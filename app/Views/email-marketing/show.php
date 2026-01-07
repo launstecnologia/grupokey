@@ -1,4 +1,9 @@
 <?php
+// Garantir que não há output antes
+if (ob_get_level() > 0) {
+    ob_end_clean();
+}
+
 $currentPage = 'email-marketing';
 ob_start();
 
@@ -349,7 +354,40 @@ $progress = $total > 0 ? round(($sent / $total) * 100) : 0;
 </div>
 
 <?php
-$content = ob_get_clean();
-include __DIR__ . '/../layouts/app.php';
+// Capturar conteúdo do buffer
+if (ob_get_level() > 0) {
+    $content = ob_get_clean();
+} else {
+    $content = '';
+}
+
+// Verificar se o layout existe
+$layoutPath = __DIR__ . '/../layouts/app.php';
+if (!file_exists($layoutPath)) {
+    // Tentar caminho alternativo
+    $layoutPath = dirname(__DIR__, 2) . '/Views/layouts/app.php';
+}
+
+// Garantir que o conteúdo está definido
+if (!isset($content)) {
+    $content = '';
+}
+
+// Incluir o layout
+if (file_exists($layoutPath)) {
+    include $layoutPath;
+} else {
+    // Fallback: renderizar sem layout se não encontrar (apenas para debug)
+    http_response_code(500);
+    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Erro</title></head><body>';
+    echo '<h1>Erro: Layout não encontrado</h1>';
+    echo '<p>Layout esperado em: ' . htmlspecialchars($layoutPath) . '</p>';
+    echo '<p>Diretório atual: ' . htmlspecialchars(__DIR__) . '</p>';
+    echo '<hr>';
+    echo '<h2>Conteúdo da view:</h2>';
+    echo '<div>' . $content . '</div>';
+    echo '</body></html>';
+    exit;
+}
 ?>
 

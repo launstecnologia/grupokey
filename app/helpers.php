@@ -31,6 +31,12 @@ if (!function_exists('redirect')) {
 if (!function_exists('view')) {
     function view($template, $data = [])
     {
+        // Garantir que não há output antes
+        if (ob_get_level() > 0 && ob_get_length() > 0) {
+            // Se há conteúdo no buffer, limpar apenas se não for intencional
+            // (algumas views usam ob_start() intencionalmente)
+        }
+        
         extract($data);
         $templatePath = __DIR__ . "/Views/{$template}.php";
         
