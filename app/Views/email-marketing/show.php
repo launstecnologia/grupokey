@@ -189,31 +189,52 @@ $progress = $total > 0 ? round(($sent / $total) * 100) : 0;
                                         </span>
                                     </div>
                                     <?php
-                                    // Tentar diferentes formas de construir a URL do arquivo
+                                    // Construir caminho e URL do arquivo
                                     $filePath = $attachment['file_path'];
+                                    $absolutePath = null;
                                     $fileUrl = null;
                                     
-                                    // Se o caminho contém 'storage/uploads', usar relativo
-                                    if (strpos($filePath, 'storage/uploads') !== false) {
-                                        $relativePath = substr($filePath, strpos($filePath, 'storage/uploads'));
-                                        $fileUrl = url($relativePath);
-                                    } 
-                                    // Se é caminho absoluto, tentar extrair a parte relativa
-                                    elseif (strpos($filePath, '/storage/') !== false) {
-                                        $relativePath = substr($filePath, strpos($filePath, '/storage/') + 1);
-                                        $fileUrl = url($relativePath);
+                                    // Se o caminho já começa com 'storage/', usar como relativo
+                                    if (strpos($filePath, 'storage' . DIRECTORY_SEPARATOR) === 0 || strpos($filePath, 'storage/') === 0) {
+                                        // Caminho relativo - construir caminho absoluto
+                                        $basePath = dirname(__DIR__, 2);
+                                        $absolutePath = $basePath . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
+                                        $fileUrl = url(str_replace(DIRECTORY_SEPARATOR, '/', $filePath));
                                     }
-                                    // Se já é relativo, usar direto
-                                    elseif (strpos($filePath, 'storage/') === 0) {
-                                        $fileUrl = url($filePath);
+                                    // Se é caminho absoluto do servidor, tentar extrair parte relativa
+                                    elseif (strpos($filePath, DIRECTORY_SEPARATOR) === 0 || strpos($filePath, '/') === 0 || (strlen($filePath) > 2 && $filePath[1] === ':')) {
+                                        // Caminho absoluto - tentar encontrar parte relativa
+                                        $absolutePath = $filePath;
+                                        
+                                        // Tentar extrair parte após 'storage/uploads'
+                                        if (strpos($filePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads') !== false) {
+                                            $relativePart = substr($filePath, strpos($filePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads'));
+                                            $fileUrl = url(str_replace(DIRECTORY_SEPARATOR, '/', $relativePart));
+                                        } elseif (strpos($filePath, 'storage/uploads') !== false) {
+                                            $relativePart = substr($filePath, strpos($filePath, 'storage/uploads'));
+                                            $fileUrl = url($relativePart);
+                                        } else {
+                                            // Fallback: usar apenas o nome do arquivo
+                                            $fileUrl = url('storage/uploads/email-attachments/' . basename($filePath));
+                                        }
                                     }
-                                    // Fallback: tentar construir URL a partir do caminho
+                                    // Fallback: assumir que é relativo
                                     else {
-                                        $fileUrl = url('storage/uploads/email-attachments/' . basename($filePath));
+                                        $basePath = dirname(__DIR__, 2);
+                                        $absolutePath = $basePath . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
+                                        $fileUrl = url('storage/uploads/' . str_replace(['\\', DIRECTORY_SEPARATOR], '/', $filePath));
                                     }
                                     
                                     // Verificar se o arquivo existe
-                                    $fileExists = file_exists($filePath);
+                                    $fileExists = $absolutePath && file_exists($absolutePath);
+                                    
+                                    // Se não encontrou, tentar caminho direto do banco
+                                    if (!$fileExists && $filePath) {
+                                        $fileExists = file_exists($filePath);
+                                        if ($fileExists) {
+                                            $absolutePath = $filePath;
+                                        }
+                                    }
                                     ?>
                                     <?php if ($fileExists && $fileUrl): ?>
                                         <a href="<?= $fileUrl ?>" 

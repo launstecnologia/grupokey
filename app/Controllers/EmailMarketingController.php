@@ -660,24 +660,35 @@ class EmailMarketingController
                     if ($filePath) {
                         write_log("Verificando arquivo: {$filePath}", 'email-queue.log');
                         
-                        // Tentar caminho absoluto primeiro
-                        $absolutePath = $filePath;
-                        if (!file_exists($absolutePath)) {
-                            // Se não existir, tentar caminho relativo a partir da raiz do projeto
-                            $basePath = dirname(__DIR__, 2);
+                        $absolutePath = null;
+                        $basePath = dirname(__DIR__, 2);
+                        
+                        // Se o caminho começa com 'storage/', é relativo
+                        if (strpos($filePath, 'storage' . DIRECTORY_SEPARATOR) === 0 || strpos($filePath, 'storage/') === 0) {
+                            $absolutePath = $basePath . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
+                            write_log("Caminho relativo detectado. Construindo: {$absolutePath}", 'email-queue.log');
+                        }
+                        // Se é caminho absoluto (começa com / ou tem :), usar direto
+                        elseif (strpos($filePath, DIRECTORY_SEPARATOR) === 0 || strpos($filePath, '/') === 0 || (strlen($filePath) > 2 && $filePath[1] === ':')) {
+                            $absolutePath = $filePath;
+                            write_log("Caminho absoluto detectado: {$absolutePath}", 'email-queue.log');
                             
-                            // Se o caminho já começa com storage, usar direto
-                            if (strpos($filePath, 'storage') === 0) {
-                                $absolutePath = $basePath . DIRECTORY_SEPARATOR . $filePath;
-                            } elseif (strpos($filePath, DIRECTORY_SEPARATOR) !== 0 && strpos($filePath, ':') === false) {
-                                // Caminho relativo
-                                $absolutePath = $basePath . DIRECTORY_SEPARATOR . $filePath;
+                            // Se não existe, tentar extrair parte relativa
+                            if (!file_exists($absolutePath)) {
+                                if (strpos($filePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads') !== false) {
+                                    $relativePart = substr($filePath, strpos($filePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads'));
+                                    $absolutePath = $basePath . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePart);
+                                    write_log("Tentando caminho relativo extraído: {$absolutePath}", 'email-queue.log');
+                                }
                             }
-                            
-                            write_log("Tentando caminho absoluto: {$absolutePath}", 'email-queue.log');
+                        }
+                        // Fallback: assumir que é relativo a partir de storage/uploads
+                        else {
+                            $absolutePath = $basePath . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
+                            write_log("Fallback: assumindo caminho relativo: {$absolutePath}", 'email-queue.log');
                         }
                         
-                        if (file_exists($absolutePath)) {
+                        if ($absolutePath && file_exists($absolutePath)) {
                             $fileSize = filesize($absolutePath);
                             write_log("✓ Arquivo existe. Tamanho: {$fileSize} bytes", 'email-queue.log');
                             
@@ -687,7 +698,8 @@ class EmailMarketingController
                             ];
                         } else {
                             write_log("✗ ERRO: Arquivo não existe em nenhum caminho testado", 'email-queue.log');
-                            write_log("Caminhos testados: {$filePath}, {$absolutePath}", 'email-queue.log');
+                            write_log("Caminho original: {$filePath}", 'email-queue.log');
+                            write_log("Caminho absoluto tentado: " . ($absolutePath ?? 'N/A'), 'email-queue.log');
                         }
                     } else {
                         write_log("✗ ERRO: Caminho do arquivo não definido", 'email-queue.log');
@@ -981,15 +993,35 @@ class EmailMarketingController
                         }
                         
                         // Garantir que o caminho seja absoluto e normalizado
-                        $filePath = realpath($filePath) ?: $filePath;
+                        $absolutePath = realpath($filePath) ?: $filePath;
                         
-                        write_log('Upload de anexo bem-sucedido. Caminho absoluto: ' . $filePath, 'email-marketing.log');
+                        // Converter para caminho relativo a partir de storage/uploads
+                        // Isso garante que funcione tanto em localhost quanto no servidor
+                        $storagePath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads';
+                        $relativePath = str_replace($storagePath . DIRECTORY_SEPARATOR, '', $absolutePath);
+                        
+                        // Se não conseguiu extrair caminho relativo, usar o caminho completo
+                        if ($relativePath === $absolutePath) {
+                            // Tentar extrair apenas a parte após 'storage/uploads'
+                            if (strpos($absolutePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads') !== false) {
+                                $relativePath = substr($absolutePath, strpos($absolutePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads') + strlen('storage' . DIRECTORY_SEPARATOR . 'uploads') + 1);
+                            } else {
+                                // Fallback: usar caminho absoluto
+                                $relativePath = $absolutePath;
+                            }
+                        }
+                        
+                        // Construir caminho relativo no formato: email-attachments/nome-arquivo.ext
+                        $pathToSave = 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . $relativePath;
+                        
+                        write_log('Upload de anexo bem-sucedido. Caminho absoluto: ' . $absolutePath, 'email-marketing.log');
+                        write_log('Caminho relativo para salvar: ' . $pathToSave, 'email-marketing.log');
                         write_log('Nome original: ' . ($uploadResult['original_name'] ?? $file['name']), 'email-marketing.log');
                         write_log('Tamanho: ' . ($uploadResult['size'] ?? $file['size']) . ' bytes', 'email-marketing.log');
                         
                         $this->campaignModel->addAttachment(
                             $campaignId,
-                            $filePath,
+                            $pathToSave,
                             $uploadResult['original_name'] ?? $file['name'],
                             $uploadResult['size'] ?? $file['size'],
                             $uploadResult['mime_type'] ?? $file['type']
