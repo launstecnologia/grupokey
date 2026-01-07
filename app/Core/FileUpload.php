@@ -12,7 +12,7 @@ class FileUpload
     
     public function __construct()
     {
-        $this->allowedTypes = explode(',', $_ENV['ALLOWED_EXTENSIONS'] ?? 'jpg,jpeg,png,pdf,doc,docx');
+        $this->allowedTypes = explode(',', $_ENV['ALLOWED_EXTENSIONS'] ?? 'jpg,jpeg,png,pdf,doc,docx,xls,xlsx');
         $this->maxSize = $_ENV['MAX_FILE_SIZE'] ?? 10485760; // 10MB
         $this->uploadPath = __DIR__ . '/../../storage/uploads';
         
@@ -41,6 +41,7 @@ class FileUpload
         
         // Validar MIME type
         $mimeType = null;
+        $mimeTypeSource = 'unknown';
         
         // Verificar se a extensão fileinfo está disponível
         if (function_exists('finfo_open')) {
@@ -48,21 +49,33 @@ class FileUpload
             if ($finfo) {
                 $mimeType = \finfo_file($finfo, $file['tmp_name']);
                 \finfo_close($finfo);
+                $mimeTypeSource = 'finfo';
             }
         }
         
         // Fallback: usar mime_content_type se fileinfo não estiver disponível
         if (empty($mimeType) && function_exists('mime_content_type')) {
             $mimeType = \mime_content_type($file['tmp_name']);
+            $mimeTypeSource = 'mime_content_type';
         }
         
         // Fallback final: usar o tipo do $_FILES
         if (empty($mimeType)) {
             $mimeType = $file['type'] ?? 'application/octet-stream';
+            $mimeTypeSource = 'file_type';
+        }
+        
+        // Log para debug
+        if (function_exists('write_log')) {
+            write_log("Validação MIME: Extensão='{$extension}', MIME Type='{$mimeType}' (fonte: {$mimeTypeSource})", 'file-upload.log');
         }
         
         if (!$this->isValidMimeType($mimeType, $extension)) {
-            throw new \Exception('Tipo de arquivo inválido');
+            $errorMsg = "Tipo de arquivo inválido. Extensão: {$extension}, MIME Type: {$mimeType}";
+            if (function_exists('write_log')) {
+                write_log("ERRO: {$errorMsg}", 'file-upload.log');
+            }
+            throw new \Exception($errorMsg);
         }
         
         // Gerar nome único
@@ -160,15 +173,82 @@ class FileUpload
     private function isValidMimeType($mimeType, $extension)
     {
         $validMimes = [
-            'jpg' => ['image/jpeg'],
-            'jpeg' => ['image/jpeg'],
+            'jpg' => ['image/jpeg', 'image/jpg'],
+            'jpeg' => ['image/jpeg', 'image/jpg'],
             'png' => ['image/png'],
             'pdf' => ['application/pdf'],
-            'doc' => ['application/msword'],
-            'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+            'doc' => [
+                'application/msword',
+                'application/vnd.ms-word',
+                'application/x-msword',
+                'application/octet-stream' // Alguns servidores retornam isso para DOC
+            ],
+            'docx' => [
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml',
+                'application/zip', // DOCX é um arquivo ZIP
+                'application/x-zip-compressed',
+                'application/octet-stream' // Alguns servidores retornam isso para DOCX
+            ],
+            'xls' => [
+                'application/vnd.ms-excel',
+                'application/excel',
+                'application/x-excel',
+                'application/x-msexcel',
+                'application/octet-stream' // Alguns servidores retornam isso para XLS
+            ],
+            'xlsx' => [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml',
+                'application/zip', // XLSX é um arquivo ZIP
+                'application/x-zip-compressed',
+                'application/octet-stream' // Alguns servidores retornam isso para XLSX
+            ]
         ];
         
-        return isset($validMimes[$extension]) && in_array($mimeType, $validMimes[$extension]);
+        // Se a extensão não está na lista, rejeitar
+        if (!isset($validMimes[$extension])) {
+            if (function_exists('write_log')) {
+                write_log("ERRO: Extensão '{$extension}' não está na lista de tipos permitidos", 'file-upload.log');
+            }
+            return false;
+        }
+        
+        // Verificar se o MIME type está na lista de válidos para esta extensão
+        if (in_array($mimeType, $validMimes[$extension])) {
+            if (function_exists('write_log')) {
+                write_log("OK: MIME type '{$mimeType}' válido para extensão '{$extension}'", 'file-upload.log');
+            }
+            return true;
+        }
+        
+        // Para DOCX e XLSX, aceitar application/zip ou application/octet-stream
+        // pois alguns servidores não detectam corretamente
+        if (($extension === 'docx' || $extension === 'xlsx') && 
+            ($mimeType === 'application/zip' || 
+             $mimeType === 'application/x-zip-compressed' || 
+             $mimeType === 'application/octet-stream')) {
+            if (function_exists('write_log')) {
+                write_log("OK: Aceitando {$extension} com MIME type '{$mimeType}' (arquivo ZIP/Office)", 'file-upload.log');
+            }
+            return true;
+        }
+        
+        // Se o MIME type é application/octet-stream mas a extensão é válida,
+        // aceitar (muitos servidores retornam isso quando não conseguem detectar)
+        if ($mimeType === 'application/octet-stream' && isset($validMimes[$extension])) {
+            if (function_exists('write_log')) {
+                write_log("AVISO: MIME type 'application/octet-stream' para extensão '{$extension}'. Aceitando baseado na extensão.", 'file-upload.log');
+            }
+            return true;
+        }
+        
+        // Log do erro
+        if (function_exists('write_log')) {
+            write_log("ERRO: MIME type '{$mimeType}' não é válido para extensão '{$extension}'", 'file-upload.log');
+        }
+        
+        return false;
     }
     
     private function formatBytes($size, $precision = 2)

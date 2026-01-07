@@ -938,7 +938,14 @@ class EmailMarketingController
                 ];
                 
                 try {
+                    write_log('=== INICIANDO UPLOAD DE ANEXO ===', 'email-marketing.log');
+                    write_log('Nome do arquivo: ' . $file['name'], 'email-marketing.log');
+                    write_log('Tipo MIME do arquivo: ' . ($file['type'] ?? 'N/A'), 'email-marketing.log');
+                    write_log('Tamanho: ' . $file['size'] . ' bytes', 'email-marketing.log');
+                    
                     $uploadResult = $this->fileUpload->upload($file, 'email-attachments');
+                    
+                    write_log('Resultado do upload: ' . json_encode($uploadResult), 'email-marketing.log');
                     
                     // FileUpload retorna: file_path, original_name, file_name, size, mime_type, extension
                     if (isset($uploadResult['file_path']) && !empty($uploadResult['file_path'])) {
