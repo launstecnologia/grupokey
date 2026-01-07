@@ -147,22 +147,40 @@ class EmailMarketingController
             redirect(url('email-marketing'));
         }
         
-        $attachments = $this->campaignModel->getAttachments($id);
-        write_log('Campanha ID: ' . $id . ' - Total de anexos encontrados: ' . count($attachments), 'email-marketing.log');
-        if (!empty($attachments)) {
-            write_log('Anexos: ' . json_encode($attachments), 'email-marketing.log');
+        try {
+            $attachments = $this->campaignModel->getAttachments($id);
+            if (function_exists('write_log')) {
+                @write_log('Campanha ID: ' . $id . ' - Total de anexos encontrados: ' . count($attachments), 'email-marketing.log');
+                if (!empty($attachments)) {
+                    @write_log('Anexos: ' . json_encode($attachments), 'email-marketing.log');
+                }
+            }
+        } catch (\Exception $e) {
+            $attachments = [];
+            if (function_exists('write_log')) {
+                @write_log('Erro ao buscar anexos: ' . $e->getMessage(), 'email-marketing.log');
+            }
         }
         
-        $recipients = $this->campaignModel->getRecipients($id);
-        $queueStats = $this->queueModel->getStats($id);
+        try {
+            $recipients = $this->campaignModel->getRecipients($id);
+        } catch (\Exception $e) {
+            $recipients = [];
+        }
+        
+        try {
+            $queueStats = $this->queueModel->getStats($id);
+        } catch (\Exception $e) {
+            $queueStats = [];
+        }
         
         $data = [
             'title' => 'Detalhes da Campanha',
             'currentPage' => 'email-marketing',
             'campaign' => $campaign,
-            'attachments' => $attachments,
-            'recipients' => $recipients,
-            'queueStats' => $queueStats
+            'attachments' => $attachments ?? [],
+            'recipients' => $recipients ?? [],
+            'queueStats' => $queueStats ?? []
         ];
         
         view('email-marketing/show', $data);

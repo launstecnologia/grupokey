@@ -1,11 +1,25 @@
 <?php
+// Habilitar exibição de erros para debug (apenas se não estiver em produção)
+if (defined('APP_DEBUG') && APP_DEBUG) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+}
+
 // Garantir que não há output antes
-if (ob_get_level() > 0) {
+while (ob_get_level() > 0) {
     ob_end_clean();
 }
 
 $currentPage = 'email-marketing';
 ob_start();
+
+// Tratamento de erros
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    if (error_reporting() === 0) {
+        return false;
+    }
+    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+}, E_ALL & ~E_NOTICE & ~E_WARNING);
 
 $campaign = $campaign ?? [];
 $attachments = $attachments ?? [];
@@ -194,51 +208,73 @@ $progress = $total > 0 ? round(($sent / $total) * 100) : 0;
                                         </span>
                                     </div>
                                     <?php
-                                    // Construir caminho e URL do arquivo
-                                    $filePath = $attachment['file_path'];
-                                    $absolutePath = null;
-                                    $fileUrl = null;
-                                    
-                                    // Se o caminho já começa com 'storage/', usar como relativo
-                                    if (strpos($filePath, 'storage' . DIRECTORY_SEPARATOR) === 0 || strpos($filePath, 'storage/') === 0) {
-                                        // Caminho relativo - construir caminho absoluto
-                                        $basePath = dirname(__DIR__, 2);
-                                        $absolutePath = $basePath . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
-                                        $fileUrl = url(str_replace(DIRECTORY_SEPARATOR, '/', $filePath));
-                                    }
-                                    // Se é caminho absoluto do servidor, tentar extrair parte relativa
-                                    elseif (strpos($filePath, DIRECTORY_SEPARATOR) === 0 || strpos($filePath, '/') === 0 || (strlen($filePath) > 2 && $filePath[1] === ':')) {
-                                        // Caminho absoluto - tentar encontrar parte relativa
-                                        $absolutePath = $filePath;
+                                    try {
+                                        // Construir caminho e URL do arquivo
+                                        $filePath = $attachment['file_path'] ?? '';
+                                        $absolutePath = null;
+                                        $fileUrl = null;
+                                        $fileExists = false;
                                         
-                                        // Tentar extrair parte após 'storage/uploads'
-                                        if (strpos($filePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads') !== false) {
-                                            $relativePart = substr($filePath, strpos($filePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads'));
-                                            $fileUrl = url(str_replace(DIRECTORY_SEPARATOR, '/', $relativePart));
-                                        } elseif (strpos($filePath, 'storage/uploads') !== false) {
-                                            $relativePart = substr($filePath, strpos($filePath, 'storage/uploads'));
-                                            $fileUrl = url($relativePart);
-                                        } else {
-                                            // Fallback: usar apenas o nome do arquivo
-                                            $fileUrl = url('storage/uploads/email-attachments/' . basename($filePath));
+                                        if (!empty($filePath)) {
+                                            // Se o caminho já começa com 'storage/', usar como relativo
+                                            if (strpos($filePath, 'storage' . DIRECTORY_SEPARATOR) === 0 || strpos($filePath, 'storage/') === 0) {
+                                                // Caminho relativo - construir caminho absoluto
+                                                $basePath = dirname(__DIR__, 2);
+                                                $absolutePath = $basePath . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
+                                                if (function_exists('url')) {
+                                                    $fileUrl = url(str_replace(DIRECTORY_SEPARATOR, '/', $filePath));
+                                                }
+                                            }
+                                            // Se é caminho absoluto do servidor, tentar extrair parte relativa
+                                            elseif (strpos($filePath, DIRECTORY_SEPARATOR) === 0 || strpos($filePath, '/') === 0 || (strlen($filePath) > 2 && $filePath[1] === ':')) {
+                                                // Caminho absoluto - tentar encontrar parte relativa
+                                                $absolutePath = $filePath;
+                                                
+                                                // Tentar extrair parte após 'storage/uploads'
+                                                if (strpos($filePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads') !== false) {
+                                                    $relativePart = substr($filePath, strpos($filePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads'));
+                                                    if (function_exists('url')) {
+                                                        $fileUrl = url(str_replace(DIRECTORY_SEPARATOR, '/', $relativePart));
+                                                    }
+                                                } elseif (strpos($filePath, 'storage/uploads') !== false) {
+                                                    $relativePart = substr($filePath, strpos($filePath, 'storage/uploads'));
+                                                    if (function_exists('url')) {
+                                                        $fileUrl = url($relativePart);
+                                                    }
+                                                } else {
+                                                    // Fallback: usar apenas o nome do arquivo
+                                                    if (function_exists('url')) {
+                                                        $fileUrl = url('storage/uploads/email-attachments/' . basename($filePath));
+                                                    }
+                                                }
+                                            }
+                                            // Fallback: assumir que é relativo
+                                            else {
+                                                $basePath = dirname(__DIR__, 2);
+                                                $absolutePath = $basePath . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
+                                                if (function_exists('url')) {
+                                                    $fileUrl = url('storage/uploads/' . str_replace(['\\', DIRECTORY_SEPARATOR], '/', $filePath));
+                                                }
+                                            }
+                                            
+                                            // Verificar se o arquivo existe
+                                            if ($absolutePath) {
+                                                $fileExists = @file_exists($absolutePath);
+                                            }
+                                            
+                                            // Se não encontrou, tentar caminho direto do banco
+                                            if (!$fileExists && $filePath) {
+                                                $fileExists = @file_exists($filePath);
+                                                if ($fileExists) {
+                                                    $absolutePath = $filePath;
+                                                }
+                                            }
                                         }
-                                    }
-                                    // Fallback: assumir que é relativo
-                                    else {
-                                        $basePath = dirname(__DIR__, 2);
-                                        $absolutePath = $basePath . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
-                                        $fileUrl = url('storage/uploads/' . str_replace(['\\', DIRECTORY_SEPARATOR], '/', $filePath));
-                                    }
-                                    
-                                    // Verificar se o arquivo existe
-                                    $fileExists = $absolutePath && file_exists($absolutePath);
-                                    
-                                    // Se não encontrou, tentar caminho direto do banco
-                                    if (!$fileExists && $filePath) {
-                                        $fileExists = file_exists($filePath);
-                                        if ($fileExists) {
-                                            $absolutePath = $filePath;
-                                        }
+                                    } catch (\Exception $e) {
+                                        // Em caso de erro, definir valores padrão
+                                        $fileExists = false;
+                                        $fileUrl = null;
+                                        $absolutePath = null;
                                     }
                                     ?>
                                     <?php if ($fileExists && $fileUrl): ?>
@@ -354,38 +390,76 @@ $progress = $total > 0 ? round(($sent / $total) * 100) : 0;
 </div>
 
 <?php
-// Capturar conteúdo do buffer
-if (ob_get_level() > 0) {
-    $content = ob_get_clean();
-} else {
-    $content = '';
-}
+// Restaurar handler de erros
+restore_error_handler();
 
-// Verificar se o layout existe
-$layoutPath = __DIR__ . '/../layouts/app.php';
-if (!file_exists($layoutPath)) {
-    // Tentar caminho alternativo
-    $layoutPath = dirname(__DIR__, 2) . '/Views/layouts/app.php';
-}
-
-// Garantir que o conteúdo está definido
-if (!isset($content)) {
-    $content = '';
-}
-
-// Incluir o layout
-if (file_exists($layoutPath)) {
-    include $layoutPath;
-} else {
-    // Fallback: renderizar sem layout se não encontrar (apenas para debug)
+try {
+    // Capturar conteúdo do buffer
+    if (ob_get_level() > 0) {
+        $content = ob_get_clean();
+    } else {
+        $content = '';
+    }
+    
+    // Verificar se o conteúdo foi capturado
+    if (empty($content) && ob_get_level() > 0) {
+        // Tentar capturar novamente
+        $content = ob_get_clean();
+    }
+    
+    // Garantir que o conteúdo está definido
+    if (!isset($content)) {
+        $content = '';
+    }
+    
+    // Verificar se o layout existe
+    $layoutPath = __DIR__ . '/../layouts/app.php';
+    if (!file_exists($layoutPath)) {
+        // Tentar caminho alternativo
+        $altPath = dirname(__DIR__, 2) . '/Views/layouts/app.php';
+        if (file_exists($altPath)) {
+            $layoutPath = $altPath;
+        }
+    }
+    
+    // Incluir o layout
+    if (file_exists($layoutPath)) {
+        // Garantir que as variáveis necessárias estão definidas
+        if (!isset($title)) {
+            $title = $campaign['name'] ?? 'Detalhes da Campanha';
+        }
+        if (!isset($currentPage)) {
+            $currentPage = 'email-marketing';
+        }
+        
+        include $layoutPath;
+    } else {
+        // Fallback: renderizar sem layout se não encontrar (apenas para debug)
+        http_response_code(500);
+        header('Content-Type: text/html; charset=UTF-8');
+        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Erro</title></head><body>';
+        echo '<h1>Erro: Layout não encontrado</h1>';
+        echo '<p>Layout esperado em: ' . htmlspecialchars($layoutPath) . '</p>';
+        echo '<p>Diretório atual: ' . htmlspecialchars(__DIR__) . '</p>';
+        echo '<p>Arquivo existe: ' . (file_exists($layoutPath) ? 'SIM' : 'NÃO') . '</p>';
+        echo '<hr>';
+        echo '<h2>Conteúdo da view (' . strlen($content) . ' caracteres):</h2>';
+        echo '<div style="border: 1px solid #ccc; padding: 10px;">' . htmlspecialchars($content) . '</div>';
+        echo '</body></html>';
+        exit;
+    }
+} catch (\Throwable $e) {
+    // Capturar qualquer erro e exibir
     http_response_code(500);
+    header('Content-Type: text/html; charset=UTF-8');
     echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Erro</title></head><body>';
-    echo '<h1>Erro: Layout não encontrado</h1>';
-    echo '<p>Layout esperado em: ' . htmlspecialchars($layoutPath) . '</p>';
-    echo '<p>Diretório atual: ' . htmlspecialchars(__DIR__) . '</p>';
-    echo '<hr>';
-    echo '<h2>Conteúdo da view:</h2>';
-    echo '<div>' . $content . '</div>';
+    echo '<h1>Erro ao renderizar view</h1>';
+    echo '<p><strong>Mensagem:</strong> ' . htmlspecialchars($e->getMessage()) . '</p>';
+    echo '<p><strong>Arquivo:</strong> ' . htmlspecialchars($e->getFile()) . '</p>';
+    echo '<p><strong>Linha:</strong> ' . $e->getLine() . '</p>';
+    if (defined('APP_DEBUG') && APP_DEBUG) {
+        echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
+    }
     echo '</body></html>';
     exit;
 }
