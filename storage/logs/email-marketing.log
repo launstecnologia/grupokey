@@ -1,0 +1,20 @@
+[2025-12-05 14:12:38] === TENTATIVA DE DELEÇÃO DE CAMPANHA ===
+[2025-12-05 14:12:38] Campanha ID: 1
+[2025-12-05 14:12:38] Método HTTP: DELETE
+[2025-12-05 14:12:38] Usuário: Lucas Moraes
+[2025-12-05 14:12:38] Campanha encontrada: {"id":1,"name":"teste","status":"SCHEDULED","total_recipients":1}
+[2025-12-05 14:12:38] Iniciando deleção de anexos...
+[2025-12-05 14:12:38] Total de anexos encontrados: 0
+[2025-12-05 14:12:38] Iniciando deleção da campanha...
+[2025-12-05 14:12:38] SUCESSO: Campanha deletada com sucesso!
+[2025-12-05 14:12:38] Campanha ID 1 removida do banco de dados
+[2025-12-05 14:12:42] === TENTATIVA DE DELEÇÃO DE CAMPANHA ===
+[2025-12-05 14:12:42] Campanha ID: 2
+[2025-12-05 14:12:42] Método HTTP: DELETE
+[2025-12-05 14:12:42] Usuário: Lucas Moraes
+[2025-12-05 14:12:42] Campanha encontrada: {"id":2,"name":"asdd","status":"SCHEDULED","total_recipients":1}
+[2025-12-05 14:12:42] Iniciando deleção de anexos...
+[2025-12-05 14:12:42] Total de anexos encontrados: 0
+[2025-12-05 14:12:42] Iniciando deleção da campanha...
+[2025-12-05 14:12:42] SUCESSO: Campanha deletada com sucesso!
+[2025-12-05 14:12:42] Campanha ID 2 removida do banco de dados

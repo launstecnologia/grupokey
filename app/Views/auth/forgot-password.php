@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esqueci minha senha - Sistema CRM</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: #01195b;
+            min-height: 100vh;
+        }
+        
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="mx-auto md:h-screen flex flex-col justify-center items-center px-6 pt-8">
+        <!-- Logo -->
+        <div class="text-2xl font-semibold flex justify-center items-center mb-8 lg:mb-10">
+            <?php $logoUrl = url('public/images/logo-white.png'); ?>
+            <img src="<?= $logoUrl ?>" class="h-24 w-auto" alt="GRUPO Key Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="hidden items-center">
+                <span class="text-white text-3xl font-bold">GRUPO</span>
+                <span class="text-cyan-400 text-3xl font-bold ml-2">KEY</span>
+            </div>
+        </div>
+        
+        <!-- Form Card -->
+        <div class="form-container bg-white shadow-2xl rounded-lg w-full sm:max-w-md">
+            <div class="p-6 sm:p-8 lg:p-12 space-y-6">
+                <div class="text-center">
+                    <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                        Esqueci minha senha
+                    </h2>
+                    <p class="text-gray-600">
+                        Digite seu email e enviaremos um link para redefinir sua senha
+                    </p>
+                </div>
+                
+                <!-- Flash messages -->
+                <?php if (isset($_SESSION['error'])): ?>
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <span><?= htmlspecialchars($_SESSION['error']) ?></span>
+                        </div>
+                    </div>
+                    <?php unset($_SESSION['error']); ?>
+                <?php endif; ?>
+                
+                <?php if (isset($_SESSION['success'])): ?>
+                    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" role="alert">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span><?= htmlspecialchars($_SESSION['success']) ?></span>
+                        </div>
+                    </div>
+                    <?php unset($_SESSION['success']); ?>
+                <?php endif; ?>
+                
+                <form method="POST" action="<?= url('forgot-password') ?>" class="space-y-6">
+                    <?= csrf_field() ?>
+                    
+                    <div>
+                        <label for="email" class="text-sm font-medium text-gray-900 block mb-2">
+                            <i class="fas fa-envelope mr-1"></i>
+                            Seu e-mail
+                        </label>
+                        <input type="email" 
+                               name="email" 
+                               id="email" 
+                               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" 
+                               placeholder="seu@email.com" 
+                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                               required>
+                    </div>
+                    
+                    <button type="submit" class="text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-4 focus:ring-cyan-200 font-medium rounded-lg text-base px-5 py-3 w-full">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Enviar link de redefinição
+                    </button>
+                    
+                    <div class="text-center">
+                        <a href="<?= url('login') ?>" class="text-sm text-cyan-600 hover:underline">
+                            <i class="fas fa-arrow-left mr-1"></i>
+                            Voltar para o login
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-8 text-white opacity-75">
+            <small>
+                <i class="fas fa-info-circle mr-1"></i>
+                Acesso restrito a usuários autorizados
+            </small>
+        </div>
+    </div>
+</body>
+</html>
+

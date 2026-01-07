@@ -1,0 +1,631 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== MÓDULO DE USUÁRIOS ADMIN =====
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String
+  password          String
+  status            UserStatus @default(ACTIVE)
+  profiles          UserProfile[]
+  permissions       Permission?
+  failedAttempts    Int       @default(0)
+  lastLogin         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relacionamentos
+  createdEstablishments    Establishment[] @relation("CreatedByUser")
+  approvedEstablishments   EstablishmentApproval[] @relation("ApprovedBy")
+  reprovedEstablishments   EstablishmentApproval[] @relation("ReprovedBy")
+  createdTickets          Ticket[] @relation("CreatedByUser")
+  assignedTickets         Ticket[] @relation("AssignedTo")
+  ticketComments          TicketComment[]
+  auditLogs              AuditLog[] @relation("UserAuditLogs")
+  notifications          Notification[] @relation("UserNotifications")
+  
+  @@map("users")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+model UserProfile {
+  id       String @id @default(cuid())
+  userId   String
+  profile  ProfileType
+  
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, profile])
+  @@map("user_profiles")
+}
+
+enum ProfileType {
+  ADMIN
+  GESTOR
+  OPERADOR
+  VISUALIZADOR
+}
+
+model Permission {
+  id          String @id @default(cuid())
+  userId      String @unique
+  canCreate   Boolean @default(false)
+  canEdit     Boolean @default(false)
+  canApprove  Boolean @default(false)
+  canExport   Boolean @default(false)
+  
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("permissions")
+}
+
+// ===== MÓDULO DE REPRESENTANTES =====
+
+model Representative {
+  id              String    @id @default(cuid())
+  cnpj            String?
+  cpf             String    @unique
+  nomeCompleto    String
+  
+  // Endereço
+  cep             String
+  logradouro      String
+  numero          String
+  complemento     String?
+  bairro          String
+  cidade          String
+  uf              String
+  
+  telefone        String
+  email           String    @unique
+  status          RepresentativeStatus @default(ACTIVE)
+  
+  // Credenciais para login
+  password        String
+  forcePasswordChange Boolean @default(true)
+  failedAttempts  Int       @default(0)
+  lastLogin       DateTime?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relacionamentos
+  products        RepresentativeProduct[]
+  permissions     RepresentativePermission?
+  createdEstablishments Establishment[] @relation("CreatedByRepresentative")
+  createdTickets  Ticket[] @relation("CreatedByRepresentative")
+  auditLogs       AuditLog[] @relation("RepresentativeAuditLogs")
+  notifications   Notification[] @relation("RepresentativeNotifications")
+  
+  @@map("representatives")
+}
+
+enum RepresentativeStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+model RepresentativeProduct {
+  id               String @id @default(cuid())
+  representativeId String
+  productType      ProductType
+  
+  representative   Representative @relation(fields: [representativeId], references: [id], onDelete: Cascade)
+  
+  @@unique([representativeId, productType])
+  @@map("representative_products")
+}
+
+model RepresentativePermission {
+  id               String @id @default(cuid()) Int auto_increment primary_key
+  representativeId String @unique
+  canCreate        Boolean @default(true)
+  canEdit          Boolean @default(true)
+  canExport        Boolean @default(true)
+  
+  representative   Representative @relation(fields: [representativeId], references: [id], onDelete: Cascade)
+  
+  @@map("representative_permissions")
+}
+
+// ===== MÓDULO DE ESTABELECIMENTOS/CLIENTES =====
+
+model Establishment {
+  id                String    @id @default(cuid())
+  
+  // Identificação
+  registrationType  RegistrationType
+  cpf               String?
+  cnpj              String?
+  razaoSocial       String?
+  nomeCompleto      String
+  nomeFantasia      String
+  segmento          String
+  telefone          String
+  email             String
+  produto           ProductType
+  
+  // Endereço
+  cep               String
+  logradouro        String
+  numero            String
+  complemento       String?
+  bairro            String
+  cidade            String
+  uf                String
+  
+  // Campos específicos por produto (JSON para flexibilidade)
+  productData       Json?
+  
+  // Status e controle
+  status            EstablishmentStatus @default(PENDING)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Quem criou (pode ser Admin ou Representante)
+  createdByUserId         String?
+  createdByRepresentativeId String?
+  
+  // Relacionamentos
+  createdByUser         User? @relation("CreatedByUser", fields: [createdByUserId], references: [id])
+  createdByRepresentative Representative? @relation("CreatedByRepresentative", fields: [createdByRepresentativeId], references: [id])
+  documents         Document[]
+  approval          EstablishmentApproval?
+  tickets           Ticket[]
+  auditLogs         AuditLog[]
+  machineAssignments MachineAssignment[]
+  
+  @@map("establishments")
+}
+
+enum RegistrationType {
+  PF
+  PJ
+}
+
+enum ProductType {
+  PAGSEGURO_MP
+  FLAMEX
+  DIVERSOS
+  FGTS
+  UCREDIT
+  BRASILCARD
+  MEMBRO_KEY
+}
+
+enum EstablishmentStatus {
+  PENDING
+  APPROVED
+  REPROVED
+  DISABLED
+}
+
+model EstablishmentApproval {
+  id              String    @id @default(cuid())
+  establishmentId String    @unique
+  status          ApprovalStatus
+  reason          String?
+  observation     String?
+  approvedAt      DateTime?
+  reprovedAt      DateTime?
+  approvedById    String?
+  reprovedById    String?
+  
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  approvedBy      User? @relation("ApprovedBy", fields: [approvedById], references: [id])
+  reprovedBy      User? @relation("ReprovedBy", fields: [reprovedById], references: [id])
+  
+  @@map("establishment_approvals")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REPROVED
+}
+
+// ===== MÓDULO DE DOCUMENTOS =====
+
+model Document {
+  id              String    @id @default(cuid())
+  establishmentId String
+  fileName        String
+  originalName    String
+  mimeType        String
+  size            Int
+  documentType    DocumentType
+  filePath        String
+  uploadedAt      DateTime  @default(now())
+  
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  
+  @@map("documents")
+}
+
+enum DocumentType {
+  RG_CPF_CNH
+  SELFIE_DOCUMENTO
+  COMPROVANTE_ENDERECO
+  FOTO_FACHADA
+  CARTAO_CNPJ
+  CONTRATO_SOCIAL
+  COMPROVANTE_BANCARIO
+  PRINT_INSTAGRAM
+  FOTO_TITULAR_LOJA
+  COMPROVANTE_RESIDENCIA
+}
+
+// ===== MÓDULO DE CHAMADOS =====
+
+model Ticket {
+  id              String    @id @default(cuid())
+  ticketNumber    String    @unique
+  produto         ProductType
+  establishmentId String?
+  assunto         String
+  descricao       String
+  status          TicketStatus @default(OPEN)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Quem criou (pode ser Admin ou Representante)
+  createdByUserId         String?
+  createdByRepresentativeId String?
+  assignedToId    String?
+  
+  // Relacionamentos
+  createdByUser       User? @relation("CreatedByUser", fields: [createdByUserId], references: [id])
+  createdByRepresentative Representative? @relation("CreatedByRepresentative", fields: [createdByRepresentativeId], references: [id])
+  assignedTo      User? @relation("AssignedTo", fields: [assignedToId], references: [id])
+  establishment   Establishment? @relation(fields: [establishmentId], references: [id])
+  comments        TicketComment[]
+  
+  @@map("tickets")
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+model TicketComment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  userId    String
+  comment   String
+  createdAt DateTime @default(now())
+  
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@map("ticket_comments")
+}
+
+// ===== MÓDULO DE MATERIAL DE APOIO =====
+
+model SupportMaterial {
+  id           String    @id @default(cuid())
+  titulo       String
+  descricao    String
+  produto      ProductType
+  driveUrl     String
+  visibility   MaterialVisibility
+  ordem        Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  @@map("support_materials")
+}
+
+enum MaterialVisibility {
+  TODOS
+  PERFIS
+}
+
+// ===== MÓDULO DE ESTOQUE DE MÁQUINAS =====
+
+model Machine {
+  id              String    @id @default(cuid())
+  serialNumber    String    @unique
+  modelo          MachineModel
+  valor           Decimal   @db.Decimal(10,2)
+  canal           Channel
+  status          MachineStatus @default(AVAILABLE)
+  dataInclusao    DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relacionamentos
+  assignments     MachineAssignment[]
+  
+  @@map("machines")
+}
+
+enum MachineModel {
+  CHIP_3
+  PLUS_2
+  PRO_2
+  SMART_2
+}
+
+enum Channel {
+  FV
+  MUSE
+  SITE
+  INDIQUE_E_GANHE
+}
+
+enum MachineStatus {
+  AVAILABLE
+  SOLD
+  IN_TRANSIT
+  MAINTENANCE
+}
+
+model MachineBatch {
+  id           String    @id @default(cuid())
+  dataInclusao DateTime
+  modelo       MachineModel
+  valor        Decimal   @db.Decimal(10,2)
+  canal        Channel
+  quantity     Int
+  serialNumbers String[] // Array de números de série
+  createdAt    DateTime  @default(now())
+  
+  @@map("machine_batches")
+}
+
+model MachineAssignment {
+  id              String    @id @default(cuid())
+  machineId       String
+  establishmentId String
+  assignedAt      DateTime  @default(now())
+  
+  machine         Machine @relation(fields: [machineId], references: [id])
+  establishment   Establishment @relation(fields: [establishmentId], references: [id])
+  
+  @@unique([machineId, establishmentId])
+  @@map("machine_assignments")
+}
+
+// ===== MÓDULO DE AUDITORIA E LOGS =====
+
+model AuditLog {
+  id              String    @id @default(cuid())
+  
+  // Quem fez a ação (pode ser Admin ou Representante)
+  userId          String?
+  representativeId String?
+  
+  action          AuditAction
+  module          String
+  recordId        String?
+  recordType      String?
+  oldValues       Json?
+  newValues       Json?
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime  @default(now())
+  
+  // Relacionamentos
+  user            User? @relation("UserAuditLogs", fields: [userId], references: [id])
+  representative  Representative? @relation("RepresentativeAuditLogs", fields: [representativeId], references: [id])
+  establishment   Establishment? @relation(fields: [recordId], references: [id])
+  
+  @@map("audit_logs")
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  REPROVE
+  DISABLE
+  ENABLE
+  LOGIN
+  LOGOUT
+  PASSWORD_CHANGE
+  BLOCK_ACCOUNT
+  UNBLOCK_ACCOUNT
+}
+
+// ===== CONFIGURAÇÕES DO SISTEMA =====
+
+model SystemConfig {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  value       String
+  description String?
+  updatedAt   DateTime  @updatedAt
+  
+  @@map("system_configs")
+}
+
+// ===== TABELA PARA NOTIFICAÇÕES =====
+
+model Notification {
+  id              String    @id @default(cuid())
+  
+  // Para quem (pode ser Admin ou Representante)
+  userId          String?
+  representativeId String?
+  
+  title           String
+  message         String
+  type            NotificationType
+  relatedId       String? // ID do estabelecimento, chamado, etc.
+  isRead          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  
+  // Relacionamentos
+  user            User? @relation("UserNotifications", fields: [userId], references: [id])
+  representative  Representative? @relation("RepresentativeNotifications", fields: [representativeId], references: [id])
+  
+  @@map("notifications")
+}
+
+enum NotificationType {
+  CLIENT_APPROVED
+  CLIENT_REPROVED
+  TICKET_ASSIGNED
+  TICKET_RESOLVED
+  SYSTEM_UPDATE
+  PASSWORD_RESET
+}
+
+// ===== ÍNDICES PARA PERFORMANCE =====
+
+// Índices em User
+model User {
+  // ... campos existentes ...
+  
+  @@index([email, status])
+  @@index([lastLogin])
+}
+
+// Índices em Representative  
+model Representative {
+  // ... campos existentes ...
+  
+  @@index([email, status])
+  @@index([lastLogin])
+  @@index([cpf])
+}
+
+// Índices em Establishment
+model Establishment {
+  // ... campos existentes ...
+  
+  @@index([status, produto])
+  @@index([cidade, uf])
+  @@index([createdByUserId])
+  @@index([createdByRepresentativeId])
+  @@index([createdAt])
+  @@index([cpf, cnpj])
+}
+
+// Índices em Ticket
+model Ticket {
+  // ... campos existentes ...
+  
+  @@index([status])
+  @@index([createdByUserId])
+  @@index([createdByRepresentativeId])
+  @@index([establishmentId])
+  @@index([assignedToId])
+  @@index([createdAt])
+}
+
+// Índices em AuditLog
+model AuditLog {
+  // ... campos existentes ...
+  
+  @@index([userId, createdAt])
+  @@index([representativeId, createdAt])
+  @@index([action, module])
+  @@index([recordId, recordType])
+}
+
+// Índices em Machine
+model Machine {
+  // ... campos existentes ...
+  
+  @@index([status, modelo])
+  @@index([serialNumber])
+  @@index([canal])
+}
+
+// Índices em Document
+model Document {
+  // ... campos existentes ...
+  
+  @@index([establishmentId, documentType])
+  @@index([uploadedAt])
+}
+
+// Índices em Notification
+model Notification {
+  // ... campos existentes ...
+  
+  @@index([userId, isRead])
+  @@index([representativeId, isRead])
+  @@index([createdAt])
+}
+
+// ===== FUNÇÕES E TRIGGERS SUGERIDOS =====
+
+// Para implementar no PostgreSQL após migração:
+
+/*
+-- Trigger para auto-incrementar número do chamado
+CREATE SEQUENCE ticket_number_seq;
+
+CREATE OR REPLACE FUNCTION generate_ticket_number()
+RETURNS TRIGGER AS $
+BEGIN
+  NEW.ticket_number := 'TKT-' || LPAD(nextval('ticket_number_seq')::text, 6, '0');
+  RETURN NEW;
+END;
+$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_generate_ticket_number
+  BEFORE INSERT ON tickets
+  FOR EACH ROW
+  EXECUTE FUNCTION generate_ticket_number();
+
+-- Trigger para auditoria automática
+CREATE OR REPLACE FUNCTION audit_trigger()
+RETURNS TRIGGER AS $
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    INSERT INTO audit_logs (action, module, record_id, record_type, new_values, created_at)
+    VALUES ('CREATE', TG_TABLE_NAME, NEW.id, TG_TABLE_NAME, to_jsonb(NEW), NOW());
+    RETURN NEW;
+  ELSIF TG_OP = 'UPDATE' THEN
+    INSERT INTO audit_logs (action, module, record_id, record_type, old_values, new_values, created_at)
+    VALUES ('UPDATE', TG_TABLE_NAME, NEW.id, TG_TABLE_NAME, to_jsonb(OLD), to_jsonb(NEW), NOW());
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    INSERT INTO audit_logs (action, module, record_id, record_type, old_values, created_at)
+    VALUES ('DELETE', TG_TABLE_NAME, OLD.id, TG_TABLE_NAME, to_jsonb(OLD), NOW());
+    RETURN OLD;
+  END IF;
+  RETURN NULL;
+END;
+$ LANGUAGE plpgsql;
+
+-- Aplicar trigger de auditoria nas tabelas principais
+CREATE TRIGGER audit_establishments
+  AFTER INSERT OR UPDATE OR DELETE ON establishments
+  FOR EACH ROW EXECUTE FUNCTION audit_trigger();
+
+CREATE TRIGGER audit_representatives
+  AFTER INSERT OR UPDATE OR DELETE ON representatives
+  FOR EACH ROW EXECUTE FUNCTION audit_trigger();
+
+-- View para estatísticas do dashboard
+CREATE VIEW dashboard_stats AS
+SELECT 
+  COUNT(CASE WHEN produto = 'PAGSEGURO_MP' AND status = 'APPROVED' THEN 1 END) as pagseguro_clients,
+  COUNT(CASE WHEN produto = 'FGTS' AND status = 'APPROVED' THEN 1 END) as fgts_clients,
+  COUNT(CASE WHEN produto = 'MEMBRO_KEY' AND status = 'APPROVED' THEN 1 END) as membro_key_clients,
+  COUNT(CASE WHEN created_at >= DATE_TRUNC('month', CURRENT_DATE) THEN 1 END) as registrations_this_month,
+  COUNT(CASE WHEN status = 'PENDING' THEN 1 END) as pending_approvals
+FROM establishments;
+*/

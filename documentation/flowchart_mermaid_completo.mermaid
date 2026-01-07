@@ -1,0 +1,236 @@
+flowchart TD
+    START([Sistema CRM - Início]) --> LOGIN[Tela de Login Única]
+    
+    LOGIN --> INPUT[Inserir Email e Senha]
+    INPUT --> VALIDATE{Validar Credenciais}
+    
+    VALIDATE --> CHECK_USER{Email existe no sistema?}
+    CHECK_USER -->|Não| ERROR_USER[Erro: Usuário não encontrado]
+    ERROR_USER --> LOGIN
+    
+    CHECK_USER -->|Sim| USER_TYPE{Identificar Tipo}
+    
+    %% FLUXO USUÁRIO ADMIN
+    USER_TYPE -->|Usuário Admin| ADMIN_AUTH{Senha correta?}
+    ADMIN_AUTH -->|Não| ADMIN_FAIL[Incrementar tentativas Admin]
+    ADMIN_FAIL --> ADMIN_ATTEMPTS{Tentativas menor que 5?}
+    ADMIN_ATTEMPTS -->|Sim| LOGIN
+    ADMIN_ATTEMPTS -->|Não| ADMIN_BLOCK[Bloquear Conta Admin]
+    
+    ADMIN_AUTH -->|Sim| ADMIN_LOGIN[Login Admin Successful]
+    ADMIN_LOGIN --> ADMIN_DASHBOARD[Dashboard Admin]
+    
+    %% FLUXO REPRESENTANTE
+    USER_TYPE -->|Representante| REP_AUTH{Senha correta?}
+    REP_AUTH -->|Não| REP_FAIL[Incrementar tentativas Rep]
+    REP_FAIL --> REP_ATTEMPTS{Tentativas menor que 5?}
+    REP_ATTEMPTS -->|Sim| LOGIN
+    REP_ATTEMPTS -->|Não| REP_BLOCK[Bloquear Conta Representante]
+    
+    REP_AUTH -->|Sim| REP_FIRST{Primeiro acesso?}
+    REP_FIRST -->|Sim| CHANGE_PWD[Forçar alteração de senha]
+    CHANGE_PWD --> REP_DASHBOARD[Dashboard Representante]
+    REP_FIRST -->|Não| REP_DASHBOARD
+    
+    %% DASHBOARD ADMIN - MÓDULOS
+    ADMIN_DASHBOARD --> ADMIN_EST[Estabelecimentos]
+    ADMIN_DASHBOARD --> ADMIN_REP[Representantes]
+    ADMIN_DASHBOARD --> ADMIN_USER[Usuários]
+    ADMIN_DASHBOARD --> ADMIN_TICKET[Chamados]
+    ADMIN_DASHBOARD --> ADMIN_MATERIAL[Material de Apoio]
+    ADMIN_DASHBOARD --> ADMIN_MACHINE[Gestão de Máquinas]
+    ADMIN_DASHBOARD --> ADMIN_REPORT[Relatórios]
+    ADMIN_DASHBOARD --> ADMIN_AUDIT[Auditoria]
+    
+    %% DASHBOARD REPRESENTANTE - MÓDULOS
+    REP_DASHBOARD --> REP_CLIENTS[Meus Clientes]
+    REP_DASHBOARD --> REP_NEW[Cadastrar Cliente]
+    REP_DASHBOARD --> REP_TICKETS[Meus Chamados]
+    REP_DASHBOARD --> REP_MATERIAL[Material de Apoio]
+    REP_DASHBOARD --> REP_REPORTS[Meus Relatórios]
+    REP_DASHBOARD --> REP_PROFILE[Meu Perfil]
+    
+    %% MÓDULO ESTABELECIMENTOS - ADMIN
+    ADMIN_EST --> EST_LIST[Listar Todos]
+    ADMIN_EST --> EST_PENDING[Pendentes Aprovação]
+    ADMIN_EST --> EST_NEW[Novo Estabelecimento]
+    
+    EST_LIST --> EST_ACTIONS[Ações: Ver/Editar/Histórico/Desabilitar]
+    EST_PENDING --> EST_APPROVE{Aprovar/Reprovar}
+    EST_APPROVE -->|Aprovar| EST_APPROVED[Cliente Habilitado]
+    EST_APPROVE -->|Reprovar| EST_REPROVED[Cliente Reprovado + Motivo]
+    
+    %% MÓDULO ESTABELECIMENTOS - REPRESENTANTE  
+    REP_CLIENTS --> REP_LIST[Listar Meus Clientes]
+    REP_CLIENTS --> REP_PENDING[Meus Pendentes]
+    REP_CLIENTS --> REP_REPROVED[Meus Reprovados]
+    
+    REP_NEW --> REP_CHECK{Verificar Permissões}
+    REP_CHECK --> REP_PRODUCTS[Produtos Permitidos]
+    REP_PRODUCTS --> FORM_START[Iniciar Formulário]
+    
+    %% FLUXO COMUM DO FORMULÁRIO
+    EST_NEW --> FORM_START
+    FORM_START --> FORM_PRODUCT{Selecionar Produto}
+    
+    FORM_PRODUCT --> PROD_PAGSEGURO[PagSeguro/MP]
+    FORM_PRODUCT --> PROD_FLAMEX[Flamex]
+    FORM_PRODUCT --> PROD_DIVERSOS[Diversos]
+    FORM_PRODUCT --> PROD_FGTS[FGTS/Ucredit/BrasilCard]
+    
+    PROD_PAGSEGURO --> FORM_BASIC[Dados Básicos]
+    PROD_FLAMEX --> FORM_BASIC
+    PROD_DIVERSOS --> FORM_BASIC
+    PROD_FGTS --> FORM_BASIC
+    
+    FORM_BASIC --> FORM_ADDRESS[Endereço + CEP]
+    FORM_ADDRESS --> FORM_SPECIFIC[Campos Específicos]
+    FORM_SPECIFIC --> FORM_DOCS[Upload Documentos]
+    FORM_DOCS --> FORM_SUBMIT{Produto é PagSeguro?}
+    
+    FORM_SUBMIT -->|Sim| AUTO_APPROVE[Auto-aprovado]
+    FORM_SUBMIT -->|Não| SEND_APPROVAL[Enviar para Aprovação]
+    
+    AUTO_APPROVE --> CREATE_FOLDER[Criar Pasta Google Drive]
+    SEND_APPROVAL --> WAIT_APPROVAL[Aguardar Admin]
+    
+    WAIT_APPROVAL --> EST_APPROVE
+    EST_APPROVED --> CREATE_FOLDER
+    EST_APPROVED --> NOTIFY_REP[Notificar Representante]
+    EST_REPROVED --> NOTIFY_REP_REJECTED[Notificar Reprovação]
+    
+    %% MÓDULO REPRESENTANTES - ADMIN
+    ADMIN_REP --> REP_LIST_ALL[Listar Representantes]
+    ADMIN_REP --> REP_CREATE[Criar Representante]
+    
+    REP_CREATE --> REP_FORM_PERSONAL[Dados Pessoais]
+    REP_FORM_PERSONAL --> REP_FORM_ADDRESS[Endereço]
+    REP_FORM_ADDRESS --> REP_FORM_PRODUCTS[Selecionar Produtos]
+    REP_FORM_PRODUCTS --> REP_FORM_PERMISSIONS[Definir Permissões]
+    REP_FORM_PERMISSIONS --> REP_FORM_CREDENTIALS[Gerar Credenciais]
+    REP_FORM_CREDENTIALS --> REP_CREATED[Representante Criado]
+    REP_CREATED --> SEND_EMAIL[Enviar Email com Credenciais]
+    
+    REP_LIST_ALL --> REP_ACTIONS[Ver/Editar/Reset Senha/Bloquear]
+    
+    %% MÓDULO USUÁRIOS - ADMIN
+    ADMIN_USER --> USER_LIST[Listar Usuários]
+    ADMIN_USER --> USER_CREATE[Criar Usuário]
+    
+    USER_CREATE --> USER_FORM[Dados + Perfis + Permissões]
+    USER_FORM --> USER_CREATED[Usuário Criado]
+    
+    USER_LIST --> USER_ACTIONS[Editar/Bloquear/Reset/Revogar Sessões]
+    
+    %% MÓDULO CHAMADOS - ADMIN
+    ADMIN_TICKET --> TICKET_ALL[Todos os Chamados]
+    ADMIN_TICKET --> TICKET_CREATE_ADMIN[Novo Chamado Admin]
+    
+    TICKET_ALL --> TICKET_ASSIGN[Atribuir a Técnico]
+    TICKET_ASSIGN --> TICKET_PROGRESS[Em Andamento]
+    TICKET_PROGRESS --> TICKET_RESOLVE[Resolver]
+    TICKET_RESOLVE --> TICKET_CLOSED[Chamado Fechado]
+    
+    %% MÓDULO CHAMADOS - REPRESENTANTE
+    REP_TICKETS --> TICKET_REP_LIST[Chamados Meus Clientes]
+    REP_TICKETS --> TICKET_REP_CREATE[Novo Chamado]
+    
+    TICKET_REP_CREATE --> TICKET_SELECT_CLIENT[Selecionar Meu Cliente]
+    TICKET_SELECT_CLIENT --> TICKET_DESCRIBE[Descrever Problema]
+    TICKET_DESCRIBE --> TICKET_SUBMIT[Criar Chamado]
+    TICKET_SUBMIT --> TICKET_WAIT[Aguardar Atribuição]
+    
+    TICKET_CREATE_ADMIN --> TICKET_SELECT_CLIENT
+    
+    %% MÓDULO MATERIAL DE APOIO
+    ADMIN_MATERIAL --> MATERIAL_MANAGE[Gerenciar Materiais]
+    REP_MATERIAL --> MATERIAL_VIEW[Visualizar Materiais]
+    
+    MATERIAL_MANAGE --> MATERIAL_CREATE[Adicionar Material]
+    MATERIAL_MANAGE --> MATERIAL_EDIT[Editar Links]
+    MATERIAL_VIEW --> MATERIAL_DRIVE[Acessar Google Drive]
+    
+    %% MÓDULO MÁQUINAS - ADMIN APENAS
+    ADMIN_MACHINE --> MACHINE_DASHBOARD[Dashboard Estoque]
+    ADMIN_MACHINE --> MACHINE_BATCH[Novo Lote]
+    ADMIN_MACHINE --> MACHINE_LIST[Listar Máquinas]
+    ADMIN_MACHINE --> MACHINE_ASSIGN[Vincular a Cliente]
+    
+    MACHINE_BATCH --> BATCH_INFO[Dados do Lote]
+    BATCH_INFO --> BATCH_SERIAL{Inserção S/N}
+    BATCH_SERIAL -->|Individual| BATCH_SINGLE[Um por vez]
+    BATCH_SERIAL -->|Massiva| BATCH_MULTIPLE[Múltiplos S/N]
+    BATCH_SINGLE --> BATCH_SAVE[Salvar Lote]
+    BATCH_MULTIPLE --> BATCH_SAVE
+    
+    MACHINE_ASSIGN --> SEARCH_CLIENT[Buscar Cliente]
+    SEARCH_CLIENT --> CONFIRM_LINK[Confirmar Vinculação]
+    
+    %% MÓDULO RELATÓRIOS
+    ADMIN_REPORT --> REPORT_ALL[Relatório Geral]
+    ADMIN_REPORT --> REPORT_BY_REP[Por Representante]
+    ADMIN_REPORT --> REPORT_FINANCIAL[Financeiro]
+    
+    REP_REPORTS --> REPORT_MY_CLIENTS[Meus Clientes]
+    REP_REPORTS --> REPORT_PERFORMANCE[Minha Performance]
+    
+    REPORT_ALL --> EXPORT{Tipo Exportação}
+    REPORT_MY_CLIENTS --> EXPORT
+    EXPORT --> EXPORT_SIMPLE[Simplificado]
+    EXPORT --> EXPORT_DETAILED[Detalhado]
+    
+    %% MÓDULO AUDITORIA - ADMIN
+    ADMIN_AUDIT --> AUDIT_LOGS[Visualizar Logs]
+    AUDIT_LOGS --> AUDIT_FILTER[Filtrar por Usuário/Data/Ação]
+    
+    %% SISTEMA DE AUDITORIA
+    CREATE_FOLDER --> AUDIT_SYSTEM[Sistema de Auditoria]
+    REP_CREATED --> AUDIT_SYSTEM
+    TICKET_CLOSED --> AUDIT_SYSTEM
+    BATCH_SAVE --> AUDIT_SYSTEM
+    USER_CREATED --> AUDIT_SYSTEM
+    
+    AUDIT_SYSTEM --> AUDIT_RECORD[Registrar: Usuário/Rep + Ação + IP + Timestamp]
+    
+    %% RECUPERAÇÃO DE SENHA
+    LOGIN --> FORGOT_PWD[Esqueci Senha]
+    FORGOT_PWD --> FORGOT_EMAIL[Inserir Email]
+    FORGOT_EMAIL --> FORGOT_CHECK{Email existe?}
+    FORGOT_CHECK -->|Sim| FORGOT_SEND[Enviar Link Reset]
+    FORGOT_CHECK -->|Não| FORGOT_ERROR[Email não cadastrado]
+    FORGOT_SEND --> RESET_PWD[Redefinir Senha]
+    RESET_PWD --> LOGIN
+    
+    %% SISTEMA DE NOTIFICAÇÕES
+    NOTIFY_REP --> NOTIFICATION[Sistema de Notificações]
+    NOTIFY_REP_REJECTED --> NOTIFICATION
+    TICKET_WAIT --> NOTIFICATION
+    SEND_EMAIL --> NOTIFICATION
+    
+    NOTIFICATION --> NOTIFY_EMAIL[Enviar Email]
+    NOTIFICATION --> NOTIFY_IN_APP[Notificação In-App]
+    
+    %% LOGOUT E SESSÕES
+    ADMIN_DASHBOARD --> LOGOUT[Logout]
+    REP_DASHBOARD --> LOGOUT
+    LOGOUT --> LOGIN
+    
+    %% ESTILOS
+    classDef startEnd fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef admin fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef representative fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px
+    classDef process fill:#f9fbe7,stroke:#33691e,stroke-width:2px
+    classDef notification fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef system fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    
+    %% Aplicar estilos
+    class START,LOGIN,LOGOUT startEnd
+    class ADMIN_DASHBOARD,ADMIN_EST,ADMIN_REP,ADMIN_USER,ADMIN_TICKET,ADMIN_MATERIAL,ADMIN_MACHINE,ADMIN_REPORT,ADMIN_AUDIT admin
+    class REP_DASHBOARD,REP_CLIENTS,REP_NEW,REP_TICKETS,REP_MATERIAL,REP_REPORTS,REP_PROFILE representative  
+    class VALIDATE,CHECK_USER,USER_TYPE,ADMIN_AUTH,REP_AUTH,REP_FIRST,EST_APPROVE,FORM_SUBMIT,BATCH_SERIAL,EXPORT,FORGOT_CHECK decision
+    class ERROR_USER,ADMIN_BLOCK,REP_BLOCK,FORGOT_ERROR error
+    class FORM_START,FORM_BASIC,FORM_ADDRESS,FORM_SPECIFIC,FORM_DOCS,REP_FORM_PERSONAL,USER_FORM,BATCH_INFO process
+    class NOTIFY_REP,NOTIFY_REP_REJECTED,NOTIFICATION,NOTIFY_EMAIL,NOTIFY_IN_APP notification
+    class AUDIT_SYSTEM,AUDIT_RECORD,CREATE_FOLDER system
