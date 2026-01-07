@@ -175,9 +175,9 @@ $progress = $total > 0 ? round(($sent / $total) * 100) : 0;
                 </div>
 
                 <!-- Anexos -->
-                <?php if (!empty($attachments)): ?>
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Anexos</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Anexos</h2>
+                    <?php if (!empty($attachments)): ?>
                         <div class="space-y-2">
                             <?php foreach ($attachments as $attachment): ?>
                                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -188,16 +188,52 @@ $progress = $total > 0 ? round(($sent / $total) * 100) : 0;
                                             (<?= number_format($attachment['file_size'] / 1024, 2) ?> KB)
                                         </span>
                                     </div>
-                                    <a href="<?= url('storage/' . str_replace(ROOT . '/storage/', '', $attachment['file_path'])) ?>" 
-                                       target="_blank"
-                                       class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                        <i class="fas fa-download"></i>
-                                    </a>
+                                    <?php
+                                    // Tentar diferentes formas de construir a URL do arquivo
+                                    $filePath = $attachment['file_path'];
+                                    $fileUrl = null;
+                                    
+                                    // Se o caminho contém 'storage/uploads', usar relativo
+                                    if (strpos($filePath, 'storage/uploads') !== false) {
+                                        $relativePath = substr($filePath, strpos($filePath, 'storage/uploads'));
+                                        $fileUrl = url($relativePath);
+                                    } 
+                                    // Se é caminho absoluto, tentar extrair a parte relativa
+                                    elseif (strpos($filePath, '/storage/') !== false) {
+                                        $relativePath = substr($filePath, strpos($filePath, '/storage/') + 1);
+                                        $fileUrl = url($relativePath);
+                                    }
+                                    // Se já é relativo, usar direto
+                                    elseif (strpos($filePath, 'storage/') === 0) {
+                                        $fileUrl = url($filePath);
+                                    }
+                                    // Fallback: tentar construir URL a partir do caminho
+                                    else {
+                                        $fileUrl = url('storage/uploads/email-attachments/' . basename($filePath));
+                                    }
+                                    
+                                    // Verificar se o arquivo existe
+                                    $fileExists = file_exists($filePath);
+                                    ?>
+                                    <?php if ($fileExists && $fileUrl): ?>
+                                        <a href="<?= $fileUrl ?>" 
+                                           target="_blank"
+                                           class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                           title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="text-red-500 text-xs" title="Arquivo não encontrado no servidor">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                    </div>
-                <?php endif; ?>
+                    <?php else: ?>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Nenhum anexo adicionado a esta campanha.</p>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <!-- Sidebar -->

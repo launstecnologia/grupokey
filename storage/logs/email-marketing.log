@@ -18,3 +18,5 @@
 [2025-12-05 14:12:42] Iniciando deleção da campanha...
 [2025-12-05 14:12:42] SUCESSO: Campanha deletada com sucesso!
 [2025-12-05 14:12:42] Campanha ID 2 removida do banco de dados
+[2026-01-07 20:56:52] Campanha ID: 9 - Total de anexos encontrados: 1
+[2026-01-07 20:56:52] Anexos: [{"id":1,"campaign_id":9,"file_path":"\/home\/grupokey\/domains\/grupokey.com.br\/public_html\/storage\/uploads\/email-attachments\/7da61efe-5507-4bd4-8293-88fe4e8f4460.pdf","file_name":"cart\u00e3o.pdf","file_size":74990,"file_type":"application\/pdf","created_at":"2026-01-07 20:51:49"}]
