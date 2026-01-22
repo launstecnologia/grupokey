@@ -130,61 +130,101 @@ if (!class_exists('App\Core\AutoConfig')) {
             $baseUrl = self::getBaseUrl();
             $folder = self::getFolder();
             
+            // Primeiro, tentar carregar do arquivo config.env se existir
+            $envConfig = self::loadEnvFile();
+            
             // Configurações baseadas no ambiente detectado
             if ($environment === 'production') {
                 self::$config = [
                     'FOLDER' => $folder,
                     'URL' => $baseUrl,
-                    'APP_DEBUG' => 'false',
-                    'DB_HOST' => '72.60.158.222',
-                    'DB_PORT' => '3306',
-                    'DB_NAME' => 'grup_platform',
-                    'DB_USER' => 'grup_platform',
-                    'DB_PASS' => '117910Campi!25',
-                    'APP_NAME' => 'Sistema CRM',
+                    'APP_DEBUG' => $envConfig['APP_DEBUG'] ?? 'false',
+                    'DB_HOST' => $envConfig['DB_HOST'] ?? '186.209.113.149',
+                    'DB_PORT' => $envConfig['DB_PORT'] ?? '3306',
+                    'DB_NAME' => $envConfig['DB_NAME'] ?? 'grupokey_platform',
+                    'DB_USER' => $envConfig['DB_USER'] ?? 'grupokey_platform',
+                    'DB_PASS' => $envConfig['DB_PASS'] ?? '117910Campi!25',
+                    'APP_NAME' => $envConfig['APP_NAME'] ?? 'Sistema CRM',
                     'APP_ENV' => 'production',
-                    'MAIL_HOST' => 'smtp.gmail.com',
-                    'MAIL_PORT' => '587',
-                    'MAIL_USER' => 'seu-email@gmail.com',
-                    'MAIL_PASS' => 'sua-senha-app',
-                    'MAIL_FROM' => 'seu-email@gmail.com',
-                    'MAIL_NAME' => 'Sistema CRM',
-                    'MAX_FILE_SIZE' => '10485760',
-                    'ALLOWED_EXTENSIONS' => 'jpg,jpeg,png,pdf,doc,docx',
-                    'SESSION_TIMEOUT' => '7200',
-                    'MAX_LOGIN_ATTEMPTS' => '5',
-                    'BACKUP_ENABLED' => 'true',
-                    'BACKUP_PATH' => 'storage/backups/',
-                    'BACKUP_RETENTION_DAYS' => '30'
+                    'MAIL_HOST' => $envConfig['MAIL_HOST'] ?? 'smtp.gmail.com',
+                    'MAIL_PORT' => $envConfig['MAIL_PORT'] ?? '587',
+                    'MAIL_USER' => $envConfig['MAIL_USER'] ?? 'seu-email@gmail.com',
+                    'MAIL_PASS' => $envConfig['MAIL_PASS'] ?? 'sua-senha-app',
+                    'MAIL_FROM' => $envConfig['MAIL_FROM'] ?? 'seu-email@gmail.com',
+                    'MAIL_NAME' => $envConfig['MAIL_NAME'] ?? 'Sistema CRM',
+                    'MAX_FILE_SIZE' => $envConfig['MAX_FILE_SIZE'] ?? '10485760',
+                    'ALLOWED_EXTENSIONS' => $envConfig['ALLOWED_EXTENSIONS'] ?? 'jpg,jpeg,png,pdf,doc,docx',
+                    'SESSION_TIMEOUT' => $envConfig['SESSION_TIMEOUT'] ?? '7200',
+                    'MAX_LOGIN_ATTEMPTS' => $envConfig['MAX_LOGIN_ATTEMPTS'] ?? '5',
+                    'BACKUP_ENABLED' => $envConfig['BACKUP_ENABLED'] ?? 'true',
+                    'BACKUP_PATH' => $envConfig['BACKUP_PATH'] ?? 'storage/backups/',
+                    'BACKUP_RETENTION_DAYS' => $envConfig['BACKUP_RETENTION_DAYS'] ?? '30'
                 ];
             } else {
-                // localhost
+                // localhost - usar config.env ou valores padrão para localhost
                 self::$config = [
                     'FOLDER' => $folder,
                     'URL' => $baseUrl,
-                    'APP_DEBUG' => 'true',
-                    'DB_HOST' => '72.60.158.222',
-                    'DB_PORT' => '3306',
-                    'DB_NAME' => 'grup_platform',
-                    'DB_USER' => 'grup_platform',
-                    'DB_PASS' => '117910Campi!25',
-                    'APP_NAME' => 'Sistema CRM',
+                    'APP_DEBUG' => $envConfig['APP_DEBUG'] ?? 'true',
+                    'DB_HOST' => $envConfig['DB_HOST'] ?? 'localhost',
+                    'DB_PORT' => $envConfig['DB_PORT'] ?? '3306',
+                    'DB_NAME' => $envConfig['DB_NAME'] ?? 'grupokey_platform',
+                    'DB_USER' => $envConfig['DB_USER'] ?? 'root',
+                    'DB_PASS' => $envConfig['DB_PASS'] ?? '',
+                    'APP_NAME' => $envConfig['APP_NAME'] ?? 'Sistema CRM',
                     'APP_ENV' => 'development',
-                    'MAIL_HOST' => 'smtp.gmail.com',
-                    'MAIL_PORT' => '587',
-                    'MAIL_USER' => 'seu-email@gmail.com',
-                    'MAIL_PASS' => 'sua-senha-app',
-                    'MAIL_FROM' => 'seu-email@gmail.com',
-                    'MAIL_NAME' => 'Sistema CRM',
-                    'MAX_FILE_SIZE' => '10485760',
-                    'ALLOWED_EXTENSIONS' => 'jpg,jpeg,png,pdf,doc,docx',
-                    'SESSION_TIMEOUT' => '7200',
-                    'MAX_LOGIN_ATTEMPTS' => '5',
-                    'BACKUP_ENABLED' => 'false',
-                    'BACKUP_PATH' => 'storage/backups/',
-                    'BACKUP_RETENTION_DAYS' => '30'
+                    'MAIL_HOST' => $envConfig['MAIL_HOST'] ?? 'smtp.gmail.com',
+                    'MAIL_PORT' => $envConfig['MAIL_PORT'] ?? '587',
+                    'MAIL_USER' => $envConfig['MAIL_USER'] ?? 'seu-email@gmail.com',
+                    'MAIL_PASS' => $envConfig['MAIL_PASS'] ?? 'sua-senha-app',
+                    'MAIL_FROM' => $envConfig['MAIL_FROM'] ?? 'seu-email@gmail.com',
+                    'MAIL_NAME' => $envConfig['MAIL_NAME'] ?? 'Sistema CRM',
+                    'MAX_FILE_SIZE' => $envConfig['MAX_FILE_SIZE'] ?? '10485760',
+                    'ALLOWED_EXTENSIONS' => $envConfig['ALLOWED_EXTENSIONS'] ?? 'jpg,jpeg,png,pdf,doc,docx',
+                    'SESSION_TIMEOUT' => $envConfig['SESSION_TIMEOUT'] ?? '7200',
+                    'MAX_LOGIN_ATTEMPTS' => $envConfig['MAX_LOGIN_ATTEMPTS'] ?? '5',
+                    'BACKUP_ENABLED' => $envConfig['BACKUP_ENABLED'] ?? 'false',
+                    'BACKUP_PATH' => $envConfig['BACKUP_PATH'] ?? 'storage/backups/',
+                    'BACKUP_RETENTION_DAYS' => $envConfig['BACKUP_RETENTION_DAYS'] ?? '30'
                 ];
             }
+        }
+        
+        /**
+         * Carregar configurações do arquivo config.env
+         */
+        private static function loadEnvFile()
+        {
+            $config = [];
+            $envFile = __DIR__ . '/../../config.env';
+            
+            if (file_exists($envFile)) {
+                $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                
+                foreach ($lines as $line) {
+                    // Ignorar comentários
+                    if (strpos(trim($line), '#') === 0) {
+                        continue;
+                    }
+                    
+                    // Processar linhas KEY=VALUE
+                    if (strpos($line, '=') !== false) {
+                        list($key, $value) = explode('=', $line, 2);
+                        $key = trim($key);
+                        $value = trim($value);
+                        
+                        // Remover aspas se existirem
+                        if ((substr($value, 0, 1) === '"' && substr($value, -1) === '"') ||
+                            (substr($value, 0, 1) === "'" && substr($value, -1) === "'")) {
+                            $value = substr($value, 1, -1);
+                        }
+                        
+                        $config[$key] = $value;
+                    }
+                }
+            }
+            
+            return $config;
         }
         
         private static function defineGlobalConstants($environment)

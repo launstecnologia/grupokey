@@ -212,5 +212,36 @@ $router->post('/crm/notifications/read-all', 'CRMController@markAllNotifications
 $router->get('/crm/process-reminders', 'CRMController@processTaskReminders');
 $router->post('/crm/process-reminders', 'CRMController@processTaskReminders');
 
+// ===========================================
+// ROTAS DO SISTEMA WHATSAPP
+// ===========================================
+
+// Webhook da Evolution API (público - sem autenticação)
+$router->post('/whatsapp/webhook', 'WhatsAppWebhookController@handle');
+
+// Rotas de Instâncias WhatsApp (apenas admin)
+$router->get('/whatsapp/instances', 'WhatsAppController@instances');
+$router->get('/whatsapp/instances/create', 'WhatsAppController@createInstance');
+$router->post('/whatsapp/instances', 'WhatsAppController@createInstance');
+$router->get('/whatsapp/instances/{id}', 'WhatsAppController@showInstance');
+$router->post('/whatsapp/instances/{id}/connect', 'WhatsAppController@connect');
+$router->post('/whatsapp/instances/{id}/disconnect', 'WhatsAppController@disconnect');
+
+// Rotas de Filas WhatsApp (apenas admin)
+$router->get('/whatsapp/queues', 'WhatsAppQueueController@index');
+$router->get('/whatsapp/queues/create', 'WhatsAppQueueController@create');
+$router->post('/whatsapp/queues', 'WhatsAppQueueController@create');
+$router->get('/whatsapp/queues/{id}/edit', 'WhatsAppQueueController@edit');
+$router->post('/whatsapp/queues/{id}/edit', 'WhatsAppQueueController@edit');
+$router->delete('/whatsapp/queues/{id}', 'WhatsAppQueueController@delete');
+
+// Rotas de Atendimento (requer autenticação)
+$router->get('/whatsapp/attendance', 'WhatsAppAttendanceController@index');
+$router->get('/whatsapp/attendance/conversations/{id}/open', 'WhatsAppAttendanceController@openConversation');
+$router->post('/whatsapp/attendance/messages/send', 'WhatsAppAttendanceController@sendMessage');
+$router->post('/whatsapp/attendance/{id}/close', 'WhatsAppAttendanceController@closeAttendance');
+$router->post('/whatsapp/attendance/{id}/transfer', 'WhatsAppAttendanceController@transferAttendance');
+$router->get('/whatsapp/attendance/conversations/{id}/messages', 'WhatsAppAttendanceController@getNewMessages');
+
 // Executar roteamento
 $router->dispatch();

@@ -62,9 +62,10 @@ class User
     
     public function findById($id)
     {
-        $sql = "SELECT u.*, p.profile, perm.can_create, perm.can_edit, perm.can_approve, perm.can_export
+        $sql = "SELECT u.*, 
+                (SELECT GROUP_CONCAT(p.profile) FROM user_profiles p WHERE p.user_id = u.id) as profiles,
+                perm.can_create, perm.can_edit, perm.can_approve, perm.can_export
                 FROM users u
-                LEFT JOIN user_profiles p ON u.id = p.user_id
                 LEFT JOIN permissions perm ON u.id = perm.user_id
                 WHERE u.id = ?";
         

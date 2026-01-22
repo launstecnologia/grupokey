@@ -1,0 +1,944 @@
+[2025-11-29 16:29:08] ========================================
+[2025-11-29 16:29:08] === MÉTODO UPDATE CHAMADO ===
+[2025-11-29 16:29:08] ========================================
+[2025-11-29 16:29:08] Timestamp: 2025-11-29 16:29:08
+[2025-11-29 16:29:08] Representante ID: 17
+[2025-11-29 16:29:08] REQUEST_METHOD: PUT
+[2025-11-29 16:29:08] POST _method: PUT
+[2025-11-29 16:29:08] POST completo: {
+    "csrf_token": "6173ec385c65032f40e0d1dcbe7f7693cd7a396a12c255b9a97adb895ce965a4",
+    "_method": "PUT",
+    "original_nome_completo": "L.R de Moraes Tecnologia Online",
+    "original_email": "teste-completo@email.com",
+    "original_telefone": "(16) 99242-2354",
+    "original_status": "ACTIVE",
+    "cpf": "433.476.928-45",
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "senha": "",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:29:08] GET completo: []
+[2025-11-29 16:29:08] ✅ Método HTTP aceito: PUT (via _method override)
+[2025-11-29 16:29:08] --- Verificando CSRF token ---
+[2025-11-29 16:29:08] ✅ CSRF token válido
+[2025-11-29 16:29:08] --- Buscando representante no banco ---
+[2025-11-29 16:29:08] ✅ Representante encontrado: {
+    "id": 17,
+    "cpf": "433.476.928-45",
+    "nome_completo": "L.R de Moraes Tecnologia Online",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "telefone": "(16) 99242-2354",
+    "email": "teste-completo@email.com",
+    "photo": null,
+    "password": "$2y$10$\/C2EgOnceZyt3Ssz4pMiHOUcbANobpAbhq7\/crqF7U5oGC.GwDqYO",
+    "status": "ACTIVE",
+    "failed_attempts": 0,
+    "last_login": null,
+    "force_password_change": 0,
+    "created_at": "2025-11-29 16:13:22",
+    "updated_at": "2025-11-29 16:13:22"
+}
+[2025-11-29 16:29:08] --- Validando e sanitizando dados de entrada ---
+[2025-11-29 16:29:08] Dados validados e sanitizados: {
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cpf": "433.476.928-45",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:29:08] ✅ Validação passou sem erros
+[2025-11-29 16:29:08] --- Iniciando atualização no banco de dados ---
+[2025-11-29 16:29:08] Chamando representativeModel->update com ID: 17
+[2025-11-29 16:29:08] Dados a serem atualizados: {
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cpf": "433.476.928-45",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:29:08] UPDATE executado para representante 17 - Linhas afetadas: 1
+[2025-11-29 16:29:08] Resultado do update: ✅ SUCESSO
+[2025-11-29 16:29:08] ✅ Dados do representante atualizados com sucesso
+[2025-11-29 16:29:08] --- Processando produtos permitidos ---
+[2025-11-29 16:29:08] ⚠️ AVISO: allowed_products não está presente no POST
+[2025-11-29 16:29:08] Chaves disponíveis no POST: csrf_token, _method, original_nome_completo, original_email, original_telefone, original_status, cpf, nome_completo, email, telefone, cep, logradouro, numero, complemento, bairro, cidade, uf, senha, status
+[2025-11-29 16:29:08] Produtos recebidos no POST: []
+[2025-11-29 16:29:08] Quantidade de produtos: 0
+[2025-11-29 16:29:08] ⚠️ AVISO: Nenhum produto foi enviado no formulário
+[2025-11-29 16:29:08] Chamando setProducts para salvar produtos...
+[2025-11-29 16:29:08] ✅ setProducts executado com sucesso
+[2025-11-29 16:29:08] Verificando produtos salvos no banco...
+[2025-11-29 16:29:08] getProducts para representante 17: []
+[2025-11-29 16:29:08] Produtos salvos no banco: []
+[2025-11-29 16:29:08] Quantidade de produtos salvos: 0
+[2025-11-29 16:29:08] ✅ SUCESSO: Nenhum produto selecionado (todos permitidos)
+[2025-11-29 16:29:08] --- Finalizando processo de atualização ---
+[2025-11-29 16:29:08] Redirecionando para: /representantes/17/edit
+[2025-11-29 16:29:08] Mensagem de sucesso na sessão: Representante atualizado com sucesso! Nenhum produto específico selecionado (representante poderá cadastrar todos os produtos).
+[2025-11-29 16:29:08] Mensagem de erro na sessão: NÃO DEFINIDA
+[2025-11-29 16:29:08] ========================================
+[2025-11-29 16:29:08] 
+[2025-11-29 16:29:08] getProducts para representante 17: []
+[2025-11-29 16:29:08] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-11-29 16:29:08] Representante ID: 17
+[2025-11-29 16:29:08] Produtos do banco: []
+[2025-11-29 16:29:08] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-11-29 16:29:08] Tipo de $allowedProducts: array
+[2025-11-29 16:29:08] Conteúdo: []
+[2025-11-29 16:29:08] Tipos extraídos: []
+[2025-11-29 16:29:08] Produtos selecionados finais: []
+[2025-11-29 16:29:12] ========================================
+[2025-11-29 16:29:12] === MÉTODO UPDATE CHAMADO ===
+[2025-11-29 16:29:12] ========================================
+[2025-11-29 16:29:12] Timestamp: 2025-11-29 16:29:12
+[2025-11-29 16:29:12] Representante ID: 17
+[2025-11-29 16:29:12] REQUEST_METHOD: PUT
+[2025-11-29 16:29:12] POST _method: PUT
+[2025-11-29 16:29:12] POST completo: {
+    "csrf_token": "6173ec385c65032f40e0d1dcbe7f7693cd7a396a12c255b9a97adb895ce965a4",
+    "_method": "PUT",
+    "original_nome_completo": "gkjhk",
+    "original_email": "teste-completo@email.com",
+    "original_telefone": "(16) 99242-2354",
+    "original_status": "ACTIVE",
+    "cpf": "433.476.928-45",
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "allowed_products": [
+        "CDC",
+        "CDX_EVO"
+    ],
+    "senha": "",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:29:12] GET completo: []
+[2025-11-29 16:29:12] ✅ Método HTTP aceito: PUT (via _method override)
+[2025-11-29 16:29:12] --- Verificando CSRF token ---
+[2025-11-29 16:29:12] ✅ CSRF token válido
+[2025-11-29 16:29:12] --- Buscando representante no banco ---
+[2025-11-29 16:29:12] ✅ Representante encontrado: {
+    "id": 17,
+    "cpf": "433.476.928-45",
+    "nome_completo": "gkjhk",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "telefone": "(16) 99242-2354",
+    "email": "teste-completo@email.com",
+    "photo": null,
+    "password": "$2y$10$\/C2EgOnceZyt3Ssz4pMiHOUcbANobpAbhq7\/crqF7U5oGC.GwDqYO",
+    "status": "ACTIVE",
+    "failed_attempts": 0,
+    "last_login": null,
+    "force_password_change": 0,
+    "created_at": "2025-11-29 16:13:22",
+    "updated_at": "2025-11-29 16:29:09"
+}
+[2025-11-29 16:29:12] --- Validando e sanitizando dados de entrada ---
+[2025-11-29 16:29:12] Dados validados e sanitizados: {
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cpf": "433.476.928-45",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:29:12] ✅ Validação passou sem erros
+[2025-11-29 16:29:12] --- Iniciando atualização no banco de dados ---
+[2025-11-29 16:29:12] Chamando representativeModel->update com ID: 17
+[2025-11-29 16:29:12] Dados a serem atualizados: {
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cpf": "433.476.928-45",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:29:12] UPDATE executado para representante 17 - Linhas afetadas: 1
+[2025-11-29 16:29:12] Resultado do update: ✅ SUCESSO
+[2025-11-29 16:29:12] ✅ Dados do representante atualizados com sucesso
+[2025-11-29 16:29:12] --- Processando produtos permitidos ---
+[2025-11-29 16:29:12] Produtos recebidos no POST: [
+    "CDC",
+    "CDX_EVO"
+]
+[2025-11-29 16:29:12] Quantidade de produtos: 2
+[2025-11-29 16:29:12] Chamando setProducts para salvar produtos...
+[2025-11-29 16:29:12] === SETPRODUCTS - INSERINDO PRODUTOS ===
+[2025-11-29 16:29:12] Representante ID: 17
+[2025-11-29 16:29:12] Produtos recebidos: ["CDC","CDX_EVO"]
+[2025-11-29 16:29:12] AVISO: Dados truncados para product_type, mas inserção continuou: CDC
+[2025-11-29 16:29:12] AVISO: Dados truncados para product_type, mas inserção continuou: CDX_EVO
+[2025-11-29 16:29:12] getProducts para representante 17: []
+[2025-11-29 16:29:12] Produtos salvos no banco (verificação): []
+[2025-11-29 16:29:12] ✅ setProducts executado com sucesso
+[2025-11-29 16:29:12] Verificando produtos salvos no banco...
+[2025-11-29 16:29:12] getProducts para representante 17: []
+[2025-11-29 16:29:12] Produtos salvos no banco: []
+[2025-11-29 16:29:12] Quantidade de produtos salvos: 0
+[2025-11-29 16:29:12] ⚠️ AVISO: Contagem de produtos não confere (esperado: 2, salvo: 0)
+[2025-11-29 16:29:12] --- Finalizando processo de atualização ---
+[2025-11-29 16:29:12] Redirecionando para: /representantes/17/edit
+[2025-11-29 16:29:12] Mensagem de sucesso na sessão: NÃO DEFINIDA
+[2025-11-29 16:29:12] Mensagem de erro na sessão: Aviso: Foram selecionados 2 produto(s), mas apenas 0 foram salvos. Verifique os logs.
+[2025-11-29 16:29:12] ========================================
+[2025-11-29 16:29:12] 
+[2025-11-29 16:29:13] getProducts para representante 17: []
+[2025-11-29 16:29:13] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-11-29 16:29:13] Representante ID: 17
+[2025-11-29 16:29:13] Produtos do banco: []
+[2025-11-29 16:29:13] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-11-29 16:29:13] Tipo de $allowedProducts: array
+[2025-11-29 16:29:13] Conteúdo: []
+[2025-11-29 16:29:13] Tipos extraídos: []
+[2025-11-29 16:29:13] Produtos selecionados finais: []
+[2025-11-29 16:31:26] getProducts para representante 17: []
+[2025-11-29 16:31:26] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-11-29 16:31:26] Representante ID: 17
+[2025-11-29 16:31:26] Produtos do banco: []
+[2025-11-29 16:31:26] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-11-29 16:31:26] Tipo de $allowedProducts: array
+[2025-11-29 16:31:26] Conteúdo: []
+[2025-11-29 16:31:26] Tipos extraídos: []
+[2025-11-29 16:31:26] Produtos selecionados finais: []
+[2025-11-29 16:31:29] ========================================
+[2025-11-29 16:31:29] === MÉTODO UPDATE CHAMADO ===
+[2025-11-29 16:31:29] ========================================
+[2025-11-29 16:31:30] Timestamp: 2025-11-29 16:31:30
+[2025-11-29 16:31:30] Representante ID: 17
+[2025-11-29 16:31:30] REQUEST_METHOD: PUT
+[2025-11-29 16:31:30] POST _method: PUT
+[2025-11-29 16:31:30] POST completo: {
+    "csrf_token": "6173ec385c65032f40e0d1dcbe7f7693cd7a396a12c255b9a97adb895ce965a4",
+    "_method": "PUT",
+    "original_nome_completo": "gkjhk",
+    "original_email": "teste-completo@email.com",
+    "original_telefone": "(16) 99242-2354",
+    "original_status": "ACTIVE",
+    "cpf": "433.476.928-45",
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "allowed_products": [
+        "CDX_EVO"
+    ],
+    "senha": "",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:31:30] GET completo: []
+[2025-11-29 16:31:30] ✅ Método HTTP aceito: PUT (via _method override)
+[2025-11-29 16:31:30] --- Verificando CSRF token ---
+[2025-11-29 16:31:30] ✅ CSRF token válido
+[2025-11-29 16:31:30] --- Buscando representante no banco ---
+[2025-11-29 16:31:30] ✅ Representante encontrado: {
+    "id": 17,
+    "cpf": "433.476.928-45",
+    "nome_completo": "gkjhk",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "telefone": "(16) 99242-2354",
+    "email": "teste-completo@email.com",
+    "photo": null,
+    "password": "$2y$10$\/C2EgOnceZyt3Ssz4pMiHOUcbANobpAbhq7\/crqF7U5oGC.GwDqYO",
+    "status": "ACTIVE",
+    "failed_attempts": 0,
+    "last_login": null,
+    "force_password_change": 0,
+    "created_at": "2025-11-29 16:13:22",
+    "updated_at": "2025-11-29 16:29:14"
+}
+[2025-11-29 16:31:30] --- Validando e sanitizando dados de entrada ---
+[2025-11-29 16:31:30] Dados validados e sanitizados: {
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cpf": "433.476.928-45",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:31:30] ✅ Validação passou sem erros
+[2025-11-29 16:31:30] --- Iniciando atualização no banco de dados ---
+[2025-11-29 16:31:30] Chamando representativeModel->update com ID: 17
+[2025-11-29 16:31:30] Dados a serem atualizados: {
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cpf": "433.476.928-45",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:31:30] UPDATE executado para representante 17 - Linhas afetadas: 1
+[2025-11-29 16:31:30] Resultado do update: ✅ SUCESSO
+[2025-11-29 16:31:30] ✅ Dados do representante atualizados com sucesso
+[2025-11-29 16:31:30] --- Processando produtos permitidos ---
+[2025-11-29 16:31:30] Produtos recebidos no POST: [
+    "CDX_EVO"
+]
+[2025-11-29 16:31:30] Quantidade de produtos: 1
+[2025-11-29 16:31:30] Chamando setProducts para salvar produtos...
+[2025-11-29 16:31:30] === SETPRODUCTS - INSERINDO PRODUTOS ===
+[2025-11-29 16:31:30] Representante ID: 17
+[2025-11-29 16:31:30] Produtos recebidos: ["CDX_EVO"]
+[2025-11-29 16:31:30] ❌ ERRO: Produto NÃO foi inserido: CDX_EVO
+[2025-11-29 16:31:30] ❌ ERRO na segunda tentativa: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'product_type' at row 1
+[2025-11-29 16:31:30] getProducts para representante 17: [{"product_type":""}]
+[2025-11-29 16:31:30] Produtos salvos no banco (verificação): [{"product_type":""}]
+[2025-11-29 16:31:30] ✅ setProducts executado com sucesso
+[2025-11-29 16:31:30] Verificando produtos salvos no banco...
+[2025-11-29 16:31:30] getProducts para representante 17: [{"product_type":""}]
+[2025-11-29 16:31:30] Produtos salvos no banco: [
+    {
+        "product_type": ""
+    }
+]
+[2025-11-29 16:31:30] Quantidade de produtos salvos: 1
+[2025-11-29 16:31:30] ✅ SUCESSO: Produtos salvos corretamente
+[2025-11-29 16:31:30] --- Finalizando processo de atualização ---
+[2025-11-29 16:31:30] Redirecionando para: /representantes/17/edit
+[2025-11-29 16:31:30] Mensagem de sucesso na sessão: Representante atualizado com sucesso! 1 produto(s) permitido(s) salvo(s): 
+[2025-11-29 16:31:30] Mensagem de erro na sessão: NÃO DEFINIDA
+[2025-11-29 16:31:30] ========================================
+[2025-11-29 16:31:30] 
+[2025-11-29 16:31:30] getProducts para representante 17: [{"product_type":""}]
+[2025-11-29 16:31:30] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-11-29 16:31:30] Representante ID: 17
+[2025-11-29 16:31:30] Produtos do banco: [{"product_type":""}]
+[2025-11-29 16:31:30] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-11-29 16:31:30] Tipo de $allowedProducts: array
+[2025-11-29 16:31:30] Conteúdo: [{"product_type":""}]
+[2025-11-29 16:31:30] Produto #0: {"product_type":""}
+[2025-11-29 16:31:30] Adicionado product_type: 
+[2025-11-29 16:31:30] Tipos extraídos: [""]
+[2025-11-29 16:31:30] Produtos selecionados finais: [""]
+[2025-11-29 16:33:52] getProducts para representante 17: [{"product_type":""}]
+[2025-11-29 16:33:52] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-11-29 16:33:52] Representante ID: 17
+[2025-11-29 16:33:52] Produtos do banco: [{"product_type":""}]
+[2025-11-29 16:33:52] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-11-29 16:33:52] Tipo de $allowedProducts: array
+[2025-11-29 16:33:52] Conteúdo: [{"product_type":""}]
+[2025-11-29 16:33:52] Produto #0: {"product_type":""}
+[2025-11-29 16:33:52] Adicionado product_type: 
+[2025-11-29 16:33:52] Tipos extraídos: [""]
+[2025-11-29 16:33:52] Produtos selecionados finais (após filtro): []
+[2025-11-29 16:33:54] getProducts para representante 17: [{"product_type":""}]
+[2025-11-29 16:33:54] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-11-29 16:33:54] Representante ID: 17
+[2025-11-29 16:33:54] Produtos do banco: [{"product_type":""}]
+[2025-11-29 16:33:54] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-11-29 16:33:54] Tipo de $allowedProducts: array
+[2025-11-29 16:33:54] Conteúdo: [{"product_type":""}]
+[2025-11-29 16:33:54] Produto #0: {"product_type":""}
+[2025-11-29 16:33:54] Adicionado product_type: 
+[2025-11-29 16:33:54] Tipos extraídos: [""]
+[2025-11-29 16:33:54] Produtos selecionados finais (após filtro): []
+[2025-11-29 16:33:57] ========================================
+[2025-11-29 16:33:57] === MÉTODO UPDATE CHAMADO ===
+[2025-11-29 16:33:57] ========================================
+[2025-11-29 16:33:57] Timestamp: 2025-11-29 16:33:57
+[2025-11-29 16:33:57] Representante ID: 17
+[2025-11-29 16:33:57] REQUEST_METHOD: PUT
+[2025-11-29 16:33:57] POST _method: PUT
+[2025-11-29 16:33:57] POST completo: {
+    "csrf_token": "6173ec385c65032f40e0d1dcbe7f7693cd7a396a12c255b9a97adb895ce965a4",
+    "_method": "PUT",
+    "original_nome_completo": "gkjhk",
+    "original_email": "teste-completo@email.com",
+    "original_telefone": "(16) 99242-2354",
+    "original_status": "ACTIVE",
+    "cpf": "433.476.928-45",
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "allowed_products": [
+        "CDC",
+        "CDX_EVO"
+    ],
+    "senha": "",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:33:57] GET completo: []
+[2025-11-29 16:33:57] ✅ Método HTTP aceito: PUT (via _method override)
+[2025-11-29 16:33:57] --- Verificando CSRF token ---
+[2025-11-29 16:33:57] ✅ CSRF token válido
+[2025-11-29 16:33:57] --- Buscando representante no banco ---
+[2025-11-29 16:33:57] ✅ Representante encontrado: {
+    "id": 17,
+    "cpf": "433.476.928-45",
+    "nome_completo": "gkjhk",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "telefone": "(16) 99242-2354",
+    "email": "teste-completo@email.com",
+    "photo": null,
+    "password": "$2y$10$\/C2EgOnceZyt3Ssz4pMiHOUcbANobpAbhq7\/crqF7U5oGC.GwDqYO",
+    "status": "ACTIVE",
+    "failed_attempts": 0,
+    "last_login": null,
+    "force_password_change": 0,
+    "created_at": "2025-11-29 16:13:22",
+    "updated_at": "2025-11-29 16:31:31"
+}
+[2025-11-29 16:33:57] --- Validando e sanitizando dados de entrada ---
+[2025-11-29 16:33:57] Dados validados e sanitizados: {
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cpf": "433.476.928-45",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:33:57] ✅ Validação passou sem erros
+[2025-11-29 16:33:57] --- Iniciando atualização no banco de dados ---
+[2025-11-29 16:33:57] Chamando representativeModel->update com ID: 17
+[2025-11-29 16:33:57] Dados a serem atualizados: {
+    "nome_completo": "gkjhk",
+    "email": "teste-completo@email.com",
+    "telefone": "(16) 99242-2354",
+    "cpf": "433.476.928-45",
+    "cep": "14140-000",
+    "logradouro": "Av Pedro Amoroso",
+    "numero": "376",
+    "complemento": "teste",
+    "bairro": "teste",
+    "cidade": "Cravinhos",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-11-29 16:33:57] UPDATE executado para representante 17 - Linhas afetadas: 1
+[2025-11-29 16:33:57] Resultado do update: ✅ SUCESSO
+[2025-11-29 16:33:57] ✅ Dados do representante atualizados com sucesso
+[2025-11-29 16:33:57] --- Processando produtos permitidos ---
+[2025-11-29 16:33:57] Produtos recebidos no POST: [
+    "CDC",
+    "CDX_EVO"
+]
+[2025-11-29 16:33:57] Quantidade de produtos: 2
+[2025-11-29 16:33:57] Chamando setProducts para salvar produtos...
+[2025-11-29 16:33:57] Produtos antigos removidos para representante 17
+[2025-11-29 16:33:57] === SETPRODUCTS - INSERINDO PRODUTOS ===
+[2025-11-29 16:33:57] Representante ID: 17
+[2025-11-29 16:33:57] Produtos recebidos: ["CDC","CDX_EVO"]
+[2025-11-29 16:33:57] Inserindo produto: CDC (tamanho: 3)
+[2025-11-29 16:33:57] ✅ Produto inserido com sucesso: CDC (ID: 2)
+[2025-11-29 16:33:57] Inserindo produto: CDX_EVO (tamanho: 7)
+[2025-11-29 16:33:57] ✅ Produto inserido com sucesso: CDX_EVO (ID: 3)
+[2025-11-29 16:33:58] getProducts para representante 17: [{"product_type":"CDC"},{"product_type":"CDX_EVO"}]
+[2025-11-29 16:33:58] Produtos salvos no banco (verificação): [{"product_type":"CDC"},{"product_type":"CDX_EVO"}]
+[2025-11-29 16:33:58] ✅ setProducts executado com sucesso
+[2025-11-29 16:33:58] Verificando produtos salvos no banco...
+[2025-11-29 16:33:58] getProducts para representante 17: [{"product_type":"CDC"},{"product_type":"CDX_EVO"}]
+[2025-11-29 16:33:58] Produtos salvos no banco: [
+    {
+        "product_type": "CDC"
+    },
+    {
+        "product_type": "CDX_EVO"
+    }
+]
+[2025-11-29 16:33:58] Quantidade de produtos salvos: 2
+[2025-11-29 16:33:58] ✅ SUCESSO: Produtos salvos corretamente
+[2025-11-29 16:33:58] --- Finalizando processo de atualização ---
+[2025-11-29 16:33:58] Redirecionando para: /representantes/17/edit
+[2025-11-29 16:33:58] Mensagem de sucesso na sessão: Representante atualizado com sucesso! 2 produto(s) permitido(s) salvo(s): CDC, CDX_EVO
+[2025-11-29 16:33:58] Mensagem de erro na sessão: NÃO DEFINIDA
+[2025-11-29 16:33:58] ========================================
+[2025-11-29 16:33:58] 
+[2025-11-29 16:33:58] getProducts para representante 17: [{"product_type":"CDC"},{"product_type":"CDX_EVO"}]
+[2025-11-29 16:33:58] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-11-29 16:33:58] Representante ID: 17
+[2025-11-29 16:33:58] Produtos do banco: [{"product_type":"CDC"},{"product_type":"CDX_EVO"}]
+[2025-11-29 16:33:58] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-11-29 16:33:58] Tipo de $allowedProducts: array
+[2025-11-29 16:33:58] Conteúdo: [{"product_type":"CDC"},{"product_type":"CDX_EVO"}]
+[2025-11-29 16:33:58] Produto #0: {"product_type":"CDC"}
+[2025-11-29 16:33:58] Adicionado product_type: CDC
+[2025-11-29 16:33:58] Produto #1: {"product_type":"CDX_EVO"}
+[2025-11-29 16:33:58] Adicionado product_type: CDX_EVO
+[2025-11-29 16:33:58] Tipos extraídos: ["CDC","CDX_EVO"]
+[2025-11-29 16:33:58] Produtos selecionados finais (após filtro): ["CDC","CDX_EVO"]
+[2025-12-02 01:36:35] getProducts para representante 4: []
+[2025-12-02 01:36:35] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-12-02 01:36:35] Representante ID: 4
+[2025-12-02 01:36:35] Produtos do banco: []
+[2025-12-02 01:36:35] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-12-02 01:36:35] Tipo de $allowedProducts: array
+[2025-12-02 01:36:35] Conteúdo: []
+[2025-12-02 01:36:35] Tipos extraídos: []
+[2025-12-02 01:36:35] Produtos selecionados finais (após filtro): []
+[2025-12-02 01:36:49] ========================================
+[2025-12-02 01:36:49] === MÉTODO UPDATE CHAMADO ===
+[2025-12-02 01:36:49] ========================================
+[2025-12-02 01:36:49] Timestamp: 2025-12-02 01:36:49
+[2025-12-02 01:36:49] Representante ID: 4
+[2025-12-02 01:36:49] REQUEST_METHOD: PUT
+[2025-12-02 01:36:49] POST _method: PUT
+[2025-12-02 01:36:49] POST completo: {
+    "csrf_token": "bca87dc4f961414a3ca73dc74a624ec6c04909100c56b6e0f8f26000b7f116e2",
+    "_method": "PUT",
+    "original_nome_completo": "Representante",
+    "original_email": "representante@gmail.com",
+    "original_telefone": "(11) 99999-9999",
+    "original_status": "ACTIVE",
+    "cpf": "123.456.789-09",
+    "nome_completo": "Representante",
+    "email": "representante@gmail.com",
+    "telefone": "(11) 99999-9999",
+    "cep": "01234-567",
+    "logradouro": "Rua Teste POST",
+    "numero": "123",
+    "complemento": "Apto 456",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "allowed_products": [
+        "CDC",
+        "CDX_EVO",
+        "GOOGLE",
+        "MEMBRO_KEY",
+        "OUTROS",
+        "PAGBANK"
+    ],
+    "senha": "101010",
+    "status": "ACTIVE"
+}
+[2025-12-02 01:36:49] GET completo: []
+[2025-12-02 01:36:49] ✅ Método HTTP aceito: PUT (via _method override)
+[2025-12-02 01:36:49] --- Verificando CSRF token ---
+[2025-12-02 01:36:49] ✅ CSRF token válido
+[2025-12-02 01:36:49] --- Buscando representante no banco ---
+[2025-12-02 01:36:49] ✅ Representante encontrado: {
+    "id": 4,
+    "cpf": "123.456.789-09",
+    "nome_completo": "Representante",
+    "cep": "01234-567",
+    "logradouro": "Rua Teste POST",
+    "numero": "123",
+    "complemento": "Apto 456",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "telefone": "(11) 99999-9999",
+    "email": "representante@gmail.com",
+    "photo": null,
+    "password": "$2y$10$FLum.mBRWJiUIaUwGQUt2.M5oKqZ0XWFHSlfMkQHHr5OSemYxZjNm",
+    "status": "ACTIVE",
+    "failed_attempts": 0,
+    "last_login": "2025-10-20 20:40:36",
+    "force_password_change": 0,
+    "created_at": "2025-10-13 23:31:47",
+    "updated_at": "2025-11-26 15:06:04"
+}
+[2025-12-02 01:36:49] --- Validando e sanitizando dados de entrada ---
+[2025-12-02 01:36:49] Dados validados e sanitizados: {
+    "nome_completo": "Representante",
+    "email": "representante@gmail.com",
+    "telefone": "(11) 99999-9999",
+    "cpf": "123.456.789-09",
+    "cep": "01234-567",
+    "logradouro": "Rua Teste POST",
+    "numero": "123",
+    "complemento": "Apto 456",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "status": "ACTIVE",
+    "senha": "$2y$10$jRiJyDa6.S.qjT5TS3.8X.6R184mu9BgLcY8au1rfThdGDA2HWUT6"
+}
+[2025-12-02 01:36:49] ✅ Validação passou sem erros
+[2025-12-02 01:36:49] --- Iniciando atualização no banco de dados ---
+[2025-12-02 01:36:49] Chamando representativeModel->update com ID: 4
+[2025-12-02 01:36:49] Dados a serem atualizados: {
+    "nome_completo": "Representante",
+    "email": "representante@gmail.com",
+    "telefone": "(11) 99999-9999",
+    "cpf": "123.456.789-09",
+    "cep": "01234-567",
+    "logradouro": "Rua Teste POST",
+    "numero": "123",
+    "complemento": "Apto 456",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "status": "ACTIVE",
+    "senha": "$2y$10$jRiJyDa6.S.qjT5TS3.8X.6R184mu9BgLcY8au1rfThdGDA2HWUT6"
+}
+[2025-12-02 01:36:49] UPDATE executado para representante 4 - Linhas afetadas: 1
+[2025-12-02 01:36:49] Resultado do update: ✅ SUCESSO
+[2025-12-02 01:36:49] ✅ Dados do representante atualizados com sucesso
+[2025-12-02 01:36:49] --- Processando produtos permitidos ---
+[2025-12-02 01:36:49] Produtos recebidos no POST: [
+    "CDC",
+    "CDX_EVO",
+    "GOOGLE",
+    "MEMBRO_KEY",
+    "OUTROS",
+    "PAGBANK"
+]
+[2025-12-02 01:36:49] Quantidade de produtos: 6
+[2025-12-02 01:36:49] Chamando setProducts para salvar produtos...
+[2025-12-02 01:36:49] Produtos antigos removidos para representante 4
+[2025-12-02 01:36:49] === SETPRODUCTS - INSERINDO PRODUTOS ===
+[2025-12-02 01:36:49] Representante ID: 4
+[2025-12-02 01:36:49] Produtos recebidos: ["CDC","CDX_EVO","GOOGLE","MEMBRO_KEY","OUTROS","PAGBANK"]
+[2025-12-02 01:36:49] Inserindo produto: CDC (tamanho: 3)
+[2025-12-02 01:36:49] ✅ Produto inserido com sucesso: CDC (ID: 11)
+[2025-12-02 01:36:49] Inserindo produto: CDX_EVO (tamanho: 7)
+[2025-12-02 01:36:49] ✅ Produto inserido com sucesso: CDX_EVO (ID: 12)
+[2025-12-02 01:36:49] Inserindo produto: GOOGLE (tamanho: 6)
+[2025-12-02 01:36:50] ✅ Produto inserido com sucesso: GOOGLE (ID: 13)
+[2025-12-02 01:36:50] Inserindo produto: MEMBRO_KEY (tamanho: 10)
+[2025-12-02 01:36:50] ✅ Produto inserido com sucesso: MEMBRO_KEY (ID: 14)
+[2025-12-02 01:36:50] Inserindo produto: OUTROS (tamanho: 6)
+[2025-12-02 01:36:50] ✅ Produto inserido com sucesso: OUTROS (ID: 15)
+[2025-12-02 01:36:50] Inserindo produto: PAGBANK (tamanho: 7)
+[2025-12-02 01:36:50] ✅ Produto inserido com sucesso: PAGBANK (ID: 16)
+[2025-12-02 01:36:50] getProducts para representante 4: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 01:36:50] Produtos salvos no banco (verificação): [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 01:36:50] ✅ setProducts executado com sucesso
+[2025-12-02 01:36:50] Verificando produtos salvos no banco...
+[2025-12-02 01:36:50] getProducts para representante 4: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 01:36:50] Produtos salvos no banco: [
+    {
+        "product_type": "CDC"
+    },
+    {
+        "product_type": "CDX_EVO"
+    },
+    {
+        "product_type": "GOOGLE"
+    },
+    {
+        "product_type": "MEMBRO_KEY"
+    },
+    {
+        "product_type": "OUTROS"
+    },
+    {
+        "product_type": "PAGBANK"
+    }
+]
+[2025-12-02 01:36:50] Quantidade de produtos salvos: 6
+[2025-12-02 01:36:50] ✅ SUCESSO: Produtos salvos corretamente
+[2025-12-02 01:36:50] --- Finalizando processo de atualização ---
+[2025-12-02 01:36:50] Redirecionando para: /representantes/4/edit
+[2025-12-02 01:36:50] Mensagem de sucesso na sessão: Representante atualizado com sucesso! 6 produto(s) permitido(s) salvo(s): CDC, CDX_EVO, GOOGLE, MEMBRO_KEY, OUTROS, PAGBANK
+[2025-12-02 01:36:50] Mensagem de erro na sessão: NÃO DEFINIDA
+[2025-12-02 01:36:50] ========================================
+[2025-12-02 01:36:50] 
+[2025-12-02 01:36:50] getProducts para representante 4: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 01:36:50] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-12-02 01:36:50] Representante ID: 4
+[2025-12-02 01:36:50] Produtos do banco: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 01:36:50] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-12-02 01:36:50] Tipo de $allowedProducts: array
+[2025-12-02 01:36:50] Conteúdo: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 01:36:50] Produto #0: {"product_type":"CDC"}
+[2025-12-02 01:36:50] Adicionado product_type: CDC
+[2025-12-02 01:36:50] Produto #1: {"product_type":"CDX_EVO"}
+[2025-12-02 01:36:50] Adicionado product_type: CDX_EVO
+[2025-12-02 01:36:50] Produto #2: {"product_type":"GOOGLE"}
+[2025-12-02 01:36:50] Adicionado product_type: GOOGLE
+[2025-12-02 01:36:50] Produto #3: {"product_type":"MEMBRO_KEY"}
+[2025-12-02 01:36:50] Adicionado product_type: MEMBRO_KEY
+[2025-12-02 01:36:50] Produto #4: {"product_type":"OUTROS"}
+[2025-12-02 01:36:50] Adicionado product_type: OUTROS
+[2025-12-02 01:36:50] Produto #5: {"product_type":"PAGBANK"}
+[2025-12-02 01:36:50] Adicionado product_type: PAGBANK
+[2025-12-02 01:36:50] Tipos extraídos: ["CDC","CDX_EVO","GOOGLE","MEMBRO_KEY","OUTROS","PAGBANK"]
+[2025-12-02 01:36:50] Produtos selecionados finais (após filtro): ["CDC","CDX_EVO","GOOGLE","MEMBRO_KEY","OUTROS","PAGBANK"]
+[2025-12-02 23:48:52] getProducts para representante 4: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 23:48:52] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-12-02 23:48:52] Representante ID: 4
+[2025-12-02 23:48:52] Produtos do banco: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 23:48:52] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-12-02 23:48:52] Tipo de $allowedProducts: array
+[2025-12-02 23:48:52] Conteúdo: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 23:48:52] Produto #0: {"product_type":"CDC"}
+[2025-12-02 23:48:52] Adicionado product_type: CDC
+[2025-12-02 23:48:52] Produto #1: {"product_type":"CDX_EVO"}
+[2025-12-02 23:48:52] Adicionado product_type: CDX_EVO
+[2025-12-02 23:48:52] Produto #2: {"product_type":"GOOGLE"}
+[2025-12-02 23:48:52] Adicionado product_type: GOOGLE
+[2025-12-02 23:48:52] Produto #3: {"product_type":"MEMBRO_KEY"}
+[2025-12-02 23:48:52] Adicionado product_type: MEMBRO_KEY
+[2025-12-02 23:48:52] Produto #4: {"product_type":"OUTROS"}
+[2025-12-02 23:48:52] Adicionado product_type: OUTROS
+[2025-12-02 23:48:52] Produto #5: {"product_type":"PAGBANK"}
+[2025-12-02 23:48:52] Adicionado product_type: PAGBANK
+[2025-12-02 23:48:52] Tipos extraídos: ["CDC","CDX_EVO","GOOGLE","MEMBRO_KEY","OUTROS","PAGBANK"]
+[2025-12-02 23:48:52] Produtos selecionados finais (após filtro): ["CDC","CDX_EVO","GOOGLE","MEMBRO_KEY","OUTROS","PAGBANK"]
+[2025-12-02 23:48:57] ========================================
+[2025-12-02 23:48:57] === MÉTODO UPDATE CHAMADO ===
+[2025-12-02 23:48:57] ========================================
+[2025-12-02 23:48:57] Timestamp: 2025-12-02 23:48:57
+[2025-12-02 23:48:57] Representante ID: 4
+[2025-12-02 23:48:57] REQUEST_METHOD: PUT
+[2025-12-02 23:48:57] POST _method: PUT
+[2025-12-02 23:48:57] POST completo: {
+    "csrf_token": "f79cb4d68be9e1f9eec6bbe6fb3f07d27d83b8966294752467c2878179ad5e23",
+    "_method": "PUT",
+    "original_nome_completo": "Representante",
+    "original_email": "representante@gmail.com",
+    "original_telefone": "(11) 99999-9999",
+    "original_status": "ACTIVE",
+    "cpf": "123.456.789-09",
+    "nome_completo": "Roberto",
+    "email": "representante@gmail.com",
+    "telefone": "(11) 99999-9999",
+    "cep": "01234-567",
+    "logradouro": "Rua Teste POST",
+    "numero": "123",
+    "complemento": "Apto 456",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "allowed_products": [
+        "CDC",
+        "CDX_EVO",
+        "GOOGLE",
+        "MEMBRO_KEY",
+        "OUTROS",
+        "PAGBANK"
+    ],
+    "senha": "",
+    "status": "ACTIVE"
+}
+[2025-12-02 23:48:57] GET completo: []
+[2025-12-02 23:48:57] ✅ Método HTTP aceito: PUT (via _method override)
+[2025-12-02 23:48:57] --- Verificando CSRF token ---
+[2025-12-02 23:48:57] ✅ CSRF token válido
+[2025-12-02 23:48:57] --- Buscando representante no banco ---
+[2025-12-02 23:48:57] ✅ Representante encontrado: {
+    "id": 4,
+    "cpf": "123.456.789-09",
+    "nome_completo": "Representante",
+    "cep": "01234-567",
+    "logradouro": "Rua Teste POST",
+    "numero": "123",
+    "complemento": "Apto 456",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "telefone": "(11) 99999-9999",
+    "email": "representante@gmail.com",
+    "photo": null,
+    "password": "$2y$10$jRiJyDa6.S.qjT5TS3.8X.6R184mu9BgLcY8au1rfThdGDA2HWUT6",
+    "status": "ACTIVE",
+    "failed_attempts": 0,
+    "last_login": "2025-12-02 02:01:43",
+    "force_password_change": 0,
+    "created_at": "2025-10-13 23:31:47",
+    "updated_at": "2025-12-02 02:01:43"
+}
+[2025-12-02 23:48:57] --- Validando e sanitizando dados de entrada ---
+[2025-12-02 23:48:57] Dados validados e sanitizados: {
+    "nome_completo": "Roberto",
+    "email": "representante@gmail.com",
+    "telefone": "(11) 99999-9999",
+    "cpf": "123.456.789-09",
+    "cep": "01234-567",
+    "logradouro": "Rua Teste POST",
+    "numero": "123",
+    "complemento": "Apto 456",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-12-02 23:48:57] ✅ Validação passou sem erros
+[2025-12-02 23:48:57] --- Iniciando atualização no banco de dados ---
+[2025-12-02 23:48:57] Chamando representativeModel->update com ID: 4
+[2025-12-02 23:48:57] Dados a serem atualizados: {
+    "nome_completo": "Roberto",
+    "email": "representante@gmail.com",
+    "telefone": "(11) 99999-9999",
+    "cpf": "123.456.789-09",
+    "cep": "01234-567",
+    "logradouro": "Rua Teste POST",
+    "numero": "123",
+    "complemento": "Apto 456",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "status": "ACTIVE"
+}
+[2025-12-02 23:48:58] UPDATE executado para representante 4 - Linhas afetadas: 1
+[2025-12-02 23:48:58] Resultado do update: ✅ SUCESSO
+[2025-12-02 23:48:58] ✅ Dados do representante atualizados com sucesso
+[2025-12-02 23:48:58] --- Processando produtos permitidos ---
+[2025-12-02 23:48:58] Produtos recebidos no POST: [
+    "CDC",
+    "CDX_EVO",
+    "GOOGLE",
+    "MEMBRO_KEY",
+    "OUTROS",
+    "PAGBANK"
+]
+[2025-12-02 23:48:58] Quantidade de produtos: 6
+[2025-12-02 23:48:58] Chamando setProducts para salvar produtos...
+[2025-12-02 23:48:58] Produtos antigos removidos para representante 4
+[2025-12-02 23:48:58] === SETPRODUCTS - INSERINDO PRODUTOS ===
+[2025-12-02 23:48:58] Representante ID: 4
+[2025-12-02 23:48:58] Produtos recebidos: ["CDC","CDX_EVO","GOOGLE","MEMBRO_KEY","OUTROS","PAGBANK"]
+[2025-12-02 23:48:58] Inserindo produto: CDC (tamanho: 3)
+[2025-12-02 23:48:58] ✅ Produto inserido com sucesso: CDC (ID: 29)
+[2025-12-02 23:48:58] Inserindo produto: CDX_EVO (tamanho: 7)
+[2025-12-02 23:48:58] ✅ Produto inserido com sucesso: CDX_EVO (ID: 30)
+[2025-12-02 23:48:58] Inserindo produto: GOOGLE (tamanho: 6)
+[2025-12-02 23:48:58] ✅ Produto inserido com sucesso: GOOGLE (ID: 31)
+[2025-12-02 23:48:58] Inserindo produto: MEMBRO_KEY (tamanho: 10)
+[2025-12-02 23:48:58] ✅ Produto inserido com sucesso: MEMBRO_KEY (ID: 32)
+[2025-12-02 23:48:58] Inserindo produto: OUTROS (tamanho: 6)
+[2025-12-02 23:48:58] ✅ Produto inserido com sucesso: OUTROS (ID: 33)
+[2025-12-02 23:48:58] Inserindo produto: PAGBANK (tamanho: 7)
+[2025-12-02 23:48:58] ✅ Produto inserido com sucesso: PAGBANK (ID: 34)
+[2025-12-02 23:48:58] getProducts para representante 4: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 23:48:58] Produtos salvos no banco (verificação): [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 23:48:58] ✅ setProducts executado com sucesso
+[2025-12-02 23:48:58] Verificando produtos salvos no banco...
+[2025-12-02 23:48:58] getProducts para representante 4: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 23:48:58] Produtos salvos no banco: [
+    {
+        "product_type": "CDC"
+    },
+    {
+        "product_type": "CDX_EVO"
+    },
+    {
+        "product_type": "GOOGLE"
+    },
+    {
+        "product_type": "MEMBRO_KEY"
+    },
+    {
+        "product_type": "OUTROS"
+    },
+    {
+        "product_type": "PAGBANK"
+    }
+]
+[2025-12-02 23:48:58] Quantidade de produtos salvos: 6
+[2025-12-02 23:48:58] ✅ SUCESSO: Produtos salvos corretamente
+[2025-12-02 23:48:58] --- Finalizando processo de atualização ---
+[2025-12-02 23:48:58] Redirecionando para: /representantes/4/edit
+[2025-12-02 23:48:58] Mensagem de sucesso na sessão: Representante atualizado com sucesso! 6 produto(s) permitido(s) salvo(s): CDC, CDX_EVO, GOOGLE, MEMBRO_KEY, OUTROS, PAGBANK
+[2025-12-02 23:48:58] Mensagem de erro na sessão: NÃO DEFINIDA
+[2025-12-02 23:48:58] ========================================
+[2025-12-02 23:48:58] 
+[2025-12-02 23:48:58] getProducts para representante 4: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 23:48:58] === PRODUTOS CARREGADOS NO EDIT ===
+[2025-12-02 23:48:58] Representante ID: 4
+[2025-12-02 23:48:58] Produtos do banco: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 23:48:58] === VIEW EDIT - PRODUTOS RECEBIDOS ===
+[2025-12-02 23:48:58] Tipo de $allowedProducts: array
+[2025-12-02 23:48:58] Conteúdo: [{"product_type":"CDC"},{"product_type":"CDX_EVO"},{"product_type":"GOOGLE"},{"product_type":"MEMBRO_KEY"},{"product_type":"OUTROS"},{"product_type":"PAGBANK"}]
+[2025-12-02 23:48:58] Produto #0: {"product_type":"CDC"}
+[2025-12-02 23:48:58] Adicionado product_type: CDC
+[2025-12-02 23:48:58] Produto #1: {"product_type":"CDX_EVO"}
+[2025-12-02 23:48:58] Adicionado product_type: CDX_EVO
+[2025-12-02 23:48:58] Produto #2: {"product_type":"GOOGLE"}
+[2025-12-02 23:48:58] Adicionado product_type: GOOGLE
+[2025-12-02 23:48:58] Produto #3: {"product_type":"MEMBRO_KEY"}
+[2025-12-02 23:48:58] Adicionado product_type: MEMBRO_KEY
+[2025-12-02 23:48:58] Produto #4: {"product_type":"OUTROS"}
+[2025-12-02 23:48:58] Adicionado product_type: OUTROS
+[2025-12-02 23:48:58] Produto #5: {"product_type":"PAGBANK"}
+[2025-12-02 23:48:58] Adicionado product_type: PAGBANK
+[2025-12-02 23:48:58] Tipos extraídos: ["CDC","CDX_EVO","GOOGLE","MEMBRO_KEY","OUTROS","PAGBANK"]
+[2025-12-02 23:48:58] Produtos selecionados finais (após filtro): ["CDC","CDX_EVO","GOOGLE","MEMBRO_KEY","OUTROS","PAGBANK"]

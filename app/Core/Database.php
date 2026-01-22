@@ -33,6 +33,11 @@ class Database
             // Definir timeout máximo de execução para conexão
             set_time_limit(10);
             
+            // Log da tentativa de conexão (apenas em modo debug)
+            if (defined('APP_DEBUG') && APP_DEBUG && function_exists('write_log')) {
+                write_log("Tentando conectar ao banco: {$host}:{$port}/{$database} (usuário: {$username})", 'database.log');
+            }
+            
             $this->pdo = new PDO($dsn, $username, $password, $options);
             
             // Garantir que não há transação aberta
@@ -48,7 +53,20 @@ class Database
             set_time_limit(30);
         } catch (PDOException $e) {
             set_time_limit(30); // Restaurar timeout em caso de erro
-            throw new PDOException("Erro na conexão com o banco de dados: " . $e->getMessage());
+            
+            // Log detalhado do erro
+            if (function_exists('write_log')) {
+                write_log("Erro de conexão DB: Host={$host}, Port={$port}, DB={$database}, User={$username}, Erro: " . $e->getMessage(), 'database.log');
+            }
+            
+            $errorMsg = "Erro na conexão com o banco de dados";
+            if (defined('APP_DEBUG') && APP_DEBUG) {
+                $errorMsg .= ": {$e->getMessage()} (Host: {$host}:{$port}, Database: {$database})";
+            } else {
+                $errorMsg .= ". Verifique as configurações do banco de dados.";
+            }
+            
+            throw new PDOException($errorMsg);
         }
     }
     

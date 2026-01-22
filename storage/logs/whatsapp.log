@@ -1,0 +1,64 @@
+[2026-01-07 21:54:58] Erro ao criar instância na Evolution API: Erro da API (404): Erro desconhecido
+[2026-01-07 22:00:18] Tentando conectar instância: testeprincipal
+[2026-01-07 22:00:18] URL da API: https://evolutionapi.launs.com.br
+[2026-01-07 22:00:18] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/testeprincipal/qrcode
+[2026-01-07 22:00:19] Evolution API Response: HTTP 404
+[2026-01-07 22:00:19] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot GET /instance/testeprincipal/qrcode"]}}
+[2026-01-07 22:00:19] API Error (404): Not Found
+[2026-01-07 22:00:19] Erro ao obter QR Code do endpoint /qrcode: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]}
+[2026-01-07 22:00:19] Endpoint /qrcode retornou 404, tentando criar instância primeiro
+[2026-01-07 22:00:19] Evolution API Request: POST https://evolutionapi.launs.com.br/instance/testeprincipal/create
+[2026-01-07 22:00:19] Request Data: {"instanceName":"testeprincipal","qrcode":true,"integration":"WHATSAPP-BAILEYS"}
+[2026-01-07 22:00:19] Evolution API Response: HTTP 404
+[2026-01-07 22:00:19] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot POST /instance/testeprincipal/create"]}}
+[2026-01-07 22:00:19] API Error (404): Not Found
+[2026-01-07 22:00:19] Erro ao obter QR Code: Erro ao obter QR Code: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]} | Erro da API (404): Not Found - {"message":["Cannot POST \/instance\/testeprincipal\/create"]}
+[2026-01-07 22:00:19] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\WhatsAppController.php(153): App\Services\EvolutionApiService->getQrCode()
+#1 [internal function]: App\Controllers\WhatsAppController->connect('1')
+#2 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
+#3 C:\Projetos\grupokey\app\Core\Router.php(234): App\Core\Router->executeHandler('WhatsAppControl...', Array)
+#4 C:\Projetos\grupokey\config\routes.php(247): App\Core\Router->dispatch()
+#5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
+#6 {main}
+[2026-01-07 22:08:12] Tentando conectar instância: testeprincipal
+[2026-01-07 22:08:12] URL da API: https://evolutionapi.launs.com.br
+[2026-01-07 22:08:12] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/testeprincipal/qrcode
+[2026-01-07 22:08:12] Evolution API Response: HTTP 404
+[2026-01-07 22:08:12] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot GET /instance/testeprincipal/qrcode"]}}
+[2026-01-07 22:08:12] API Error (404): Not Found
+[2026-01-07 22:08:12] Erro ao obter QR Code do endpoint /qrcode: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]}
+[2026-01-07 22:08:12] Endpoint /qrcode retornou 404, tentando criar instância primeiro
+[2026-01-07 22:08:12] Evolution API Request: POST https://evolutionapi.launs.com.br/instance/testeprincipal/create
+[2026-01-07 22:08:12] Request Data: {"instanceName":"testeprincipal","qrcode":true,"integration":"WHATSAPP-BAILEYS"}
+[2026-01-07 22:08:12] Evolution API Response: HTTP 404
+[2026-01-07 22:08:12] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot POST /instance/testeprincipal/create"]}}
+[2026-01-07 22:08:12] API Error (404): Not Found
+[2026-01-07 22:08:12] Erro ao obter QR Code: Erro ao obter QR Code: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]} | Erro da API (404): Not Found - {"message":["Cannot POST \/instance\/testeprincipal\/create"]}
+[2026-01-07 22:08:12] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\WhatsAppController.php(153): App\Services\EvolutionApiService->getQrCode()
+#1 [internal function]: App\Controllers\WhatsAppController->connect('1')
+#2 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
+#3 C:\Projetos\grupokey\app\Core\Router.php(234): App\Core\Router->executeHandler('WhatsAppControl...', Array)
+#4 C:\Projetos\grupokey\config\routes.php(247): App\Core\Router->dispatch()
+#5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
+#6 {main}
+[2026-01-07 22:08:16] Tentando conectar instância: testeprincipal
+[2026-01-07 22:08:16] URL da API: https://evolutionapi.launs.com.br
+[2026-01-07 22:08:16] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/testeprincipal/qrcode
+[2026-01-07 22:08:16] Evolution API Response: HTTP 404
+[2026-01-07 22:08:16] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot GET /instance/testeprincipal/qrcode"]}}
+[2026-01-07 22:08:16] API Error (404): Not Found
+[2026-01-07 22:08:16] Erro ao obter QR Code do endpoint /qrcode: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]}
+[2026-01-07 22:08:16] Endpoint /qrcode retornou 404, tentando criar instância primeiro
+[2026-01-07 22:08:16] Evolution API Request: POST https://evolutionapi.launs.com.br/instance/testeprincipal/create
+[2026-01-07 22:08:16] Request Data: {"instanceName":"testeprincipal","qrcode":true,"integration":"WHATSAPP-BAILEYS"}
+[2026-01-07 22:08:16] Evolution API Response: HTTP 404
+[2026-01-07 22:08:16] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot POST /instance/testeprincipal/create"]}}
+[2026-01-07 22:08:16] API Error (404): Not Found
+[2026-01-07 22:08:16] Erro ao obter QR Code: Erro ao obter QR Code: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]} | Erro da API (404): Not Found - {"message":["Cannot POST \/instance\/testeprincipal\/create"]}
+[2026-01-07 22:08:16] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\WhatsAppController.php(153): App\Services\EvolutionApiService->getQrCode()
+#1 [internal function]: App\Controllers\WhatsAppController->connect('1')
+#2 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
+#3 C:\Projetos\grupokey\app\Core\Router.php(234): App\Core\Router->executeHandler('WhatsAppControl...', Array)
+#4 C:\Projetos\grupokey\config\routes.php(247): App\Core\Router->dispatch()
+#5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
+#6 {main}
