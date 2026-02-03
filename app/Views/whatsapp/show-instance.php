@@ -91,8 +91,8 @@ $instance = $instance ?? [];
             </div>
         </div>
 
-        <!-- QR Code (se estiver conectando) -->
-        <?php if ($instance['status'] === 'CONNECTING' && !empty($instance['qr_code'])): ?>
+        <!-- QR Code (exibir quando houver QR e ainda não estiver CONNECTED) -->
+        <?php if (!empty($instance['qr_code']) && ($instance['status'] ?? '') !== 'CONNECTED'): ?>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">QR Code para Conexão</h2>
                 <div class="text-center">
@@ -101,7 +101,7 @@ $instance = $instance ?? [];
                     </p>
                     <img src="data:image/png;base64,<?= htmlspecialchars($instance['qr_code']) ?>" 
                          alt="QR Code" 
-                         class="mx-auto border-4 border-gray-200 dark:border-gray-700 rounded-lg">
+                         class="mx-auto border-4 border-gray-200 dark:border-gray-700 rounded-lg max-w-xs">
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
                         O QR Code expira em alguns minutos. Se expirar, clique em "Conectar" novamente.
                     </p>
@@ -125,11 +125,19 @@ $instance = $instance ?? [];
                         <?= htmlspecialchars($instance['evolution_api_url'] ?? '') ?>
                     </p>
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <span class="text-sm text-gray-600 dark:text-gray-400">Webhook URL:</span>
-                    <p class="font-mono text-sm text-gray-900 dark:text-white">
-                        <?= htmlspecialchars($instance['webhook_url'] ?? 'Não configurado') ?>
+                    <p class="font-mono text-sm text-gray-900 dark:text-white break-all">
+                        <?= !empty($instance['webhook_url']) ? htmlspecialchars($instance['webhook_url']) : 'Não configurado' ?>
                     </p>
+                    <?php if (empty($instance['webhook_url'])): ?>
+                        <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/set-webhook') ?>" class="mt-2">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-colors">
+                                Configurar webhook agora
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
                 <div>
                     <span class="text-sm text-gray-600 dark:text-gray-400">Máximo de Conexões:</span>

@@ -156,6 +156,27 @@ class WhatsAppController
                     $this->instanceModel->updateQrCode($id, $qrCode);
                     $this->instanceModel->updateStatus($id, 'CONNECTING');
                     write_log('QR Code obtido com sucesso', 'whatsapp.log');
+
+                    // Configurar webhook na Evolution API se ainda não estiver configurado
+                    if (empty($instance['webhook_url'])) {
+                        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+                        $port = '';
+                        if (isset($_SERVER['SERVER_PORT']) &&
+                            (($protocol === 'http' && $_SERVER['SERVER_PORT'] != 80) ||
+                             ($protocol === 'https' && $_SERVER['SERVER_PORT'] != 443))) {
+                            $port = ':' . $_SERVER['SERVER_PORT'];
+                        }
+                        $folder = defined('FOLDER') ? FOLDER : '';
+                        $webhookUrl = $protocol . '://' . $host . $port . rtrim($folder, '/') . '/whatsapp/webhook';
+                        try {
+                            $apiService->setWebhook($webhookUrl);
+                            $this->instanceModel->update($id, ['webhook_url' => $webhookUrl]);
+                            write_log('Webhook configurado ao conectar: ' . $webhookUrl, 'whatsapp.log');
+                        } catch (\Exception $webhookError) {
+                            write_log('Aviso: Não foi possível configurar webhook ao conectar: ' . $webhookError->getMessage(), 'whatsapp.log');
+                        }
+                    }
                 } else {
                     // Se não obteve QR Code, tentar criar/recriar instância
                     write_log('QR Code não obtido, tentando criar/recriar instância', 'whatsapp.log');
@@ -208,11 +229,18 @@ class WhatsAppController
             redirect(url('whatsapp/instances'));
         }
         
-        // Tentar obter status atual da API
+        // Atualizar status na API só se for CONNECTED (não sobrescrever CONNECTING com DISCONNECTED)
         try {
             $apiService = new EvolutionApiService($instance);
             $status = $apiService->getStatus();
-            $this->instanceModel->updateStatus($id, $status);
+            $currentStatus = $instance['status'] ?? 'DISCONNECTED';
+            // Só atualizar se a API disser CONNECTED ou se já estiver CONNECTED e API disser desconectado
+            if ($status === 'CONNECTED') {
+                $this->instanceModel->updateStatus($id, $status);
+            } elseif ($currentStatus === 'CONNECTED' && $status !== 'CONNECTED') {
+                $this->instanceModel->updateStatus($id, $status);
+            }
+            // Se status é CONNECTING e temos QR, não sobrescrever com DISCONNECTED (usuário ainda não escaneou)
             $instance = $this->instanceModel->findById($id);
         } catch (\Exception $e) {
             // Ignorar erro
@@ -255,6 +283,42 @@ class WhatsAppController
             $_SESSION['error'] = 'Erro ao desconectar: ' . $e->getMessage();
         }
         
+        redirect(url('whatsapp/instances/' . $id));
+    }
+
+    /**
+     * Configurar webhook na Evolution API (quando estiver vazio)
+     */
+    public function setWebhook($id)
+    {
+        Auth::requireAdmin();
+
+        try {
+            $instance = $this->instanceModel->findById($id);
+            if (!$instance) {
+                throw new \Exception('Instância não encontrada');
+            }
+
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $port = '';
+            if (isset($_SERVER['SERVER_PORT']) &&
+                (($protocol === 'http' && $_SERVER['SERVER_PORT'] != 80) ||
+                 ($protocol === 'https' && $_SERVER['SERVER_PORT'] != 443))) {
+                $port = ':' . $_SERVER['SERVER_PORT'];
+            }
+            $folder = defined('FOLDER') ? FOLDER : '';
+            $webhookUrl = $protocol . '://' . $host . $port . rtrim($folder, '/') . '/whatsapp/webhook';
+
+            $apiService = new EvolutionApiService($instance);
+            $apiService->setWebhook($webhookUrl);
+            $this->instanceModel->update($id, ['webhook_url' => $webhookUrl]);
+
+            $_SESSION['success'] = 'Webhook configurado com sucesso: ' . $webhookUrl;
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'Erro ao configurar webhook: ' . $e->getMessage();
+        }
+
         redirect(url('whatsapp/instances/' . $id));
     }
 }

@@ -226,6 +226,7 @@ $router->post('/whatsapp/instances', 'WhatsAppController@createInstance');
 $router->get('/whatsapp/instances/{id}', 'WhatsAppController@showInstance');
 $router->post('/whatsapp/instances/{id}/connect', 'WhatsAppController@connect');
 $router->post('/whatsapp/instances/{id}/disconnect', 'WhatsAppController@disconnect');
+$router->post('/whatsapp/instances/{id}/set-webhook', 'WhatsAppController@setWebhook');
 
 // Rotas de Filas WhatsApp (apenas admin)
 $router->get('/whatsapp/queues', 'WhatsAppQueueController@index');
