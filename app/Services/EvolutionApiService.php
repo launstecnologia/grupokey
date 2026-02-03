@@ -30,11 +30,19 @@ class EvolutionApiService
     }
 
     /**
-     * Fazer requisição à Evolution API (endpoint relativo à instância: /instance/{key}{endpoint})
+     * Path base da API (Evolution API v2 usa /instances/ no plural)
+     */
+    private function getInstancePath()
+    {
+        return '/instances/';
+    }
+
+    /**
+     * Fazer requisição à Evolution API (endpoint relativo à instância: /instances/{key}{endpoint})
      */
     private function request($method, $endpoint, $data = null)
     {
-        $url = $this->apiUrl . '/instance/' . $this->instance['instance_key'] . $endpoint;
+        $url = $this->apiUrl . $this->getInstancePath() . $this->instance['instance_key'] . $endpoint;
         return $this->doRequest($method, $url, $data);
     }
 
@@ -107,11 +115,11 @@ class EvolutionApiService
     }
     
     /**
-     * Criar instância na Evolution API (v2: POST /instance/create - key não vai no path)
+     * Criar instância na Evolution API (v2: POST /instances/create - key não vai no path)
      */
     public function createInstance($qrcode = true, $integration = 'WHATSAPP-BAILEYS')
     {
-        $url = $this->apiUrl . '/instance/create';
+        $url = $this->apiUrl . $this->getInstancePath() . 'create';
         $data = [
             'instanceName' => $this->instance['instance_key'],
             'qrcode' => $qrcode,
@@ -143,8 +151,9 @@ class EvolutionApiService
                 $this->createInstance(true);
                 sleep(2);
             } catch (\Exception $e2) {
-                // Ignorar se já existe
-                if (strpos($e2->getMessage(), 'already exists') === false) {
+                // Ignorar se já existe ou nome já em uso (403)
+                $msg = $e2->getMessage();
+                if (strpos($msg, 'already exists') === false && strpos($msg, 'already in use') === false) {
                     throw $e2;
                 }
             }
@@ -155,7 +164,7 @@ class EvolutionApiService
     }
     
     /**
-     * Obter QR Code (Evolution API v2: GET /instance/{key}/connect retorna pairCode/base64)
+     * Obter QR Code (Evolution API v2: GET /instances/{key}/connect retorna pairCode/base64)
      */
     public function getQrCode()
     {
@@ -177,6 +186,15 @@ class EvolutionApiService
                     $response = $this->request('GET', $endpoint);
                     return $this->extractQrCodeFromResponse($response);
                 } catch (\Exception $e2) {
+                    // 403 "already in use" = instância já existe, só obter o QR de novo
+                    if (strpos($e2->getMessage(), '403') !== false && strpos($e2->getMessage(), 'already in use') !== false) {
+                        if (function_exists('write_log')) {
+                            write_log('Instância já existe na API, obtendo QR Code novamente', 'whatsapp.log');
+                        }
+                        sleep(1);
+                        $response = $this->request('GET', $endpoint);
+                        return $this->extractQrCodeFromResponse($response);
+                    }
                     throw new \Exception("Erro ao obter QR Code: " . $e->getMessage() . " | " . $e2->getMessage());
                 }
             }
