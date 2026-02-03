@@ -16,11 +16,18 @@ $instance = $instance ?? [];
                 </h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">Detalhes da instância WhatsApp</p>
             </div>
-            <div>
-                <a href="<?= url('whatsapp/instances') ?>" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
+            <div class="flex gap-2">
+                <a href="<?= url('whatsapp/instances') ?>" class="bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 text-white font-medium px-4 py-2 rounded-lg inline-flex items-center transition-colors shadow">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Voltar
                 </a>
+                <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/delete') ?>" class="inline" onsubmit="return confirm('Excluir esta instância? A ação não pode ser desfeita.');">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 text-white font-medium px-4 py-2 rounded-lg inline-flex items-center transition-colors shadow">
+                        <i class="fas fa-trash-alt mr-2"></i>
+                        Excluir
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -33,9 +40,9 @@ $instance = $instance ?? [];
                     <div>
                         <span class="text-sm text-gray-600 dark:text-gray-400">Status da Conexão:</span>
                         <span class="ml-2 px-3 py-1 rounded-full text-xs font-semibold <?php
-                            echo $instance['status'] === 'CONNECTED' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : '';
-                            echo $instance['status'] === 'CONNECTING' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' : '';
-                            echo $instance['status'] === 'DISCONNECTED' ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300' : '';
+                            echo $instance['status'] === 'CONNECTED' ? 'bg-green-100 text-green-800 dark:bg-green-600 dark:text-white' : '';
+                            echo $instance['status'] === 'CONNECTING' ? 'bg-yellow-100 text-yellow-800 dark:bg-amber-500 dark:text-white' : '';
+                            echo $instance['status'] === 'DISCONNECTED' ? 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-100' : '';
                         ?>">
                             <?= htmlspecialchars($instance['status'] ?? 'DISCONNECTED') ?>
                         </span>
@@ -68,20 +75,20 @@ $instance = $instance ?? [];
                     <?php if ($instance['status'] === 'DISCONNECTED'): ?>
                         <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/connect') ?>">
                             <?= csrf_field() ?>
-                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            <button type="submit" class="w-full bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow">
                                 <i class="fas fa-link mr-2"></i>
                                 Conectar (Gerar QR Code)
                             </button>
                         </form>
                     <?php elseif ($instance['status'] === 'CONNECTING'): ?>
-                        <div class="text-center text-yellow-600 dark:text-yellow-400">
+                        <div class="text-center text-yellow-700 dark:text-amber-400 font-medium">
                             <i class="fas fa-spinner fa-spin mr-2"></i>
                             Aguardando conexão...
                         </div>
                     <?php elseif ($instance['status'] === 'CONNECTED'): ?>
                         <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/disconnect') ?>">
                             <?= csrf_field() ?>
-                            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow">
                                 <i class="fas fa-unlink mr-2"></i>
                                 Desconectar
                             </button>
@@ -133,7 +140,7 @@ $instance = $instance ?? [];
                     <?php if (empty($instance['webhook_url'])): ?>
                         <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/set-webhook') ?>" class="mt-2">
                             <?= csrf_field() ?>
-                            <button type="submit" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-colors">
+                            <button type="submit" class="text-sm bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition-colors shadow">
                                 Configurar webhook agora
                             </button>
                         </form>

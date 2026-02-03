@@ -17,7 +17,7 @@ $instances = $instances ?? [];
                 <p class="text-gray-600 dark:text-gray-400 mt-1">Gerencie suas instâncias do WhatsApp</p>
             </div>
             <div>
-                <a href="<?= url('whatsapp/instances/create') ?>" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
+                <a href="<?= url('whatsapp/instances/create') ?>" class="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white font-medium px-4 py-2 rounded-lg inline-flex items-center transition-colors shadow-md">
                     <i class="fas fa-plus mr-2"></i>
                     Nova Instância
                 </a>
@@ -30,7 +30,7 @@ $instances = $instances ?? [];
                 <div class="col-span-full bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
                     <i class="fab fa-whatsapp text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
                     <p class="text-gray-500 dark:text-gray-400 mb-4">Nenhuma instância configurada</p>
-                    <a href="<?= url('whatsapp/instances/create') ?>" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
+                    <a href="<?= url('whatsapp/instances/create') ?>" class="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white font-medium px-4 py-2 rounded-lg inline-flex items-center shadow-md">
                         <i class="fas fa-plus mr-2"></i>
                         Criar Primeira Instância
                     </a>
@@ -48,9 +48,9 @@ $instances = $instances ?? [];
                                 </p>
                             </div>
                             <span class="px-3 py-1 rounded-full text-xs font-semibold <?php
-                                echo $instance['status'] === 'CONNECTED' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : '';
-                                echo $instance['status'] === 'CONNECTING' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' : '';
-                                echo $instance['status'] === 'DISCONNECTED' ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300' : '';
+                                echo $instance['status'] === 'CONNECTED' ? 'bg-green-100 text-green-800 dark:bg-green-600 dark:text-white' : '';
+                                echo $instance['status'] === 'CONNECTING' ? 'bg-yellow-100 text-yellow-800 dark:bg-amber-500 dark:text-white' : '';
+                                echo $instance['status'] === 'DISCONNECTED' ? 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-100' : '';
                             ?>">
                                 <?= htmlspecialchars($instance['status']) ?>
                             </span>
@@ -65,30 +65,38 @@ $instances = $instances ?? [];
                             </div>
                         <?php endif; ?>
                         
-                        <div class="flex gap-2 mt-4">
+                        <div class="flex flex-wrap gap-2 mt-4">
                             <a href="<?= url('whatsapp/instances/' . $instance['id']) ?>" 
-                               class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center text-sm transition-colors">
+                               class="flex-1 min-w-[80px] bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-lg text-center text-sm transition-colors shadow">
                                 <i class="fas fa-eye mr-1"></i>
                                 Ver
                             </a>
                             
                             <?php if ($instance['status'] === 'DISCONNECTED'): ?>
-                                <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/connect') ?>" class="flex-1">
+                                <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/connect') ?>" class="flex-1 min-w-[80px]">
                                     <?= csrf_field() ?>
-                                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                                    <button type="submit" class="w-full bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors shadow">
                                         <i class="fas fa-link mr-1"></i>
                                         Conectar
                                     </button>
                                 </form>
                             <?php elseif ($instance['status'] === 'CONNECTED'): ?>
-                                <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/disconnect') ?>" class="flex-1">
+                                <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/disconnect') ?>" class="flex-1 min-w-[80px]">
                                     <?= csrf_field() ?>
-                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                                    <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors shadow">
                                         <i class="fas fa-unlink mr-1"></i>
                                         Desconectar
                                     </button>
                                 </form>
                             <?php endif; ?>
+                            
+                            <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/delete') ?>" class="flex-1 min-w-[80px]" onsubmit="return confirm('Excluir esta instância? A ação não pode ser desfeita.');">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="w-full bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors shadow">
+                                    <i class="fas fa-trash-alt mr-1"></i>
+                                    Excluir
+                                </button>
+                            </form>
                         </div>
                     </div>
                 <?php endforeach; ?>

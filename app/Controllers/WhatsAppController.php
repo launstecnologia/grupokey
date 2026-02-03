@@ -321,5 +321,34 @@ class WhatsAppController
 
         redirect(url('whatsapp/instances/' . $id));
     }
+
+    /**
+     * Excluir instância (Evolution API + banco)
+     */
+    public function deleteInstance($id)
+    {
+        Auth::requireAdmin();
+
+        try {
+            $instance = $this->instanceModel->findById($id);
+            if (!$instance) {
+                throw new \Exception('Instância não encontrada');
+            }
+
+            try {
+                $apiService = new EvolutionApiService($instance);
+                $apiService->deleteInstance();
+            } catch (\Exception $e) {
+                write_log('Aviso ao excluir na Evolution API: ' . $e->getMessage(), 'whatsapp.log');
+            }
+
+            $this->instanceModel->delete($id);
+            $_SESSION['success'] = 'Instância excluída com sucesso.';
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'Erro ao excluir instância: ' . $e->getMessage();
+        }
+
+        redirect(url('whatsapp/instances'));
+    }
 }
 
