@@ -22,8 +22,9 @@ class WhatsAppContact
         $existing = $this->findByPhoneNumber($instanceId, $phoneNumber);
         
         if ($existing) {
-            // Atualizar
-            return $this->update($existing['id'], $data);
+            // Atualizar e retornar o ID do contato
+            $this->update($existing['id'], $data);
+            return $existing['id'];
         } else {
             // Criar
             $sql = "INSERT INTO whatsapp_contacts 

@@ -199,15 +199,23 @@ class WhatsAppWebhookController
     
     /**
      * Processar novas mensagens
+     * Evolution pode enviar: data.messages[] OU um único objeto em data (com data.key, data.message)
      */
     private function handleMessagesUpsert($instance, $data)
     {
-        $messages = $data['data']['messages'] ?? $data['data'] ?? $data['messages'] ?? [];
+        $messages = $data['data']['messages'] ?? null;
+        if ($messages === null && isset($data['data']['key'])) {
+            // Payload com uma única mensagem em data (Evolution v2)
+            $messages = [$data['data']];
+        }
+        if ($messages === null) {
+            $messages = $data['messages'] ?? [];
+        }
         if (!is_array($messages)) {
             $messages = [$messages];
         }
         foreach ($messages as $messageData) {
-            if (is_array($messageData)) {
+            if (is_array($messageData) && !empty($messageData['key'])) {
                 $this->processMessage($instance, $messageData);
             }
         }
