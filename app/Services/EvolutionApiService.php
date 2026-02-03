@@ -22,11 +22,27 @@ class EvolutionApiService
     }
     
     /**
-     * Fazer requisição à Evolution API
+     * Fazer requisição à Evolution API (URL completa - para create que não usa key no path)
+     */
+    private function requestToUrl($method, $url, $data = null)
+    {
+        return $this->doRequest($method, $url, $data);
+    }
+
+    /**
+     * Fazer requisição à Evolution API (endpoint relativo à instância: /instance/{key}{endpoint})
      */
     private function request($method, $endpoint, $data = null)
     {
         $url = $this->apiUrl . '/instance/' . $this->instance['instance_key'] . $endpoint;
+        return $this->doRequest($method, $url, $data);
+    }
+
+    /**
+     * Executa a requisição HTTP à Evolution API
+     */
+    private function doRequest($method, $url, $data = null)
+    {
         
         // Log da requisição
         if (function_exists('write_log')) {
@@ -91,20 +107,17 @@ class EvolutionApiService
     }
     
     /**
-     * Criar instância na Evolution API
+     * Criar instância na Evolution API (v2: POST /instance/create - key não vai no path)
      */
     public function createInstance($qrcode = true, $integration = 'WHATSAPP-BAILEYS')
     {
-        // Na Evolution API, criar instância já gera o QR Code se qrcode=true
-        $endpoint = '/create';
-        
+        $url = $this->apiUrl . '/instance/create';
         $data = [
             'instanceName' => $this->instance['instance_key'],
             'qrcode' => $qrcode,
             'integration' => $integration
         ];
-        
-        return $this->request('POST', $endpoint, $data);
+        return $this->requestToUrl('POST', $url, $data);
     }
     
     /**
@@ -142,55 +155,67 @@ class EvolutionApiService
     }
     
     /**
-     * Obter QR Code
+     * Obter QR Code (Evolution API v2: GET /instance/{key}/connect retorna pairCode/base64)
      */
     public function getQrCode()
     {
-        $endpoint = '/qrcode';
+        $endpoint = '/connect';
         try {
             $response = $this->request('GET', $endpoint);
-            
-            // A resposta pode vir em diferentes formatos dependendo da versão da API
-            if (isset($response['qrcode']['base64'])) {
-                return $response['qrcode']['base64'];
-            } elseif (isset($response['base64'])) {
-                return $response['base64'];
-            } elseif (isset($response['qrcode'])) {
-                if (is_string($response['qrcode'])) {
-                    return $response['qrcode'];
-                } elseif (is_array($response['qrcode']) && isset($response['qrcode']['base64'])) {
-                    return $response['qrcode']['base64'];
-                }
-            } elseif (isset($response['code'])) {
-                // Algumas versões retornam 'code' ao invés de 'qrcode'
-                return $response['code'];
-            }
-            
-            write_log('QR Code não encontrado na resposta: ' . json_encode($response), 'whatsapp.log');
-            return null;
+            return $this->extractQrCodeFromResponse($response);
         } catch (\Exception $e) {
-            write_log('Erro ao obter QR Code do endpoint /qrcode: ' . $e->getMessage(), 'whatsapp.log');
-            
-            // Se o endpoint /qrcode não existir (404), a instância pode não estar criada
-            // Tentar criar e obter novamente
+            if (function_exists('write_log')) {
+                write_log('Erro ao obter QR Code do endpoint /connect: ' . $e->getMessage(), 'whatsapp.log');
+            }
             if (strpos($e->getMessage(), '404') !== false) {
-                write_log('Endpoint /qrcode retornou 404, tentando criar instância primeiro', 'whatsapp.log');
+                if (function_exists('write_log')) {
+                    write_log('Endpoint /connect retornou 404, tentando criar instância primeiro', 'whatsapp.log');
+                }
                 try {
                     $this->createInstance(true);
                     sleep(2);
                     $response = $this->request('GET', $endpoint);
-                    if (isset($response['qrcode']['base64'])) {
-                        return $response['qrcode']['base64'];
-                    } elseif (isset($response['base64'])) {
-                        return $response['base64'];
-                    }
+                    return $this->extractQrCodeFromResponse($response);
                 } catch (\Exception $e2) {
                     throw new \Exception("Erro ao obter QR Code: " . $e->getMessage() . " | " . $e2->getMessage());
                 }
             }
-            
             throw $e;
         }
+    }
+
+    /**
+     * Extrai o QR Code (base64 ou pairCode) da resposta da Evolution API
+     */
+    private function extractQrCodeFromResponse($response)
+    {
+        if (isset($response['base64'])) {
+            return $response['base64'];
+        }
+        if (isset($response['pairCode'])) {
+            return $response['pairCode'];
+        }
+        if (isset($response['qrcode']['base64'])) {
+            return $response['qrcode']['base64'];
+        }
+        if (isset($response['qrcode'])) {
+            if (is_string($response['qrcode'])) {
+                return $response['qrcode'];
+            }
+            if (is_array($response['qrcode']) && isset($response['qrcode']['base64'])) {
+                return $response['qrcode']['base64'];
+            }
+        }
+        if (isset($response['code'])) {
+            return $response['code'];
+        }
+        if (isset($response['result']) && is_string($response['result'])) {
+            return $response['result'];
+        }
+        if (function_exists('write_log')) {
+            write_log('QR Code não encontrado na resposta: ' . json_encode($response), 'whatsapp.log');
+        }
+        return null;
     }
     
     /**

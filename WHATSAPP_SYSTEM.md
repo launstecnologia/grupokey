@@ -105,9 +105,8 @@ database/migrations/031_create_whatsapp_system_tables.sql
 
 O sistema utiliza os seguintes endpoints da Evolution API:
 
-- `POST /instance/create`: Criar instância
-- `GET /instance/{key}/connect`: Conectar e gerar QR Code
-- `GET /instance/{key}/qrcode`: Obter QR Code
+- `POST /instance/create`: Criar instância (nome da instância no body; Evolution API v2)
+- `GET /instance/{key}/connect`: Conectar e obter QR Code (Evolution API v2)
 - `GET /instance/{key}/connectionState`: Status da conexão
 - `POST /instance/{key}/sendText`: Enviar mensagem de texto
 - `POST /instance/{key}/sendMedia`: Enviar mídia
