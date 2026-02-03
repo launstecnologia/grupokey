@@ -52,13 +52,20 @@ class WhatsAppWebhookController
      */
     public function handle()
     {
-        // Log do webhook recebido
         $payload = file_get_contents('php://input');
-        write_log('Webhook recebido: ' . $payload, 'whatsapp-webhook.log');
-        
+        $method = $_SERVER['REQUEST_METHOD'] ?? '?';
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+        // Log completo de toda requisição recebida (para diagnóstico)
+        write_log('========== WEBHOOK ENTRADA ========== ' . date('Y-m-d H:i:s'), 'whatsapp-webhook.log');
+        write_log('Método: ' . $method . ' | Content-Type: ' . $contentType, 'whatsapp-webhook.log');
+        write_log('Body (raw): ' . ($payload ?: '(vazio)'), 'whatsapp-webhook.log');
+        write_log('======================================', 'whatsapp-webhook.log');
+
         $data = json_decode($payload, true);
-        
+
         if (!$data) {
+            write_log('Webhook rejeitado: JSON inválido. Body: ' . substr($payload, 0, 500), 'whatsapp-webhook.log');
             http_response_code(400);
             echo json_encode(['error' => 'Invalid JSON']);
             return;
@@ -108,7 +115,9 @@ class WhatsAppWebhookController
                 default:
                     write_log('Evento não tratado: ' . ($data['event'] ?? $data['eventType'] ?? '') . ' | payload inicio: ' . substr($payload, 0, 300), 'whatsapp-webhook.log');
             }
-            
+
+            write_log('Webhook processado: evento=' . ($data['event'] ?? $data['eventType'] ?? '') . ', instance=' . ($instanceName ?? ''), 'whatsapp-webhook.log');
+
             http_response_code(200);
             echo json_encode(['success' => true]);
             
