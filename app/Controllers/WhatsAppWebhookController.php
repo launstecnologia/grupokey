@@ -106,18 +106,19 @@ class WhatsAppWebhookController
     
     /**
      * Processar atualização de conexão
+     * Evolution API envia state "open" quando conectado; normalizamos para CONNECTED no sistema
      */
     private function handleConnectionUpdate($instance, $data)
     {
         $state = $data['data']['state'] ?? 'DISCONNECTED';
-        
-        $this->instanceModel->updateStatus($instance['id'], strtoupper($state));
-        
-        if ($state === 'open') {
-            // Obter informações da conexão
+        $stateNormalized = $this->normalizeConnectionState($state);
+
+        $this->instanceModel->updateStatus($instance['id'], $stateNormalized);
+
+        if ($stateNormalized === 'CONNECTED') {
+            $this->instanceModel->updateQrCode($instance['id'], null);
             $phoneNumber = $data['data']['user'] ?? null;
             $profileName = $data['data']['userName'] ?? null;
-            
             if ($phoneNumber) {
                 $this->instanceModel->updateConnectionInfo(
                     $instance['id'],
@@ -126,6 +127,21 @@ class WhatsAppWebhookController
                 );
             }
         }
+    }
+
+    /**
+     * Normaliza estado da Evolution API para o valor usado no sistema (CONNECTED, DISCONNECTED, CONNECTING)
+     */
+    private function normalizeConnectionState($state)
+    {
+        $s = strtolower(trim((string) $state));
+        if ($s === 'open' || $s === 'connected') {
+            return 'CONNECTED';
+        }
+        if ($s === 'connecting' || $s === 'opening') {
+            return 'CONNECTING';
+        }
+        return 'DISCONNECTED';
     }
     
     /**

@@ -253,11 +253,28 @@ class EvolutionApiService
     
     /**
      * Obter status da conexão (v2.3: GET /instance/connectionState/{{instance}})
+     * Evolution API retorna "open" quando conectado; normalizamos para CONNECTED
      */
     public function getStatus()
     {
         $response = $this->requestInstanceAction('GET', 'connectionState');
-        return $response['state'] ?? 'DISCONNECTED';
+        $state = $response['state'] ?? 'DISCONNECTED';
+        return $this->normalizeConnectionState($state);
+    }
+
+    /**
+     * Normaliza estado da API para CONNECTED / CONNECTING / DISCONNECTED
+     */
+    private function normalizeConnectionState($state)
+    {
+        $s = strtolower(trim((string) $state));
+        if ($s === 'open' || $s === 'connected') {
+            return 'CONNECTED';
+        }
+        if ($s === 'connecting' || $s === 'opening') {
+            return 'CONNECTING';
+        }
+        return 'DISCONNECTED';
     }
     
     /**
@@ -334,14 +351,18 @@ class EvolutionApiService
 
     /**
      * Configurar webhook (v2.3: POST /webhook/set/{{instance}})
+     * Evolution API espera objeto "webhook" com enabled: true (Postman collection)
      */
     public function setWebhook($webhookUrl, $events = ['MESSAGES_UPSERT', 'CONNECTION_UPDATE', 'QRCODE_UPDATED'])
     {
         $data = [
-            'url' => $webhookUrl,
-            'webhook_by_events' => true,
-            'events' => $events,
-            'webhook_base64' => false
+            'webhook' => [
+                'enabled' => true,
+                'url' => $webhookUrl,
+                'byEvents' => true,
+                'base64' => false,
+                'events' => $events
+            ]
         ];
         return $this->requestResourceAction('POST', 'webhook', 'set', $data);
     }

@@ -229,18 +229,17 @@ class WhatsAppController
             redirect(url('whatsapp/instances'));
         }
         
-        // Atualizar status na API só se for CONNECTED (não sobrescrever CONNECTING com DISCONNECTED)
+        // Sincronizar status com a Evolution API (open -> CONNECTED)
         try {
             $apiService = new EvolutionApiService($instance);
             $status = $apiService->getStatus();
             $currentStatus = $instance['status'] ?? 'DISCONNECTED';
-            // Só atualizar se a API disser CONNECTED ou se já estiver CONNECTED e API disser desconectado
             if ($status === 'CONNECTED') {
                 $this->instanceModel->updateStatus($id, $status);
+                $this->instanceModel->updateQrCode($id, null);
             } elseif ($currentStatus === 'CONNECTED' && $status !== 'CONNECTED') {
                 $this->instanceModel->updateStatus($id, $status);
             }
-            // Se status é CONNECTING e temos QR, não sobrescrever com DISCONNECTED (usuário ainda não escaneou)
             $instance = $this->instanceModel->findById($id);
         } catch (\Exception $e) {
             // Ignorar erro

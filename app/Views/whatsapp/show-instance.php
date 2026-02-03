@@ -128,7 +128,7 @@ $instance = $instance ?? [];
                              onerror="this.style.display='none'; document.getElementById('qrcode-fallback').style.display='block';">
                         <div id="qrcode-fallback" style="display:none;" class="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg max-w-xs mx-auto">
                             <p class="text-sm text-amber-800 dark:text-amber-200 mb-2">Imagem do QR não carregou.</p>
-                            <p class="text-xs text-amber-700 dark:text-amber-300">Clique em &quot;Conectar&quot; novamente para gerar um novo QR Code.</p>
+                            <p class="text-xs text-amber-700 dark:text-amber-300">Use o botão &quot;Atualizar QR Code&quot; abaixo para gerar um novo.</p>
                         </div>
                     <?php else: ?>
                         <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg max-w-xs mx-auto">
@@ -140,8 +140,15 @@ $instance = $instance ?? [];
                         </div>
                     <?php endif; ?>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
-                        O QR Code expira em alguns minutos. Se expirar, clique em &quot;Conectar&quot; novamente.
+                        O QR Code expira em alguns minutos.
                     </p>
+                    <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/connect') ?>" class="mt-3">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow inline-flex items-center">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Atualizar QR Code
+                        </button>
+                    </form>
                 </div>
             </div>
         <?php endif; ?>
