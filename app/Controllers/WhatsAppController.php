@@ -304,6 +304,40 @@ class WhatsAppController
     }
 
     /**
+     * Checar/sincronizar status com a Evolution API (botão "Checar conexão")
+     */
+    public function checkStatus($id)
+    {
+        Auth::requireAdmin();
+
+        try {
+            $instance = $this->instanceModel->findById($id);
+            if (!$instance) {
+                throw new \Exception('Instância não encontrada');
+            }
+
+            $apiService = new EvolutionApiService($instance);
+            $status = $apiService->getStatus();
+            $current = $instance['status'] ?? 'DISCONNECTED';
+
+            if ($status === 'CONNECTED') {
+                $this->instanceModel->updateStatus($id, 'CONNECTED');
+                $this->instanceModel->updateQrCode($id, null);
+                $_SESSION['success'] = 'Status atualizado: conectado na Evolution API.';
+            } elseif ($status !== 'CONNECTED' && $current === 'CONNECTED') {
+                $this->instanceModel->updateStatus($id, $status);
+                $_SESSION['warning'] = 'Status atualizado: desconectado na Evolution API.';
+            } else {
+                $_SESSION['success'] = 'Status verificado: ' . $status . ' na Evolution API.';
+            }
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'Erro ao checar: ' . $e->getMessage();
+        }
+
+        redirect(url('whatsapp/instances/' . $id));
+    }
+
+    /**
      * Configurar webhook na Evolution API (quando estiver vazio)
      */
     public function setWebhook($id)
