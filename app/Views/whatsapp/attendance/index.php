@@ -132,7 +132,7 @@ $connectedInstances = $connected_instances ?? [];
                             </div>
                         <?php else: ?>
                             <?php foreach ($conversations as $conv): ?>
-                                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer conversation-item" 
+                                <div class="p-4 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer conversation-item" 
                                      data-conversation-id="<?= $conv['id'] ?>"
                                      onclick="openConversation(<?= $conv['id'] ?>)">
                                     <div class="flex items-start gap-3">
@@ -314,7 +314,10 @@ async function openConversation(conversationId) {
         try {
             data = text ? JSON.parse(text) : {};
         } catch (e) {
-            alert('Erro ao carregar conversa: resposta inválida');
+            const msg = /<\s*html/i.test(text)
+                ? 'O servidor retornou uma página em vez de dados. Verifique se está logado e tente novamente.'
+                : 'Erro ao carregar conversa: resposta inválida do servidor.';
+            alert(msg);
             return;
         }
         if (!response.ok) {

@@ -154,10 +154,14 @@ class WhatsAppAttendanceController
     {
         Auth::requireAuth();
         
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=utf-8');
         
         try {
             $userId = $_SESSION['user_id'];
+            $conversationId = is_array($conversationId) ? (int) ($conversationId['id'] ?? $conversationId[0] ?? 0) : (int) $conversationId;
+            if ($conversationId <= 0) {
+                throw new \Exception('ID da conversa inválido');
+            }
             
             $conversation = $this->conversationModel->findById($conversationId);
             
@@ -193,14 +197,15 @@ class WhatsAppAttendanceController
                 'conversation' => $conversation,
                 'attendance' => $attendance,
                 'messages' => $messages
-            ]);
-            
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
         } catch (\Exception $e) {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
                 'message' => $e->getMessage()
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
         }
     }
     
