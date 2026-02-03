@@ -100,17 +100,47 @@ $instance = $instance ?? [];
 
         <!-- QR Code (exibir quando houver QR e ainda não estiver CONNECTED) -->
         <?php if (!empty($instance['qr_code']) && ($instance['status'] ?? '') !== 'CONNECTED'): ?>
+            <?php
+            $qr = trim($instance['qr_code']);
+            $qrSrc = '';
+            $qrClean = preg_replace('/\s+/', '', $qr);
+            $looksLikeBase64 = (strlen($qrClean) > 100 && preg_match('/^[A-Za-z0-9+\/=]+$/', $qrClean));
+            $isPairCode = (strpos($qr, 'http') === 0) || (strlen($qrClean) < 100 && !$looksLikeBase64);
+            if (strpos($qr, 'data:image') === 0) {
+                $qrSrc = $qr;
+            } elseif ($isPairCode) {
+                $qrSrc = '';
+            } else {
+                $qrSrc = 'data:image/png;base64,' . $qrClean;
+            }
+            ?>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">QR Code para Conexão</h2>
                 <div class="text-center">
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                         Escaneie este QR Code com o WhatsApp que deseja conectar
                     </p>
-                    <img src="data:image/png;base64,<?= htmlspecialchars($instance['qr_code']) ?>" 
-                         alt="QR Code" 
-                         class="mx-auto border-4 border-gray-200 dark:border-gray-700 rounded-lg max-w-xs">
+                    <?php if ($qrSrc): ?>
+                        <img id="qrcode-img" 
+                             src="<?= htmlspecialchars($qrSrc, ENT_QUOTES, 'UTF-8') ?>" 
+                             alt="QR Code" 
+                             class="mx-auto border-4 border-gray-200 dark:border-gray-700 rounded-lg max-w-xs w-64 h-64 object-contain bg-white"
+                             onerror="this.style.display='none'; document.getElementById('qrcode-fallback').style.display='block';">
+                        <div id="qrcode-fallback" style="display:none;" class="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg max-w-xs mx-auto">
+                            <p class="text-sm text-amber-800 dark:text-amber-200 mb-2">Imagem do QR não carregou.</p>
+                            <p class="text-xs text-amber-700 dark:text-amber-300">Clique em &quot;Conectar&quot; novamente para gerar um novo QR Code.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg max-w-xs mx-auto">
+                            <p class="text-sm text-gray-700 dark:text-gray-200 mb-2">Código de pareamento:</p>
+                            <p class="font-mono text-xs break-all text-gray-900 dark:text-white"><?= htmlspecialchars($qr) ?></p>
+                            <?php if (strpos($qr, 'http') === 0): ?>
+                                <a href="<?= htmlspecialchars($qr) ?>" target="_blank" rel="noopener" class="inline-block mt-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">Abrir link para parear</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
-                        O QR Code expira em alguns minutos. Se expirar, clique em "Conectar" novamente.
+                        O QR Code expira em alguns minutos. Se expirar, clique em &quot;Conectar&quot; novamente.
                     </p>
                 </div>
             </div>

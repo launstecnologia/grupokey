@@ -167,7 +167,12 @@ class EvolutionApiService
     {
         try {
             $response = $this->requestInstanceAction('GET', 'connect');
-            return $this->extractQrCodeFromResponse($response);
+            $value = $this->extractQrCodeFromResponse($response);
+            if ($value && function_exists('write_log')) {
+                $preview = is_string($value) ? (strlen($value) . ' chars, starts: ' . substr($value, 0, 30)) : 'non-string';
+                write_log('QR Code extraído: ' . $preview, 'whatsapp.log');
+            }
+            return $value;
         } catch (\Exception $e) {
             if (function_exists('write_log')) {
                 write_log('Erro ao obter QR Code do endpoint connect: ' . $e->getMessage(), 'whatsapp.log');
@@ -199,36 +204,51 @@ class EvolutionApiService
 
     /**
      * Extrai o QR Code (base64 ou pairCode) da resposta da Evolution API
+     * Normaliza base64 (remove quebras de linha) para exibição em data URL
      */
     private function extractQrCodeFromResponse($response)
     {
+        $raw = null;
         if (isset($response['base64'])) {
-            return $response['base64'];
+            $raw = $response['base64'];
+        } elseif (isset($response['pairCode'])) {
+            $raw = $response['pairCode'];
+        } elseif (isset($response['qrcode']['base64'])) {
+            $raw = $response['qrcode']['base64'];
+        } elseif (isset($response['qrcode'])) {
+            $raw = is_string($response['qrcode']) ? $response['qrcode'] : ($response['qrcode']['base64'] ?? null);
+        } elseif (isset($response['result']['base64'])) {
+            $raw = $response['result']['base64'];
+        } elseif (isset($response['result']) && is_string($response['result'])) {
+            $raw = $response['result'];
+        } elseif (isset($response['code'])) {
+            $raw = $response['code'];
         }
-        if (isset($response['pairCode'])) {
-            return $response['pairCode'];
-        }
-        if (isset($response['qrcode']['base64'])) {
-            return $response['qrcode']['base64'];
-        }
-        if (isset($response['qrcode'])) {
-            if (is_string($response['qrcode'])) {
-                return $response['qrcode'];
+        if ($raw === null) {
+            if (function_exists('write_log')) {
+                write_log('QR Code não encontrado na resposta: ' . json_encode($response), 'whatsapp.log');
             }
-            if (is_array($response['qrcode']) && isset($response['qrcode']['base64'])) {
-                return $response['qrcode']['base64'];
-            }
+            return null;
         }
-        if (isset($response['code'])) {
-            return $response['code'];
+        return $this->normalizeQrCodeValue($raw);
+    }
+
+    /**
+     * Normaliza valor do QR: remove espaços/quebras do base64; mantém data URL ou pairCode como está
+     */
+    private function normalizeQrCodeValue($value)
+    {
+        if (!is_string($value)) {
+            return $value;
         }
-        if (isset($response['result']) && is_string($response['result'])) {
-            return $response['result'];
+        $trimmed = trim($value);
+        if (strpos($trimmed, 'data:image') === 0) {
+            return $trimmed;
         }
-        if (function_exists('write_log')) {
-            write_log('QR Code não encontrado na resposta: ' . json_encode($response), 'whatsapp.log');
+        if (preg_match('/^[A-Za-z0-9+\/=]+$/s', $trimmed) || strpos($trimmed, "\n") !== false || strpos($trimmed, "\r") !== false) {
+            return preg_replace('/\s+/', '', $trimmed);
         }
-        return null;
+        return $trimmed;
     }
     
     /**
