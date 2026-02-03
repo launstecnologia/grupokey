@@ -209,18 +209,27 @@ $connectedInstances = $connected_instances ?? [];
                     <!-- Campo de envio -->
                     <div class="p-4 border-t border-gray-200 dark:border-gray-700">
                         <form id="message-form" onsubmit="sendMessage(event)">
-                            <div class="flex gap-2">
+                            <input type="file" id="file-attach" class="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx">
+                            <div class="flex gap-2 items-center">
+                                <button type="button" onclick="document.getElementById('file-attach').click()" 
+                                        class="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white" title="Anexar imagem, vídeo, áudio ou documento">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button type="button" id="btn-record-audio" onclick="toggleRecordAudio()" 
+                                        class="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white" title="Gravar áudio">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
                                 <input type="text" 
                                        id="message-input" 
-                                       placeholder="Digite sua mensagem..."
-                                       class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                       required>
-                                <button type="submit" 
+                                       placeholder="Digite sua mensagem ou anexe um arquivo..."
+                                       class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                <button type="submit" id="btn-send" 
                                         class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors">
                                     <i class="fab fa-whatsapp mr-2"></i>
                                     Enviar
                                 </button>
                             </div>
+                            <div id="attach-preview" class="mt-2 hidden text-sm text-gray-600 dark:text-gray-400"></div>
                         </form>
                     </div>
                 </div>
@@ -239,6 +248,9 @@ $connectedInstances = $connected_instances ?? [];
 let currentConversationId = null;
 let lastMessageId = 0;
 let pollingInterval = null;
+let pendingMedia = null; // { url, type, file_name }
+let mediaRecorder = null;
+let recordedChunks = [];
 
 // Iniciar conversa por número (adicionar número)
 async function startConversationByNumber(event) {
@@ -297,8 +309,18 @@ async function openConversation(conversationId) {
     
     try {
         const response = await fetch(`<?= url('whatsapp/attendance/conversations') ?>/${conversationId}/open`);
-        const data = await response.json();
-        
+        const text = await response.text();
+        let data = null;
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (e) {
+            alert('Erro ao carregar conversa: resposta inválida');
+            return;
+        }
+        if (!response.ok) {
+            alert(data.message || data.error || 'Erro ao carregar conversa');
+            return;
+        }
         if (data.success) {
             // Atualizar header
             document.getElementById('chat-contact-name').textContent = data.conversation.contact_name || data.conversation.phone_number;
@@ -310,80 +332,188 @@ async function openConversation(conversationId) {
             // Iniciar polling
             startPolling();
         } else {
-            alert('Erro ao abrir conversa: ' + data.message);
+            alert('Erro ao abrir conversa: ' + (data.message || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao carregar conversa');
+        alert('Erro ao carregar conversa' + (error.message ? ': ' + error.message : ''));
     }
 }
 
-// Renderizar mensagens
-function renderMessages(messages) {
+// Renderizar mensagens (texto, imagem, áudio, vídeo, documento). Se options.append === true, só adiciona ao final sem limpar.
+function renderMessages(messages, options) {
     const container = document.getElementById('chat-messages');
-    container.innerHTML = '';
+    const append = options && options.append === true;
+    if (!messages.length) {
+        if (!append) container.innerHTML = '';
+        return;
+    }
+    if (!append) container.innerHTML = '';
     
     messages.forEach(msg => {
-        if (msg.id > lastMessageId) {
-            lastMessageId = msg.id;
-        }
+        if (msg.id > lastMessageId) lastMessageId = msg.id;
         
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex ${msg.from_me ? 'justify-end' : 'justify-start'}`;
         
+        let mediaHtml = '';
+        const type = (msg.message_type || '').toUpperCase();
+        const mediaUrl = msg.media_url || '';
+        if (mediaUrl) {
+            if (type === 'IMAGE') {
+                mediaHtml = `<img src="${escapeHtml(mediaUrl)}" alt="Imagem" class="max-w-full max-h-64 rounded object-contain my-1" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'"><a href="${escapeHtml(mediaUrl)}" target="_blank" class="text-blue-400 underline text-sm" style="display:none">Ver imagem</a>`;
+            } else if (type === 'AUDIO') {
+                mediaHtml = `<audio controls class="max-w-full my-1" src="${escapeHtml(mediaUrl)}">Não suportado. <a href="${escapeHtml(mediaUrl)}" target="_blank">Baixar áudio</a></audio>`;
+            } else if (type === 'VIDEO') {
+                mediaHtml = `<video controls class="max-w-full max-h-48 rounded my-1" src="${escapeHtml(mediaUrl)}">Não suportado. <a href="${escapeHtml(mediaUrl)}" target="_blank">Ver vídeo</a></video>`;
+            } else {
+                mediaHtml = `<a href="${escapeHtml(mediaUrl)}" target="_blank" class="text-blue-400 underline">Ver/baixar arquivo</a>`;
+            }
+        }
+        const bodyHtml = msg.body ? `<p class="break-words">${escapeHtml(msg.body)}</p>` : '';
+        const timeHtml = `<p class="text-xs opacity-75 mt-1">${formatTime(msg.created_at)}</p>`;
         messageDiv.innerHTML = `
             <div class="max-w-[70%] ${msg.from_me ? 'bg-green-500 text-white' : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'} rounded-lg px-4 py-2">
-                ${msg.message_type !== 'TEXT' ? `<p class="text-xs opacity-75">${msg.message_type}</p>` : ''}
-                ${msg.body ? `<p>${escapeHtml(msg.body)}</p>` : ''}
-                ${msg.media_url ? `<a href="${msg.media_url}" target="_blank" class="text-blue-400 underline">Ver mídia</a>` : ''}
-                <p class="text-xs opacity-75 mt-1">${formatTime(msg.created_at)}</p>
+                ${type !== 'TEXT' && type ? `<p class="text-xs opacity-75">${escapeHtml(type)}</p>` : ''}
+                ${mediaHtml}
+                ${bodyHtml}
+                ${timeHtml}
             </div>
         `;
-        
         container.appendChild(messageDiv);
     });
-    
-    // Scroll para baixo
     container.scrollTop = container.scrollHeight;
 }
 
-// Enviar mensagem
+// Anexar arquivo: upload e preview
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('file-attach');
+    if (fileInput) {
+        fileInput.addEventListener('change', async function() {
+            if (!this.files || !this.files[0] || !currentConversationId) return;
+            const file = this.files[0];
+            const preview = document.getElementById('attach-preview');
+            try {
+                preview.classList.remove('hidden');
+                preview.textContent = 'Enviando ' + file.name + '...';
+                const formData = new FormData();
+                formData.append('file', file);
+                const response = await fetch('<?= url('whatsapp/attendance/upload-media') ?>', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    pendingMedia = { url: data.url, type: data.type, file_name: data.file_name || file.name };
+                    preview.textContent = 'Anexado: ' + (data.file_name || file.name) + ' (' + data.type + '). Envie ou digite legenda.';
+                } else {
+                    preview.textContent = 'Erro: ' + (data.message || 'Falha no upload');
+                    pendingMedia = null;
+                }
+            } catch (e) {
+                preview.textContent = 'Erro ao enviar arquivo';
+                pendingMedia = null;
+            }
+            this.value = '';
+        });
+    }
+});
+
+// Gravar áudio
+async function toggleRecordAudio() {
+    const btn = document.getElementById('btn-record-audio');
+    const icon = btn.querySelector('i');
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        icon.className = 'fas fa-microphone';
+        btn.classList.remove('bg-red-500');
+        return;
+    }
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        recordedChunks = [];
+        mediaRecorder.ondataavailable = e => { if (e.data.size) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = async () => {
+            stream.getTracks().forEach(t => t.stop());
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const file = new File([blob], 'audio.webm', { type: 'audio/webm' });
+            const preview = document.getElementById('attach-preview');
+            preview.classList.remove('hidden');
+            preview.textContent = 'Enviando áudio...';
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                const response = await fetch('<?= url('whatsapp/attendance/upload-media') ?>', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    pendingMedia = { url: data.url, type: 'AUDIO', file_name: 'audio.webm' };
+                    preview.textContent = 'Áudio gravado. Clique em Enviar.';
+                } else {
+                    preview.textContent = 'Erro: ' + (data.message || 'Falha no upload');
+                }
+            } catch (e) {
+                preview.textContent = 'Erro ao enviar áudio';
+            }
+        };
+        mediaRecorder.start();
+        icon.className = 'fas fa-stop';
+        btn.classList.add('bg-red-500');
+    } catch (e) {
+        alert('Não foi possível acessar o microfone: ' + (e.message || 'Permissão negada'));
+    }
+}
+
+// Enviar mensagem (texto e/ou mídia)
 async function sendMessage(event) {
     event.preventDefault();
     
     const messageInput = document.getElementById('message-input');
     const message = messageInput.value.trim();
     
-    if (!message || !currentConversationId) {
+    if (!currentConversationId) return;
+    if (!message && !pendingMedia) {
+        alert('Digite uma mensagem ou anexe um arquivo.');
         return;
     }
     
+    const btn = document.getElementById('btn-send');
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+    
     try {
+        const payload = {
+            conversation_id: currentConversationId,
+            message: message || (pendingMedia ? '' : null),
+            type: pendingMedia ? pendingMedia.type : 'TEXT',
+            media_url: pendingMedia ? pendingMedia.url : null
+        };
+        if (pendingMedia && pendingMedia.file_name) payload.file_name = pendingMedia.file_name;
+        
         const response = await fetch('<?= url('whatsapp/attendance/messages/send') ?>', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                conversation_id: currentConversationId,
-                message: message,
-                type: 'TEXT'
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
         
         const data = await response.json();
         
         if (data.success) {
             messageInput.value = '';
-            // Adicionar mensagem à lista
-            renderMessages([data.message]);
+            pendingMedia = null;
+            document.getElementById('attach-preview').classList.add('hidden');
+            document.getElementById('attach-preview').textContent = '';
+            renderMessages([data.message], { append: true });
         } else {
-            alert('Erro ao enviar: ' + data.message);
+            alert('Erro ao enviar: ' + (data.message || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
         alert('Erro ao enviar mensagem');
     }
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
 }
 
 // Polling para novas mensagens
@@ -399,8 +529,8 @@ function startPolling() {
             const response = await fetch(`<?= url('whatsapp/attendance/conversations') ?>/${currentConversationId}/messages?last_message_id=${lastMessageId}`);
             const data = await response.json();
             
-            if (data.success && data.messages.length > 0) {
-                renderMessages(data.messages);
+            if (data.success && data.messages && data.messages.length > 0) {
+                renderMessages(data.messages, { append: true });
             }
         } catch (error) {
             console.error('Erro no polling:', error);

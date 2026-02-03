@@ -243,6 +243,7 @@ $router->get('/whatsapp/attendance', 'WhatsAppAttendanceController@index');
 $router->post('/whatsapp/attendance/start-conversation', 'WhatsAppAttendanceController@startConversationByNumber');
 $router->get('/whatsapp/attendance/conversations/{id}/open', 'WhatsAppAttendanceController@openConversation');
 $router->post('/whatsapp/attendance/messages/send', 'WhatsAppAttendanceController@sendMessage');
+$router->post('/whatsapp/attendance/upload-media', 'WhatsAppAttendanceController@uploadMedia');
 $router->post('/whatsapp/attendance/{id}/close', 'WhatsAppAttendanceController@closeAttendance');
 $router->post('/whatsapp/attendance/{id}/transfer', 'WhatsAppAttendanceController@transferAttendance');
 $router->get('/whatsapp/attendance/conversations/{id}/messages', 'WhatsAppAttendanceController@getNewMessages');

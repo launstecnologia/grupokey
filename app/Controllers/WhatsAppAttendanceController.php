@@ -222,8 +222,14 @@ class WhatsAppAttendanceController
             $messageType = $data['type'] ?? 'TEXT';
             $mediaUrl = $data['media_url'] ?? null;
             
-            if (!$conversationId || !$message) {
-                throw new \Exception('Dados incompletos');
+            if (!$conversationId) {
+                throw new \Exception('Conversa não informada');
+            }
+            if (!$message && !$mediaUrl) {
+                throw new \Exception('Informe a mensagem ou anexe um arquivo');
+            }
+            if ($messageType !== 'TEXT' && !$mediaUrl) {
+                throw new \Exception('URL da mídia é obrigatória para este tipo');
             }
             
             // Verificar se o usuário tem acesso à conversa
@@ -240,15 +246,30 @@ class WhatsAppAttendanceController
             // Enviar via Evolution API
             $apiService = new EvolutionApiService($instance);
             
+            $bodyToSave = $message;
             if ($messageType === 'TEXT') {
                 $response = $apiService->sendText($contact['phone_number'], $message);
             } else {
-                $response = $apiService->sendMedia(
-                    $contact['phone_number'],
-                    $mediaUrl,
-                    strtolower($messageType),
-                    $message
-                );
+                $mediaType = strtolower($messageType);
+                if ($mediaType === 'document' && !empty($data['file_name'])) {
+                    $response = $apiService->sendMedia(
+                        $contact['phone_number'],
+                        $mediaUrl,
+                        $mediaType,
+                        $message ?: null,
+                        $data['file_name']
+                    );
+                } else {
+                    $response = $apiService->sendMedia(
+                        $contact['phone_number'],
+                        $mediaUrl,
+                        $mediaType,
+                        $message ?: null
+                    );
+                }
+                if (!$bodyToSave) {
+                    $bodyToSave = '[Mídia]';
+                }
             }
             
             // Salvar mensagem no banco
@@ -260,13 +281,13 @@ class WhatsAppAttendanceController
                 'remote_jid' => $contact['phone_number'] . '@s.whatsapp.net',
                 'from_me' => true,
                 'message_type' => $messageType,
-                'body' => $message,
+                'body' => $bodyToSave,
                 'media_url' => $mediaUrl,
                 'timestamp' => time()
             ]);
             
             // Atualizar última mensagem
-            $this->conversationModel->updateLastMessage($conversationId, substr($message, 0, 100));
+            $this->conversationModel->updateLastMessage($conversationId, substr($bodyToSave, 0, 100));
             
             $savedMessage = $this->messageModel->findById($messageId);
             
@@ -275,6 +296,96 @@ class WhatsAppAttendanceController
                 'message' => $savedMessage
             ]);
             
+        } catch (\Exception $e) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Upload de mídia para envio no WhatsApp (imagem, áudio, vídeo, documento)
+     * Retorna URL pública para uso na Evolution API
+     */
+    public function uploadMedia()
+    {
+        Auth::requireAuth();
+        header('Content-Type: application/json');
+        
+        $allowedExtensions = [
+            'image' => ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+            'video' => ['mp4', 'webm', '3gp'],
+            'audio' => ['mp3', 'ogg', 'm4a', 'wav'],
+            'document' => ['pdf', 'doc', 'docx', 'xls', 'xlsx']
+        ];
+        $allExt = array_merge(
+            $allowedExtensions['image'],
+            $allowedExtensions['video'],
+            $allowedExtensions['audio'],
+            $allowedExtensions['document']
+        );
+        $maxSize = 16 * 1024 * 1024; // 16MB
+        
+        try {
+            if (empty($_FILES['file']) || !is_uploaded_file($_FILES['file']['tmp_name'])) {
+                throw new \Exception('Nenhum arquivo enviado');
+            }
+            $file = $_FILES['file'];
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                $errors = [
+                    UPLOAD_ERR_INI_SIZE => 'Arquivo excede o limite do servidor',
+                    UPLOAD_ERR_FORM_SIZE => 'Arquivo muito grande',
+                    UPLOAD_ERR_PARTIAL => 'Upload incompleto',
+                    UPLOAD_ERR_NO_FILE => 'Nenhum arquivo enviado',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Pasta temporária indisponível',
+                    UPLOAD_ERR_CANT_WRITE => 'Falha ao gravar arquivo',
+                    UPLOAD_ERR_EXTENSION => 'Upload bloqueado por extensão'
+                ];
+                throw new \Exception($errors[$file['error']] ?? 'Erro no upload');
+            }
+            if ($file['size'] > $maxSize) {
+                throw new \Exception('Arquivo muito grande. Máximo 16MB');
+            }
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, $allExt)) {
+                throw new \Exception('Tipo de arquivo não permitido. Use: imagem, vídeo, áudio ou documento (PDF, DOC, etc.)');
+            }
+            
+            $baseDir = dirname(__DIR__, 2);
+            $uploadDir = $baseDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'whatsapp';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $fileName = uniqid('wa_', true) . '.' . $ext;
+            $filePath = $uploadDir . DIRECTORY_SEPARATOR . $fileName;
+            if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+                throw new \Exception('Erro ao salvar arquivo');
+            }
+            
+            $pathUrl = 'public/uploads/whatsapp/' . $fileName;
+            $relativeUrl = url($pathUrl);
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $fullUrl = $scheme . '://' . $host . $relativeUrl;
+            
+            if (in_array($ext, $allowedExtensions['image'])) {
+                $mediaType = 'image';
+            } elseif (in_array($ext, $allowedExtensions['video'])) {
+                $mediaType = 'video';
+            } elseif (in_array($ext, $allowedExtensions['audio'])) {
+                $mediaType = 'audio';
+            } else {
+                $mediaType = 'document';
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'url' => $fullUrl,
+                'type' => strtoupper($mediaType),
+                'file_name' => $file['name']
+            ]);
         } catch (\Exception $e) {
             http_response_code(400);
             echo json_encode([
