@@ -253,13 +253,30 @@ class EvolutionApiService
     
     /**
      * Obter status da conexão (v2.3: GET /instance/connectionState/{{instance}})
-     * Evolution API retorna "open" quando conectado; normalizamos para CONNECTED
+     * Evolution API pode retornar state em response direto ou aninhado (instance, data, result)
      */
     public function getStatus()
     {
         $response = $this->requestInstanceAction('GET', 'connectionState');
-        $state = $response['state'] ?? 'DISCONNECTED';
-        return $this->normalizeConnectionState($state);
+        $state = null;
+        if (isset($response['state'])) {
+            $state = $response['state'];
+        } elseif (isset($response['instance']['state'])) {
+            $state = $response['instance']['state'];
+        } elseif (isset($response['instance']['status'])) {
+            $state = $response['instance']['status'];
+        } elseif (isset($response['data']['state'])) {
+            $state = $response['data']['state'];
+        } elseif (isset($response['result']['state'])) {
+            $state = $response['result']['state'];
+        }
+        $state = $state ?? 'DISCONNECTED';
+        $normalized = $this->normalizeConnectionState($state);
+        if ($normalized === 'DISCONNECTED' && function_exists('write_log')) {
+            $keys = is_array($response) ? array_keys($response) : [];
+            write_log('getStatus DISCONNECTED - instance_key=' . ($this->instance['instance_key'] ?? '') . ', response_keys=' . json_encode($keys), 'whatsapp.log');
+        }
+        return $normalized;
     }
 
     /**

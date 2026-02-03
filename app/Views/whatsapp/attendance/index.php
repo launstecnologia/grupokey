@@ -5,6 +5,7 @@ ob_start();
 $conversations = $conversations ?? [];
 $queues = $queues ?? [];
 $filters = $filters ?? [];
+$connectedInstances = $connected_instances ?? [];
 ?>
 
 <div class="pt-6 px-4">
@@ -19,10 +20,65 @@ $filters = $filters ?? [];
                 <p class="text-gray-600 dark:text-gray-400 mt-1">Gerencie suas conversas e atendimentos</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="refreshConversations()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
+                <button type="button" onclick="document.getElementById('modal-new-conversation').classList.remove('hidden')" 
+                        class="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white font-medium px-4 py-2 rounded-lg inline-flex items-center transition-colors shadow">
+                    <i class="fas fa-plus mr-2"></i>
+                    Adicionar número
+                </button>
+                <button onclick="refreshConversations()" class="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-lg inline-flex items-center transition-colors shadow">
                     <i class="fas fa-sync-alt mr-2"></i>
                     Atualizar
                 </button>
+            </div>
+        </div>
+
+        <!-- Modal Adicionar número -->
+        <div id="modal-new-conversation" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="if (event.target === this) this.classList.add('hidden')">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6" onclick="event.stopPropagation()">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-phone-alt mr-2 text-green-500"></i>
+                    Nova conversa
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Informe o número com DDD (ex: 5516999999999) para iniciar uma conversa.</p>
+                <form id="form-new-conversation" onsubmit="startConversationByNumber(event)">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número (WhatsApp)</label>
+                        <input type="text" id="new-phone-number" placeholder="5516999999999" 
+                               class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                               required>
+                    </div>
+                    <?php if (count($connectedInstances) > 1): ?>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instância</label>
+                        <select id="new-instance-id" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <?php foreach ($connectedInstances as $inst): ?>
+                                <option value="<?= (int)$inst['id'] ?>"><?= htmlspecialchars($inst['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (!empty($queues)): ?>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fila (opcional)</label>
+                        <select id="new-queue-id" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="">Nenhuma</option>
+                            <?php foreach ($queues as $q): ?>
+                                <option value="<?= (int)$q['id'] ?>"><?= htmlspecialchars($q['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+                    <div class="flex gap-2 justify-end">
+                        <button type="button" onclick="document.getElementById('modal-new-conversation').classList.add('hidden')" 
+                                class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            Cancelar
+                        </button>
+                        <button type="submit" id="btn-start-conversation" class="bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-2 rounded-lg inline-flex items-center">
+                            <i class="fas fa-comment-dots mr-2"></i>
+                            Iniciar conversa
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -183,6 +239,52 @@ $filters = $filters ?? [];
 let currentConversationId = null;
 let lastMessageId = 0;
 let pollingInterval = null;
+
+// Iniciar conversa por número (adicionar número)
+async function startConversationByNumber(event) {
+    event.preventDefault();
+    const phoneInput = document.getElementById('new-phone-number');
+    const phoneNumber = phoneInput.value.trim();
+    if (!phoneNumber) {
+        alert('Informe o número de telefone.');
+        return;
+    }
+    const btn = document.getElementById('btn-start-conversation');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Iniciando...';
+    const payload = { phone_number: phoneNumber };
+    const instanceSelect = document.getElementById('new-instance-id');
+    if (instanceSelect) payload.instance_id = parseInt(instanceSelect.value, 10);
+    const queueSelect = document.getElementById('new-queue-id');
+    if (queueSelect && queueSelect.value) payload.queue_id = parseInt(queueSelect.value, 10);
+    try {
+        const response = await fetch('<?= url('whatsapp/attendance/start-conversation') ?>', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('modal-new-conversation').classList.add('hidden');
+            phoneInput.value = '';
+            currentConversationId = data.conversation_id;
+            lastMessageId = 0;
+            document.getElementById('chat-container').style.display = 'block';
+            document.getElementById('chat-placeholder').style.display = 'none';
+            document.getElementById('chat-contact-name').textContent = data.conversation.contact_name || data.conversation.phone_number;
+            document.getElementById('chat-contact-phone').textContent = data.conversation.phone_number;
+            renderMessages(data.messages || []);
+            startPolling();
+        } else {
+            alert('Erro: ' + (data.message || 'Não foi possível iniciar a conversa.'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Erro ao iniciar conversa.');
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-comment-dots mr-2"></i> Iniciar conversa';
+}
 
 // Abrir conversa
 async function openConversation(conversationId) {

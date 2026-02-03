@@ -54,18 +54,99 @@ class WhatsAppAttendanceController
         
         $conversations = $this->conversationModel->getAll($filters);
         $queues = $this->queueModel->getAll(['is_active' => true]);
+        $connectedInstances = $this->instanceModel->getAll(['status' => 'CONNECTED']);
         
         $data = [
             'title' => 'Atendimento WhatsApp',
             'currentPage' => 'whatsapp-attendance',
             'conversations' => $conversations,
             'queues' => $queues,
-            'filters' => $filters
+            'filters' => $filters,
+            'connected_instances' => $connectedInstances
         ];
         
         view('whatsapp/attendance/index', $data);
     }
     
+    /**
+     * Iniciar conversa por número (API REST) - adicionar número para conversar
+     */
+    public function startConversationByNumber()
+    {
+        Auth::requireAuth();
+
+        header('Content-Type: application/json');
+
+        try {
+            $data = json_decode(file_get_contents('php://input'), true) ?: [];
+            $phoneNumber = trim($data['phone_number'] ?? '');
+            $instanceId = !empty($data['instance_id']) ? (int) $data['instance_id'] : null;
+            $queueId = !empty($data['queue_id']) ? (int) $data['queue_id'] : null;
+
+            if ($phoneNumber === '') {
+                throw new \Exception('Informe o número de telefone');
+            }
+
+            $phoneNumber = preg_replace('/\D/', '', $phoneNumber);
+            if (strlen($phoneNumber) < 10) {
+                throw new \Exception('Número inválido. Use DDD + número (ex: 5516999999999).');
+            }
+
+            if (!preg_match('/^\d+$/', $phoneNumber)) {
+                throw new \Exception('Número deve conter apenas dígitos');
+            }
+
+            if ($instanceId) {
+                $instance = $this->instanceModel->findById($instanceId);
+            } else {
+                $instances = $this->instanceModel->getAll(['status' => 'CONNECTED']);
+                $instance = $instances[0] ?? null;
+            }
+
+            if (!$instance || ($instance['status'] ?? '') !== 'CONNECTED') {
+                throw new \Exception('Nenhuma instância conectada. Conecte uma instância WhatsApp primeiro.');
+            }
+
+            $instanceId = (int) $instance['id'];
+
+            $this->contactModel->createOrUpdate($instanceId, $phoneNumber, []);
+            $contact = $this->contactModel->findByPhoneNumber($instanceId, $phoneNumber);
+            if (!$contact) {
+                throw new \Exception('Erro ao criar contato');
+            }
+
+            $conversation = $this->conversationModel->findOrCreate($instanceId, $contact['id'], $queueId);
+
+            $userId = $_SESSION['user_id'];
+            $attendance = $this->attendanceModel->findActiveByConversation($conversation['id']);
+            if (!$attendance) {
+                $this->attendanceModel->create([
+                    'conversation_id' => $conversation['id'],
+                    'user_id' => $userId,
+                    'queue_id' => $conversation['queue_id']
+                ]);
+            } elseif ($attendance['user_id'] != $userId) {
+                throw new \Exception('Esta conversa já está sendo atendida por outro usuário');
+            }
+
+            $conversation = $this->conversationModel->findById($conversation['id']);
+            $messages = $this->messageModel->getByConversation($conversation['id'], 100);
+
+            echo json_encode([
+                'success' => true,
+                'conversation_id' => $conversation['id'],
+                'conversation' => $conversation,
+                'messages' => $messages
+            ]);
+        } catch (\Exception $e) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
     /**
      * Abrir conversa (API REST)
      */
