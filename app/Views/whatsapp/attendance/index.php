@@ -132,7 +132,7 @@ $connectedInstances = $connected_instances ?? [];
                             </div>
                         <?php else: ?>
                             <?php foreach ($conversations as $conv): ?>
-                                <div class="p-4 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer conversation-item" 
+                                <div class="p-4 hover:bg-gray-100 cursor-pointer conversation-item" 
                                      data-conversation-id="<?= $conv['id'] ?>"
                                      onclick="openConversation(<?= $conv['id'] ?>)">
                                     <div class="flex items-start gap-3">
@@ -166,7 +166,7 @@ $connectedInstances = $connected_instances ?? [];
                                                     <?= $conv['last_message_at'] ? date('d/m H:i', strtotime($conv['last_message_at'])) : '' ?>
                                                 </span>
                                                 <?php if ($conv['queue_name']): ?>
-                                                    <span class="text-xs px-2 py-1 rounded" style="background-color: <?= htmlspecialchars($conv['queue_color'] ?? '#3B82F6') ?>20; color: <?= htmlspecialchars($conv['queue_color'] ?? '#3B82F6') ?>">
+                                                    <span class="queue-tag-whatsapp text-xs px-2 py-1 rounded" style="background-color: <?= htmlspecialchars($conv['queue_color'] ?? '#3B82F6') ?>20; color: <?= htmlspecialchars($conv['queue_color'] ?? '#3B82F6') ?>">
                                                         <?= htmlspecialchars($conv['queue_name']) ?>
                                                     </span>
                                                 <?php endif; ?>
@@ -376,7 +376,7 @@ function renderMessages(messages, options) {
         const bodyHtml = msg.body ? `<p class="break-words">${escapeHtml(msg.body)}</p>` : '';
         const timeHtml = `<p class="text-xs opacity-75 mt-1">${formatTime(msg.created_at)}</p>`;
         messageDiv.innerHTML = `
-            <div class="max-w-[70%] ${msg.from_me ? 'bg-green-500 text-white' : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'} rounded-lg px-4 py-2">
+            <div class="max-w-[70%] chat-msg-bubble ${msg.from_me ? 'chat-msg-sent bg-green-500 text-white' : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'} rounded-lg px-4 py-2">
                 ${type !== 'TEXT' && type ? `<p class="text-xs opacity-75">${escapeHtml(type)}</p>` : ''}
                 ${mediaHtml}
                 ${bodyHtml}

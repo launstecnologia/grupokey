@@ -162,6 +162,25 @@
             border-color: #4b5563 !important;
         }
         
+        /* WhatsApp Atendimento: lista de conversas - hover escuro (preto) */
+        .dark .conversation-item {
+            background-color: transparent !important;
+        }
+        .dark .conversation-item:hover {
+            background-color: #111827 !important;
+        }
+        /* Tag de fila (ex: "Geral") no tema escuro */
+        .dark .queue-tag-whatsapp {
+            background-color: #374151 !important;
+            color: #9ca3af !important;
+        }
+        
+        /* WhatsApp chat: texto das mensagens em branco (bolhas verdes e conteúdo) */
+        .chat-msg-bubble.chat-msg-sent,
+        .chat-msg-bubble.chat-msg-sent * {
+            color: #ffffff !important;
+        }
+        
         /* Hover states */
         .dark .hover\:bg-gray-600:hover {
             background-color: #374151 !important;

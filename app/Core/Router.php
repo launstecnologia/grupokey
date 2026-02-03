@@ -278,7 +278,9 @@ class Router
             if (class_exists($controllerClass)) {
                 $controllerInstance = new $controllerClass();
                 if (method_exists($controllerInstance, $method)) {
-                    call_user_func_array([$controllerInstance, $method], $params);
+                    // Passar parâmetros por posição (valores do array) para o método do controller
+                    $args = array_values($params);
+                    call_user_func_array([$controllerInstance, $method], $args);
                     return;
                 }
             }

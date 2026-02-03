@@ -376,7 +376,7 @@ class EvolutionApiService
             'webhook' => [
                 'enabled' => true,
                 'url' => $webhookUrl,
-                'byEvents' => true,
+                'byEvents' => false,
                 'base64' => false,
                 'events' => $events
             ]

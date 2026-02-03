@@ -62,3 +62,7 @@
 #4 C:\Projetos\grupokey\config\routes.php(247): App\Core\Router->dispatch()
 #5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
 #6 {main}
+[2026-02-04 00:16:07] Evolution API Request: POST https://evolutionapi.launs.com.br/message/sendText/teste-key
+[2026-02-04 00:16:07] Request Data: {"number":"5516992422354","text":"eai"}
+[2026-02-04 00:16:09] Evolution API Response: HTTP 201
+[2026-02-04 00:16:09] Response Body: {"key":{"remoteJid":"5516992422354@s.whatsapp.net","fromMe":true,"id":"3EB066D50E2A589CEE5300"},"pushName":"Você","status":"PENDING","message":{"conversation":"eai"},"contextInfo":{"mentionedJid":[],"groupMentions":[],"ephemeralSettingTimestamp":{"low":1769987768,"high":0,"unsigned":false},"disappearingMode":{"initiator":0}},"messageType":"conversation","messageTimestamp":1770160568,"instanceId":"a013e0cd-de64-428b-bf57-c609418275a1","source":"web"}

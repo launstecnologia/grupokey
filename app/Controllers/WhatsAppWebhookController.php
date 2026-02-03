@@ -50,11 +50,13 @@ class WhatsAppWebhookController
         }
         
         try {
-            // Identificar o tipo de evento
-            $event = $data['event'] ?? null;
-            $instanceName = $data['instance'] ?? null;
+            // Identificar o tipo de evento (Evolution API v1: messages.upsert | v2: MESSAGES_UPSERT)
+            $event = $data['event'] ?? $data['eventType'] ?? null;
+            $event = $event ? strtolower(str_replace('_', '.', $event)) : null;
+            $instanceName = $data['instance'] ?? $data['instanceName'] ?? $data['data']['instance'] ?? null;
             
             if (!$instanceName) {
+                write_log('Webhook sem instance: ' . substr($payload, 0, 500), 'whatsapp-webhook.log');
                 http_response_code(400);
                 echo json_encode(['error' => 'Instance name missing']);
                 return;
@@ -70,7 +72,7 @@ class WhatsAppWebhookController
                 return;
             }
             
-            // Processar evento
+            // Processar evento (aceitar tanto messages.upsert quanto MESSAGES_UPSERT)
             switch ($event) {
                 case 'connection.update':
                     $this->handleConnectionUpdate($instance, $data);
@@ -89,7 +91,7 @@ class WhatsAppWebhookController
                     break;
                     
                 default:
-                    write_log('Evento não tratado: ' . $event, 'whatsapp-webhook.log');
+                    write_log('Evento não tratado: ' . ($data['event'] ?? $data['eventType'] ?? '') . ' | payload inicio: ' . substr($payload, 0, 300), 'whatsapp-webhook.log');
             }
             
             http_response_code(200);
@@ -162,10 +164,14 @@ class WhatsAppWebhookController
      */
     private function handleMessagesUpsert($instance, $data)
     {
-        $messages = $data['data']['messages'] ?? [];
-        
+        $messages = $data['data']['messages'] ?? $data['data'] ?? $data['messages'] ?? [];
+        if (!is_array($messages)) {
+            $messages = [$messages];
+        }
         foreach ($messages as $messageData) {
-            $this->processMessage($instance, $messageData);
+            if (is_array($messageData)) {
+                $this->processMessage($instance, $messageData);
+            }
         }
     }
     
@@ -196,12 +202,14 @@ class WhatsAppWebhookController
     private function processMessage($instance, $messageData)
     {
         try {
-            $remoteJid = $messageData['key']['remoteJid'] ?? null;
-            $fromMe = $messageData['key']['fromMe'] ?? false;
-            $messageKey = $messageData['key']['id'] ?? null;
-            $timestamp = $messageData['messageTimestamp'] ?? time();
+            $key = $messageData['key'] ?? [];
+            $remoteJid = $key['remoteJid'] ?? $messageData['remoteJid'] ?? null;
+            $fromMe = !empty($key['fromMe']) || !empty($messageData['fromMe']);
+            $messageKey = $key['id'] ?? $messageData['key']['id'] ?? $messageData['id'] ?? null;
+            $timestamp = $messageData['messageTimestamp'] ?? $messageData['messageTimestamp'] ?? time();
             
             if (!$remoteJid) {
+                write_log('processMessage sem remoteJid: ' . json_encode($messageData), 'whatsapp-webhook.log');
                 return;
             }
             
@@ -238,11 +246,15 @@ class WhatsAppWebhookController
             $caption = null;
             
             $messageContent = $messageData['message'] ?? [];
-            
-            if (isset($messageContent['conversation'])) {
+            if (is_string($messageContent)) {
+                $body = $messageContent;
+            } elseif (isset($messageContent['conversation'])) {
                 $body = $messageContent['conversation'];
             } elseif (isset($messageContent['extendedTextMessage']['text'])) {
                 $body = $messageContent['extendedTextMessage']['text'];
+            } elseif (isset($messageContent['textMessage'])) {
+                $tm = $messageContent['textMessage'];
+                $body = is_string($tm) ? $tm : ($tm['text'] ?? null);
             } elseif (isset($messageContent['imageMessage'])) {
                 $messageType = 'IMAGE';
                 $mediaUrl = $messageContent['imageMessage']['url'] ?? null;

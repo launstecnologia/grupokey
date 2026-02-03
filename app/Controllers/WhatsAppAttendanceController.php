@@ -199,8 +199,12 @@ class WhatsAppAttendanceController
                 'messages' => $messages
             ], JSON_UNESCAPED_UNICODE);
             exit;
-        } catch (\Exception $e) {
-            http_response_code(400);
+        } catch (\Throwable $e) {
+            if (function_exists('write_log')) {
+                write_log('openConversation erro: ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine(), 'whatsapp.log');
+                write_log('Stack: ' . $e->getTraceAsString(), 'whatsapp.log');
+            }
+            http_response_code($e instanceof \Exception ? 400 : 500);
             echo json_encode([
                 'success' => false,
                 'message' => $e->getMessage()
