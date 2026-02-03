@@ -22,28 +22,26 @@ class EvolutionApiService
     }
     
     /**
-     * Fazer requisição à Evolution API (URL completa - para create que não usa key no path)
+     * Evolution API v2.3 (Postman): /instance/connect/{{instance}}, /instance/create, /message/sendText/{{instance}}, etc.
+     * Monta URL a partir dos segmentos do path (ex: ['instance','connect','key-teste']).
      */
-    private function requestToUrl($method, $url, $data = null)
+    private function requestByPath($method, array $pathSegments, $data = null)
     {
+        $path = implode('/', array_map('trim', $pathSegments));
+        $url = $this->apiUrl . '/' . $path;
         return $this->doRequest($method, $url, $data);
     }
 
-    /**
-     * Path base da API (Evolution API v2 usa /instances/ no plural)
-     */
-    private function getInstancePath()
+    /** Helper: path com instance key no final (ex: instance/connect/key-teste) */
+    private function requestInstanceAction($method, $action, $data = null)
     {
-        return '/instances/';
+        return $this->requestByPath($method, ['instance', $action, $this->instance['instance_key']], $data);
     }
 
-    /**
-     * Fazer requisição à Evolution API (endpoint relativo à instância: /instances/{key}{endpoint})
-     */
-    private function request($method, $endpoint, $data = null)
+    /** Helper: path message/action/instance ou chat/action/instance */
+    private function requestResourceAction($method, $resource, $action, $data = null)
     {
-        $url = $this->apiUrl . $this->getInstancePath() . $this->instance['instance_key'] . $endpoint;
-        return $this->doRequest($method, $url, $data);
+        return $this->requestByPath($method, [$resource, $action, $this->instance['instance_key']], $data);
     }
 
     /**
@@ -115,17 +113,16 @@ class EvolutionApiService
     }
     
     /**
-     * Criar instância na Evolution API (v2: POST /instances/create - key não vai no path)
+     * Criar instância na Evolution API v2.3: POST /instance/create (Postman)
      */
     public function createInstance($qrcode = true, $integration = 'WHATSAPP-BAILEYS')
     {
-        $url = $this->apiUrl . $this->getInstancePath() . 'create';
         $data = [
             'instanceName' => $this->instance['instance_key'],
             'qrcode' => $qrcode,
             'integration' => $integration
         ];
-        return $this->requestToUrl('POST', $url, $data);
+        return $this->requestByPath('POST', ['instance', 'create'], $data);
     }
     
     /**
@@ -164,35 +161,33 @@ class EvolutionApiService
     }
     
     /**
-     * Obter QR Code (Evolution API v2: GET /instances/{key}/connect retorna pairCode/base64)
+     * Obter QR Code (Evolution API v2.3 Postman: GET /instance/connect/{{instance}} retorna base64)
      */
     public function getQrCode()
     {
-        $endpoint = '/connect';
         try {
-            $response = $this->request('GET', $endpoint);
+            $response = $this->requestInstanceAction('GET', 'connect');
             return $this->extractQrCodeFromResponse($response);
         } catch (\Exception $e) {
             if (function_exists('write_log')) {
-                write_log('Erro ao obter QR Code do endpoint /connect: ' . $e->getMessage(), 'whatsapp.log');
+                write_log('Erro ao obter QR Code do endpoint connect: ' . $e->getMessage(), 'whatsapp.log');
             }
             if (strpos($e->getMessage(), '404') !== false) {
                 if (function_exists('write_log')) {
-                    write_log('Endpoint /connect retornou 404, tentando criar instância primeiro', 'whatsapp.log');
+                    write_log('Endpoint connect retornou 404, tentando criar instância primeiro', 'whatsapp.log');
                 }
                 try {
                     $this->createInstance(true);
                     sleep(2);
-                    $response = $this->request('GET', $endpoint);
+                    $response = $this->requestInstanceAction('GET', 'connect');
                     return $this->extractQrCodeFromResponse($response);
                 } catch (\Exception $e2) {
-                    // 403 "already in use" = instância já existe, só obter o QR de novo
                     if (strpos($e2->getMessage(), '403') !== false && strpos($e2->getMessage(), 'already in use') !== false) {
                         if (function_exists('write_log')) {
                             write_log('Instância já existe na API, obtendo QR Code novamente', 'whatsapp.log');
                         }
                         sleep(1);
-                        $response = $this->request('GET', $endpoint);
+                        $response = $this->requestInstanceAction('GET', 'connect');
                         return $this->extractQrCodeFromResponse($response);
                     }
                     throw new \Exception("Erro ao obter QR Code: " . $e->getMessage() . " | " . $e2->getMessage());
@@ -237,176 +232,123 @@ class EvolutionApiService
     }
     
     /**
-     * Obter status da conexão
+     * Obter status da conexão (v2.3: GET /instance/connectionState/{{instance}})
      */
     public function getStatus()
     {
-        $endpoint = '/connectionState';
-        $response = $this->request('GET', $endpoint);
+        $response = $this->requestInstanceAction('GET', 'connectionState');
         return $response['state'] ?? 'DISCONNECTED';
     }
     
     /**
-     * Obter informações da instância
+     * Obter informações da instância (v2.3: GET /instance/fetchInstances)
      */
     public function getInstanceInfo()
     {
-        // Tentar endpoint /fetchInstances (pode não existir em todas as versões)
         try {
-            $endpoint = '/fetchInstances';
-            $response = $this->request('GET', $endpoint);
-            
-            // Se a resposta é um array, buscar nossa instância
+            $response = $this->requestByPath('GET', ['instance', 'fetchInstances']);
             if (is_array($response)) {
-                foreach ($response as $instance) {
-                    if (isset($instance['instance']['instanceName']) && 
-                        $instance['instance']['instanceName'] === $this->instance['instance_key']) {
-                        return $instance;
+                foreach ($response as $item) {
+                    if (isset($item['instance']['instanceName']) &&
+                        $item['instance']['instanceName'] === $this->instance['instance_key']) {
+                        return $item;
                     }
                 }
             }
-            
             return $response;
         } catch (\Exception $e) {
-            // Se o endpoint não existir, tentar endpoint alternativo
             if (strpos($e->getMessage(), '404') !== false) {
-                try {
-                    // Tentar endpoint /fetchInstance (singular)
-                    $endpoint = '/fetchInstance';
-                    return $this->request('GET', $endpoint);
-                } catch (\Exception $e2) {
-                    // Se também não existir, retornar null (instância pode não existir)
-                    return null;
-                }
+                return null;
             }
             throw $e;
         }
     }
     
     /**
-     * Desconectar instância
+     * Desconectar instância (v2.3: DELETE /instance/logout/{{instance}})
      */
     public function disconnect()
     {
-        $endpoint = '/logout';
-        return $this->request('DELETE', $endpoint);
+        return $this->requestInstanceAction('DELETE', 'logout');
     }
-    
+
     /**
-     * Deletar instância
+     * Deletar instância (v2.3: DELETE /instance/delete/{{instance}})
      */
     public function deleteInstance()
     {
-        $endpoint = '/delete';
-        return $this->request('DELETE', $endpoint);
+        return $this->requestInstanceAction('DELETE', 'delete');
     }
     
     /**
-     * Enviar mensagem de texto
+     * Enviar mensagem de texto (v2.3: POST /message/sendText/{{instance}})
      */
     public function sendText($number, $text, $quotedMessageId = null)
     {
-        $endpoint = '/sendText';
-        
-        $data = [
-            'number' => $number,
-            'text' => $text
-        ];
-        
+        $data = ['number' => $number, 'text' => $text];
         if ($quotedMessageId) {
             $data['quoted'] = $quotedMessageId;
         }
-        
-        return $this->request('POST', $endpoint, $data);
+        return $this->requestResourceAction('POST', 'message', 'sendText', $data);
     }
-    
+
     /**
-     * Enviar mídia (imagem, vídeo, áudio, documento)
+     * Enviar mídia (v2.3: POST /message/sendMedia/{{instance}})
      */
     public function sendMedia($number, $mediaUrl, $type = 'image', $caption = null, $fileName = null)
     {
-        $endpoint = '/sendMedia';
-        
-        $data = [
-            'number' => $number,
-            'mediatype' => $type,
-            'media' => $mediaUrl
-        ];
-        
-        if ($caption) {
-            $data['caption'] = $caption;
-        }
-        
-        if ($fileName) {
-            $data['fileName'] = $fileName;
-        }
-        
-        return $this->request('POST', $endpoint, $data);
+        $data = ['number' => $number, 'mediatype' => $type, 'media' => $mediaUrl];
+        if ($caption) $data['caption'] = $caption;
+        if ($fileName) $data['fileName'] = $fileName;
+        return $this->requestResourceAction('POST', 'message', 'sendMedia', $data);
     }
-    
+
     /**
-     * Marcar mensagens como lidas
+     * Marcar mensagens como lidas (v2.3: POST /chat/markMessageAsRead/{{instance}})
      */
     public function markAsRead($number, $messageIds = [])
     {
-        $endpoint = '/chat/markMessageAsRead';
-        
-        $data = [
-            'number' => $number,
-            'readMessages' => $messageIds
-        ];
-        
-        return $this->request('PUT', $endpoint, $data);
+        $data = ['number' => $number, 'readMessages' => $messageIds];
+        return $this->requestResourceAction('POST', 'chat', 'markMessageAsRead', $data);
     }
-    
+
     /**
-     * Configurar webhook
+     * Configurar webhook (v2.3: POST /webhook/set/{{instance}})
      */
     public function setWebhook($webhookUrl, $events = ['MESSAGES_UPSERT', 'CONNECTION_UPDATE', 'QRCODE_UPDATED'])
     {
-        $endpoint = '/webhook/set';
-        
         $data = [
             'url' => $webhookUrl,
             'webhook_by_events' => true,
             'events' => $events,
             'webhook_base64' => false
         ];
-        
-        return $this->request('POST', $endpoint, $data);
+        return $this->requestResourceAction('POST', 'webhook', 'set', $data);
     }
-    
+
     /**
-     * Obter contatos
+     * Obter contatos (v2.3: POST /chat/findContacts/{{instance}})
      */
     public function getContacts()
     {
-        $endpoint = '/chat/fetchContacts';
-        return $this->request('GET', $endpoint);
+        return $this->requestResourceAction('POST', 'chat', 'findContacts');
     }
-    
+
     /**
-     * Obter chats
+     * Obter chats (v2.3: POST /chat/findChats/{{instance}})
      */
     public function getChats()
     {
-        $endpoint = '/chat/fetchChats';
-        return $this->request('GET', $endpoint);
+        return $this->requestResourceAction('POST', 'chat', 'findChats');
     }
-    
+
     /**
-     * Obter mensagens de um chat
+     * Obter mensagens de um chat (v2.3: POST /chat/findMessages/{{instance}})
      */
     public function getMessages($number, $limit = 50)
     {
-        $endpoint = '/chat/fetchMessages';
-        
-        $data = [
-            'number' => $number,
-            'limit' => $limit
-        ];
-        
-        return $this->request('POST', $endpoint, $data);
+        $data = ['number' => $number, 'limit' => $limit];
+        return $this->requestResourceAction('POST', 'chat', 'findMessages', $data);
     }
 }
 

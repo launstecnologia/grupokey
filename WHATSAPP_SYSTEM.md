@@ -103,16 +103,16 @@ database/migrations/031_create_whatsapp_system_tables.sql
 
 ### Endpoints Utilizados
 
-O sistema utiliza os seguintes endpoints da Evolution API:
+O sistema utiliza os seguintes endpoints da Evolution API (v2.3 – conforme Postman collection):
 
-- `POST /instance/create`: Criar instância (nome da instância no body; Evolution API v2)
-- `GET /instance/{key}/connect`: Conectar e obter QR Code (Evolution API v2)
-- `GET /instance/{key}/connectionState`: Status da conexão
-- `POST /instance/{key}/sendText`: Enviar mensagem de texto
-- `POST /instance/{key}/sendMedia`: Enviar mídia
-- `PUT /instance/{key}/chat/markMessageAsRead`: Marcar como lida
-- `POST /instance/{key}/webhook/set`: Configurar webhook
-- `DELETE /instance/{key}/logout`: Desconectar
+- `POST /instance/create`: Criar instância (nome no body)
+- `GET /instance/connect/{key}`: Conectar e obter QR Code (resposta: base64)
+- `GET /instance/connectionState/{key}`: Status da conexão
+- `POST /message/sendText/{key}`: Enviar texto
+- `POST /message/sendMedia/{key}`: Enviar mídia
+- `POST /chat/markMessageAsRead/{key}`: Marcar como lida
+- `POST /webhook/set/{key}`: Configurar webhook
+- `DELETE /instance/logout/{key}`: Desconectar
 
 ### Webhook
 
