@@ -25,20 +25,38 @@ class WhatsAppController
     }
     
     /**
-     * Listar instâncias
+     * Listar instâncias (sincroniza status com Evolution API para refletir CONNECTED)
      */
     public function instances()
     {
         Auth::requireAdmin();
-        
+
         $instances = $this->instanceModel->getAll();
-        
+
+        foreach ($instances as $instance) {
+            try {
+                $apiService = new EvolutionApiService($instance);
+                $status = $apiService->getStatus();
+                $current = $instance['status'] ?? 'DISCONNECTED';
+                if ($status === 'CONNECTED' && $current !== 'CONNECTED') {
+                    $this->instanceModel->updateStatus($instance['id'], 'CONNECTED');
+                    $this->instanceModel->updateQrCode($instance['id'], null);
+                } elseif ($status !== 'CONNECTED' && $current === 'CONNECTED') {
+                    $this->instanceModel->updateStatus($instance['id'], $status);
+                }
+            } catch (\Exception $e) {
+                // Ignorar erro (API indisponível ou instância inexistente)
+            }
+        }
+
+        $instances = $this->instanceModel->getAll();
+
         $data = [
             'title' => 'Instâncias WhatsApp',
             'currentPage' => 'whatsapp',
             'instances' => $instances
         ];
-        
+
         view('whatsapp/instances', $data);
     }
     
