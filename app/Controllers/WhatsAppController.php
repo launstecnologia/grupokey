@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Auth;
+use App\Core\AutoConfig;
 use App\Models\WhatsAppInstance;
 use App\Models\WhatsAppContact;
 use App\Models\WhatsAppConversation;
@@ -11,6 +12,31 @@ use App\Services\EvolutionApiService;
 
 class WhatsAppController
 {
+    /**
+     * Retorna a URL pública do webhook para a Evolution API.
+     * Use APP_URL no config.env (ex: https://grupokey.com.br) para forçar URL acessível pela internet.
+     */
+    private function getWebhookUrl()
+    {
+        $appUrl = AutoConfig::get('APP_URL', '');
+        if ($appUrl !== '' && $appUrl !== null) {
+            $base = rtrim($appUrl, '/');
+            $folder = defined('FOLDER') ? FOLDER : '';
+            $path = ($folder !== '' && $folder !== '/') ? rtrim($folder, '/') . '/whatsapp/webhook' : 'whatsapp/webhook';
+            return $base . '/' . ltrim($path, '/');
+        }
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $port = '';
+        if (isset($_SERVER['SERVER_PORT']) &&
+            (($protocol === 'http' && $_SERVER['SERVER_PORT'] != 80) ||
+             ($protocol === 'https' && $_SERVER['SERVER_PORT'] != 443))) {
+            $port = ':' . $_SERVER['SERVER_PORT'];
+        }
+        $folder = defined('FOLDER') ? FOLDER : '';
+        return $protocol . '://' . $host . $port . rtrim($folder, '/') . '/whatsapp/webhook';
+    }
+
     private $instanceModel;
     private $contactModel;
     private $conversationModel;
@@ -99,19 +125,9 @@ class WhatsAppController
                     // Configurar webhook automaticamente
                     // Se webhook_url foi fornecido, usar ele; senão, detectar automaticamente
                     if (!empty($data['webhook_url'])) {
-                        $webhookUrl = rtrim($data['webhook_url'], '/') . '/whatsapp/webhook';
+                        $webhookUrl = rtrim($data['webhook_url'], '/') . (strpos($data['webhook_url'], '/whatsapp/webhook') !== false ? '' : '/whatsapp/webhook');
                     } else {
-                        // Detectar URL base automaticamente
-                        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-                        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-                        $port = '';
-                        if (isset($_SERVER['SERVER_PORT']) && 
-                            (($protocol === 'http' && $_SERVER['SERVER_PORT'] != 80) || 
-                             ($protocol === 'https' && $_SERVER['SERVER_PORT'] != 443))) {
-                            $port = ':' . $_SERVER['SERVER_PORT'];
-                        }
-                        $folder = defined('FOLDER') ? FOLDER : '';
-                        $webhookUrl = $protocol . '://' . $host . $port . rtrim($folder, '/') . '/whatsapp/webhook';
+                        $webhookUrl = $this->getWebhookUrl();
                     }
                     
                     // Configurar webhook na Evolution API
@@ -177,16 +193,7 @@ class WhatsAppController
 
                     // Configurar webhook na Evolution API se ainda não estiver configurado
                     if (empty($instance['webhook_url'])) {
-                        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-                        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-                        $port = '';
-                        if (isset($_SERVER['SERVER_PORT']) &&
-                            (($protocol === 'http' && $_SERVER['SERVER_PORT'] != 80) ||
-                             ($protocol === 'https' && $_SERVER['SERVER_PORT'] != 443))) {
-                            $port = ':' . $_SERVER['SERVER_PORT'];
-                        }
-                        $folder = defined('FOLDER') ? FOLDER : '';
-                        $webhookUrl = $protocol . '://' . $host . $port . rtrim($folder, '/') . '/whatsapp/webhook';
+                        $webhookUrl = $this->getWebhookUrl();
                         try {
                             $apiService->setWebhook($webhookUrl);
                             $this->instanceModel->update($id, ['webhook_url' => $webhookUrl]);
@@ -266,7 +273,8 @@ class WhatsAppController
         $data = [
             'title' => 'Detalhes da Instância',
             'currentPage' => 'whatsapp',
-            'instance' => $instance
+            'instance' => $instance,
+            'webhook_url_esperada' => $this->getWebhookUrl()
         ];
         
         view('whatsapp/show-instance', $data);
@@ -350,16 +358,7 @@ class WhatsAppController
                 throw new \Exception('Instância não encontrada');
             }
 
-            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-            $port = '';
-            if (isset($_SERVER['SERVER_PORT']) &&
-                (($protocol === 'http' && $_SERVER['SERVER_PORT'] != 80) ||
-                 ($protocol === 'https' && $_SERVER['SERVER_PORT'] != 443))) {
-                $port = ':' . $_SERVER['SERVER_PORT'];
-            }
-            $folder = defined('FOLDER') ? FOLDER : '';
-            $webhookUrl = $protocol . '://' . $host . $port . rtrim($folder, '/') . '/whatsapp/webhook';
+            $webhookUrl = $this->getWebhookUrl();
 
             $apiService = new EvolutionApiService($instance);
             $apiService->setWebhook($webhookUrl);

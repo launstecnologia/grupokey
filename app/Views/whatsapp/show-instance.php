@@ -182,14 +182,23 @@ $instance = $instance ?? [];
                     <p class="font-mono text-sm text-gray-900 dark:text-white break-all">
                         <?= !empty($instance['webhook_url']) ? htmlspecialchars($instance['webhook_url']) : 'Não configurado' ?>
                     </p>
-                    <?php if (empty($instance['webhook_url'])): ?>
-                        <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/set-webhook') ?>" class="mt-2">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="text-sm bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition-colors shadow">
-                                Configurar webhook agora
-                            </button>
-                        </form>
+                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                        A Evolution API chama esta URL quando chegam mensagens. Ela precisa ser <strong>pública</strong> (ex: https://grupokey.com.br). Se estiver em localhost ou IP interno, o webhook não funcionará.
+                    </p>
+                    <?php if (!empty($webhook_url_esperada) && (empty($instance['webhook_url']) || $instance['webhook_url'] !== $webhook_url_esperada)): ?>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            URL que será usada ao configurar: <span class="font-mono break-all"><?= htmlspecialchars($webhook_url_esperada) ?></span>
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            Para forçar uma URL pública (ex: em produção), adicione no <code>config.env</code>: <code>APP_URL=https://grupokey.com.br</code>
+                        </p>
                     <?php endif; ?>
+                    <form method="POST" action="<?= url('whatsapp/instances/' . $instance['id'] . '/set-webhook') ?>" class="mt-2">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="text-sm bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition-colors shadow">
+                            <?= !empty($instance['webhook_url']) ? 'Reconfigurar webhook' : 'Configurar webhook agora' ?>
+                        </button>
+                    </form>
                 </div>
                 <div>
                     <span class="text-sm text-gray-600 dark:text-gray-400">Máximo de Conexões:</span>

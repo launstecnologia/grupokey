@@ -370,7 +370,7 @@ class EvolutionApiService
      * Configurar webhook (v2.3: POST /webhook/set/{{instance}})
      * Evolution API espera objeto "webhook" com enabled: true (Postman collection)
      */
-    public function setWebhook($webhookUrl, $events = ['MESSAGES_UPSERT', 'CONNECTION_UPDATE', 'QRCODE_UPDATED'])
+    public function setWebhook($webhookUrl, $events = ['MESSAGES_UPSERT', 'MESSAGES_UPDATE', 'CONNECTION_UPDATE', 'QRCODE_UPDATED'])
     {
         $data = [
             'webhook' => [
@@ -382,6 +382,18 @@ class EvolutionApiService
             ]
         ];
         return $this->requestResourceAction('POST', 'webhook', 'set', $data);
+    }
+
+    /**
+     * Consultar webhook configurado na Evolution API (GET /webhook/find/{{instance}})
+     */
+    public function getWebhook()
+    {
+        try {
+            return $this->requestByPath('GET', ['webhook', 'find', $this->instance['instance_key']]);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**

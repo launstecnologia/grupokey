@@ -158,7 +158,8 @@ if (!class_exists('App\Core\AutoConfig')) {
                     'MAX_LOGIN_ATTEMPTS' => $envConfig['MAX_LOGIN_ATTEMPTS'] ?? '5',
                     'BACKUP_ENABLED' => $envConfig['BACKUP_ENABLED'] ?? 'true',
                     'BACKUP_PATH' => $envConfig['BACKUP_PATH'] ?? 'storage/backups/',
-                    'BACKUP_RETENTION_DAYS' => $envConfig['BACKUP_RETENTION_DAYS'] ?? '30'
+                    'BACKUP_RETENTION_DAYS' => $envConfig['BACKUP_RETENTION_DAYS'] ?? '30',
+                    'APP_URL' => $envConfig['APP_URL'] ?? ''
                 ];
             } else {
                 // localhost - usar config.env ou valores padrão para localhost
@@ -185,7 +186,8 @@ if (!class_exists('App\Core\AutoConfig')) {
                     'MAX_LOGIN_ATTEMPTS' => $envConfig['MAX_LOGIN_ATTEMPTS'] ?? '5',
                     'BACKUP_ENABLED' => $envConfig['BACKUP_ENABLED'] ?? 'false',
                     'BACKUP_PATH' => $envConfig['BACKUP_PATH'] ?? 'storage/backups/',
-                    'BACKUP_RETENTION_DAYS' => $envConfig['BACKUP_RETENTION_DAYS'] ?? '30'
+                    'BACKUP_RETENTION_DAYS' => $envConfig['BACKUP_RETENTION_DAYS'] ?? '30',
+                    'APP_URL' => $envConfig['APP_URL'] ?? ''
                 ];
             }
         }

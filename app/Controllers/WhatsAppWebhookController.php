@@ -33,6 +33,21 @@ class WhatsAppWebhookController
     }
     
     /**
+     * Resposta para GET (testar se a URL está acessível). A Evolution API envia POST.
+     */
+    public function ping()
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(200);
+        echo json_encode([
+            'ok' => true,
+            'message' => 'Webhook ativo. A Evolution API deve enviar eventos via POST.',
+            'endpoint' => 'POST /whatsapp/webhook'
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    /**
      * Processar webhook da Evolution API
      */
     public function handle()
