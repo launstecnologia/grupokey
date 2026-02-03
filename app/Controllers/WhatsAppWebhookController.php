@@ -48,19 +48,33 @@ class WhatsAppWebhookController
     }
 
     /**
-     * Processar webhook da Evolution API
+     * Processar webhook da Evolution API.
+     * $event = path opcional quando Evolution usa "Webhook by Events" (ex: messages-upsert).
      */
-    public function handle()
+    public function handle($event = null)
     {
         $payload = file_get_contents('php://input');
         $method = $_SERVER['REQUEST_METHOD'] ?? '?';
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
 
-        // Log completo de toda requisição recebida (para diagnóstico)
-        write_log('========== WEBHOOK ENTRADA ========== ' . date('Y-m-d H:i:s'), 'whatsapp-webhook.log');
-        write_log('Método: ' . $method . ' | Content-Type: ' . $contentType, 'whatsapp-webhook.log');
-        write_log('Body (raw): ' . ($payload ?: '(vazio)'), 'whatsapp-webhook.log');
-        write_log('======================================', 'whatsapp-webhook.log');
+        // Log imediato (garantir que sempre gere log quando a rota for atingida)
+        if (!function_exists('write_log')) {
+            $logDir = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'logs';
+            if (!is_dir($logDir)) {
+                @mkdir($logDir, 0755, true);
+            }
+            $logFile = $logDir . DIRECTORY_SEPARATOR . 'whatsapp-webhook.log';
+            $line = '[' . date('Y-m-d H:i:s') . '] ';
+            @file_put_contents($logFile, $line . "WEBHOOK ENTRADA | Método: {$method} | URI: {$requestUri}" . PHP_EOL, FILE_APPEND | LOCK_EX);
+            @file_put_contents($logFile, $line . "Body: " . ($payload ?: '(vazio)') . PHP_EOL, FILE_APPEND | LOCK_EX);
+        } else {
+            write_log('========== WEBHOOK ENTRADA ========== ' . date('Y-m-d H:i:s'), 'whatsapp-webhook.log');
+            write_log('Método: ' . $method . ' | URI: ' . $requestUri . ($event ? ' | Event path: ' . $event : ''), 'whatsapp-webhook.log');
+            write_log('Content-Type: ' . $contentType, 'whatsapp-webhook.log');
+            write_log('Body (raw): ' . ($payload ?: '(vazio)'), 'whatsapp-webhook.log');
+            write_log('======================================', 'whatsapp-webhook.log');
+        }
 
         $data = json_decode($payload, true);
 

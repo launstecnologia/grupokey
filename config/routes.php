@@ -217,8 +217,10 @@ $router->post('/crm/process-reminders', 'CRMController@processTaskReminders');
 // ===========================================
 
 // Webhook da Evolution API (público - sem autenticação)
+// Com "Webhook by Events" ativado, a Evolution chama /whatsapp/webhook/messages-upsert etc.
 $router->get('/whatsapp/webhook', 'WhatsAppWebhookController@ping');
 $router->post('/whatsapp/webhook', 'WhatsAppWebhookController@handle');
+$router->post('/whatsapp/webhook/{event}', 'WhatsAppWebhookController@handle');
 
 // Rotas de Instâncias WhatsApp (apenas admin)
 $router->get('/whatsapp/instances', 'WhatsAppController@instances');
