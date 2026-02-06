@@ -216,10 +216,11 @@ $progress = $total > 0 ? round(($sent / $total) * 100) : 0;
                                         $fileExists = false;
                                         
                                         if (!empty($filePath)) {
+                                            // Raiz do projeto: view está em app/Views/email-marketing -> 3 níveis
+                                            $basePath = dirname(__DIR__, 3);
                                             // Se o caminho já começa com 'storage/', usar como relativo
                                             if (strpos($filePath, 'storage' . DIRECTORY_SEPARATOR) === 0 || strpos($filePath, 'storage/') === 0) {
                                                 // Caminho relativo - construir caminho absoluto
-                                                $basePath = dirname(__DIR__, 2);
                                                 $absolutePath = $basePath . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
                                                 if (function_exists('url')) {
                                                     $fileUrl = url(str_replace(DIRECTORY_SEPARATOR, '/', $filePath));
@@ -248,9 +249,8 @@ $progress = $total > 0 ? round(($sent / $total) * 100) : 0;
                                                     }
                                                 }
                                             }
-                                            // Fallback: assumir que é relativo
+                                            // Fallback: assumir que é relativo (email-attachments/arquivo.ext)
                                             else {
-                                                $basePath = dirname(__DIR__, 2);
                                                 $absolutePath = $basePath . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $filePath);
                                                 if (function_exists('url')) {
                                                     $fileUrl = url('storage/uploads/' . str_replace(['\\', DIRECTORY_SEPARATOR], '/', $filePath));

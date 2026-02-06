@@ -715,9 +715,19 @@ class EmailMarketingController
                                 'name' => $fileName ?: basename($absolutePath)
                             ];
                         } else {
-                            write_log("✗ ERRO: Arquivo não existe em nenhum caminho testado", 'email-queue.log');
-                            write_log("Caminho original: {$filePath}", 'email-queue.log');
-                            write_log("Caminho absoluto tentado: " . ($absolutePath ?? 'N/A'), 'email-queue.log');
+                            // Último fallback: procurar em storage/uploads/email-attachments pelo nome do arquivo
+                            $fallbackPath = $basePath . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'email-attachments' . DIRECTORY_SEPARATOR . ($fileName ?: basename($filePath));
+                            if (file_exists($fallbackPath)) {
+                                write_log("✓ Arquivo encontrado no fallback: {$fallbackPath}", 'email-queue.log');
+                                $attachmentPaths[] = [
+                                    'path' => $fallbackPath,
+                                    'name' => $fileName ?: basename($fallbackPath)
+                                ];
+                            } else {
+                                write_log("✗ ERRO: Arquivo não existe em nenhum caminho testado", 'email-queue.log');
+                                write_log("Caminho original: {$filePath}", 'email-queue.log');
+                                write_log("Caminho absoluto tentado: " . ($absolutePath ?? 'N/A'), 'email-queue.log');
+                            }
                         }
                     } else {
                         write_log("✗ ERRO: Caminho do arquivo não definido", 'email-queue.log');
@@ -1018,18 +1028,16 @@ class EmailMarketingController
                         $storagePath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads';
                         $relativePath = str_replace($storagePath . DIRECTORY_SEPARATOR, '', $absolutePath);
                         
-                        // Se não conseguiu extrair caminho relativo, usar o caminho completo
-                        if ($relativePath === $absolutePath) {
-                            // Tentar extrair apenas a parte após 'storage/uploads'
+                        // Nunca salvar caminho absoluto no banco (quebra em outro servidor/OS)
+                        if ($relativePath === $absolutePath || (strlen($relativePath) > 2 && $relativePath[1] === ':')) {
                             if (strpos($absolutePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads') !== false) {
                                 $relativePath = substr($absolutePath, strpos($absolutePath, 'storage' . DIRECTORY_SEPARATOR . 'uploads') + strlen('storage' . DIRECTORY_SEPARATOR . 'uploads') + 1);
                             } else {
-                                // Fallback: usar caminho absoluto
-                                $relativePath = $absolutePath;
+                                $relativePath = 'email-attachments' . DIRECTORY_SEPARATOR . basename($absolutePath);
                             }
                         }
-                        
-                        // Construir caminho relativo no formato: email-attachments/nome-arquivo.ext
+                        $relativePath = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, ltrim(trim($relativePath), '\\/'));
+                        // Sempre salvar formato relativo: storage/uploads/email-attachments/arquivo.ext
                         $pathToSave = 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . $relativePath;
                         
                         write_log('Upload de anexo bem-sucedido. Caminho absoluto: ' . $absolutePath, 'email-marketing.log');
