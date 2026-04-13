@@ -122,6 +122,14 @@ $router->put('/segmentos/{id}', 'SegmentController@update');
 $router->delete('/segmentos/{id}', 'SegmentController@destroy');
 $router->post('/segmentos/{id}/toggle-status', 'SegmentController@toggleStatus');
 
+// Rotas de produtos dinâmicos (apenas admin)
+$router->get('/produtos-dinamicos', 'DynamicProductController@index');
+$router->get('/produtos-dinamicos/create', 'DynamicProductController@create');
+$router->post('/produtos-dinamicos', 'DynamicProductController@store');
+$router->get('/produtos-dinamicos/{id}/edit', 'DynamicProductController@edit');
+$router->post('/produtos-dinamicos/{id}', 'DynamicProductController@update');
+$router->post('/produtos-dinamicos/{id}/delete', 'DynamicProductController@destroy');
+
 // Rotas da Agenda de Contatos
 $router->get('/agenda', 'AgendaController@index');
 $router->get('/agenda/create', 'AgendaController@create');

@@ -772,6 +772,14 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?= url('produtos-dinamicos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'produtos-dinamicos' ? 'bg-gray-600' : '' ?>">
+                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11 17a1 1 0 01-1 1H6a2 2 0 01-2-2V6a2 2 0 012-2h4a1 1 0 110 2H6v10h4a1 1 0 011 1zm4.707-9.707a1 1 0 00-1.414-1.414L11 9.172V8a1 1 0 10-2 0v4a1 1 0 001 1h4a1 1 0 100-2h-1.172l2.879-2.879z"></path>
+                                </svg>
+                                <span class="ml-3 flex-1 whitespace-nowrap">Produtos Dinâmicos</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?= url('billing') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'billing' ? 'bg-gray-600' : '' ?>">
                                 <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a1 1 0 100-2 1 1 0 000 2zm0 2a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
