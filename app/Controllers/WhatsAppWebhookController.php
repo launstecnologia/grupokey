@@ -315,11 +315,23 @@ class WhatsAppWebhookController
                 $messageType = 'AUDIO';
                 $mediaUrl = $messageContent['audioMessage']['url'] ?? null;
                 $mediaMimeType = $messageContent['audioMessage']['mimetype'] ?? null;
+            } elseif (isset($messageContent['stickerMessage'])) {
+                $messageType = 'IMAGE';
+                $mediaUrl = $messageContent['stickerMessage']['url'] ?? null;
+                $mediaMimeType = $messageContent['stickerMessage']['mimetype'] ?? null;
             } elseif (isset($messageContent['documentMessage'])) {
                 $messageType = 'DOCUMENT';
                 $mediaUrl = $messageContent['documentMessage']['url'] ?? null;
                 $mediaMimeType = $messageContent['documentMessage']['mimetype'] ?? null;
                 $mediaName = $messageContent['documentMessage']['fileName'] ?? null;
+            }
+            
+            // Baixar mídia da URL ao receber e salvar localmente (áudio já vem com url no webhook)
+            if ($mediaUrl && $messageKey) {
+                $localPath = $this->downloadAndStoreMedia($mediaUrl, $instance, $messageKey, $mediaMimeType, $messageType);
+                if ($localPath) {
+                    $mediaUrl = $localPath;
+                }
             }
             
             // Buscar atendimento ativo
@@ -362,6 +374,79 @@ class WhatsAppWebhookController
             write_log('Erro ao processar mensagem: ' . $e->getMessage(), 'whatsapp-webhook.log');
             write_log('Dados da mensagem: ' . json_encode($messageData), 'whatsapp-webhook.log');
         }
+    }
+    
+    /**
+     * Baixar mídia da URL (webhook) e salvar localmente.
+     * Se a URL for da Evolution API, usa apikey. Retorna "local:received/..." para gravar em media_url ou null.
+     */
+    private function downloadAndStoreMedia($mediaUrl, $instance, $messageKey, $mediaMimeType, $messageType)
+    {
+        $ext = $this->mimeToExtension($mediaMimeType, $messageType);
+        $safeKey = preg_replace('/[^a-zA-Z0-9_-]/', '_', $messageKey);
+        $fileName = $safeKey . '.' . $ext;
+        $baseDir = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'whatsapp' . DIRECTORY_SEPARATOR . 'received';
+        $instanceDir = $baseDir . DIRECTORY_SEPARATOR . (int) $instance['id'];
+        if (!is_dir($instanceDir)) {
+            @mkdir($instanceDir, 0755, true);
+        }
+        $filePath = $instanceDir . DIRECTORY_SEPARATOR . $fileName;
+        
+        $ch = curl_init($mediaUrl);
+        $headers = [];
+        $evolutionHost = parse_url(rtrim($instance['evolution_api_url'] ?? '', '/'), PHP_URL_HOST);
+        $mediaHost = parse_url($mediaUrl, PHP_URL_HOST);
+        if ($evolutionHost && $mediaHost && (strtolower($mediaHost) === strtolower($evolutionHost))) {
+            $headers[] = 'apikey: ' . ($instance['evolution_api_key'] ?? '');
+        }
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT => 25,
+            CURLOPT_HTTPHEADER => $headers
+        ]);
+        $binary = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode !== 200 || $binary === false || strlen($binary) < 10) {
+            if (function_exists('write_log')) {
+                write_log("downloadAndStoreMedia: falha url={$mediaUrl} httpCode={$httpCode} len=" . ($binary === false ? 0 : strlen($binary)), 'whatsapp-webhook.log');
+            }
+            return null;
+        }
+        $trimmed = trim($binary);
+        if (strpos($trimmed, '{') === 0 || strpos($trimmed, '[') === 0) {
+            if (function_exists('write_log')) {
+                write_log('downloadAndStoreMedia: resposta é JSON, não mídia', 'whatsapp-webhook.log');
+            }
+            return null;
+        }
+        if (@file_put_contents($filePath, $binary) === false) {
+            if (function_exists('write_log')) {
+                write_log('downloadAndStoreMedia: falha ao gravar ' . $filePath, 'whatsapp-webhook.log');
+            }
+            return null;
+        }
+        return 'local:received/' . (int) $instance['id'] . '/' . $fileName;
+    }
+    
+    private function mimeToExtension($mime, $messageType)
+    {
+        if ($mime) {
+            $m = strtolower(preg_replace('/\s*;.*$/', '', $mime));
+            $map = [
+                'audio/ogg' => 'ogg', 'audio/mpeg' => 'mp3', 'audio/mp4' => 'm4a', 'audio/webm' => 'webm',
+                'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/gif' => 'gif', 'image/webp' => 'webp',
+                'video/mp4' => 'mp4', 'video/3gpp' => '3gp',
+                'application/pdf' => 'pdf'
+            ];
+            if (isset($map[$m])) {
+                return $map[$m];
+            }
+        }
+        $typeMap = ['AUDIO' => 'ogg', 'IMAGE' => 'jpg', 'VIDEO' => 'mp4', 'DOCUMENT' => 'bin'];
+        return $typeMap[strtoupper($messageType)] ?? 'bin';
     }
     
     /**

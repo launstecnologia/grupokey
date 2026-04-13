@@ -20,9 +20,9 @@ class Establishment
         try {
             $sql = "INSERT INTO establishments (registration_type, cpf, cnpj, razao_social, nome_completo, 
                     nome_fantasia, segmento, telefone, email, produto, cep, logradouro, numero, complemento, 
-                    bairro, cidade, uf, banco, agencia, conta, tipo_conta, chave_pix, observacoes, status, created_by_user_id, created_by_representative_id, 
+                    bairro, cidade, uf, banco, agencia, conta, tipo_conta, chave_pix, observacoes, status, birth_date, created_by_user_id, created_by_representative_id, 
                     created_at, updated_at) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
             
             // Validar e corrigir valor do ENUM produto
             // O ENUM do banco pode ter valores antigos, então vamos usar NULL se não for válido
@@ -63,6 +63,7 @@ class Establishment
                 $data['chave_pix'] ?? null,
                 $data['observacoes'] ?? null,
                 $data['status'] ?? 'PENDING',
+                $data['birth_date'] ?? null,
                 $data['created_by_user_id'] ?? null,
                 $data['created_by_representative_id'] ?? null
             ];
@@ -348,7 +349,7 @@ class Establishment
                     nome_completo = ?, nome_fantasia = ?, segmento = ?, telefone = ?, email = ?, produto = ?, 
                     cep = ?, logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, uf = ?,
                     banco = ?, agencia = ?, conta = ?, tipo_conta = ?, chave_pix = ?, observacoes = ?,
-                    status = ?, updated_at = NOW() 
+                    status = ?, birth_date = ?, updated_at = NOW() 
                     WHERE id = ?";
             
             // Validar e corrigir valor do ENUM produto
@@ -390,6 +391,7 @@ class Establishment
                 $data['chave_pix'] ?? null,
                 $data['observacoes'] ?? null,
                 $data['status'] ?? 'PENDING',
+                $data['birth_date'] ?? null,
                 $id
             ];
             

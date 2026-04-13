@@ -1,0 +1,64 @@
+[2026-04-08 22:22:35] Nenhum anexo fornecido ou array vazio
+[2026-04-09 01:30:50] === PROCESSAMENTO DA FILA DE EMAILS INICIADO ===
+[2026-04-09 01:30:50] Data/Hora: 2026-04-09 01:30:50
+[2026-04-09 01:30:50] Método: GET
+[2026-04-09 01:30:50] User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+[2026-04-09 01:30:50] Via Cron: Não
+[2026-04-09 01:30:50] Autenticado como: Kennedy
+[2026-04-09 01:30:50] Configurações: batch_size=10, delay=2s
+[2026-04-09 01:30:50] Estatísticas da fila: Total=12, Prontos para envio=2, Agendados para futuro=0, Enviados=10, Falhas=0
+[2026-04-09 01:30:50] Itens prontos para envio (scheduled_at <= NOW()): 2
+[2026-04-09 01:30:50] Iniciando processamento de 2 itens
+[2026-04-09 01:30:50] --- Processando item da fila ---
+[2026-04-09 01:30:50] Queue ID: 13
+[2026-04-09 01:30:50] Campanha ID: 12
+[2026-04-09 01:30:50] Destinatário: contato@grupokey.com.br
+[2026-04-09 01:30:50] === BUSCANDO ANEXOS DA CAMPANHA ===
+[2026-04-09 01:30:50] Campaign ID: 12
+[2026-04-09 01:30:50] Total de anexos no banco: 1
+[2026-04-09 01:30:50] Anexo #0: {"id":4,"campaign_id":12,"file_path":"storage\/uploads\/email-attachments\/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf","file_name":"1766087980706_6943ee982ce5f_1766059672.pdf","file_size":3134797,"file_type":"application\/pdf","created_at":"2026-04-09 01:23:50"}
+[2026-04-09 01:30:50] Verificando arquivo: storage/uploads/email-attachments/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf
+[2026-04-09 01:30:50] Caminho relativo detectado. Construindo: /home/grupokey/domains/grupokey.com.br/public_html/storage/uploads/email-attachments/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf
+[2026-04-09 01:30:50] ✓ Arquivo existe. Tamanho: 3134797 bytes
+[2026-04-09 01:30:50] Anexos válidos preparados: 1
+[2026-04-09 01:30:50] Lista de anexos: [{"path":"\/home\/grupokey\/domains\/grupokey.com.br\/public_html\/storage\/uploads\/email-attachments\/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf","name":"1766087980706_6943ee982ce5f_1766059672.pdf"}]
+[2026-04-09 01:30:50] Tentando enviar email para: contato@grupokey.com.br
+[2026-04-09 01:30:50] === ADICIONANDO ANEXOS ===
+Total de anexos recebidos: 1
+Processando anexo #0: {"path":"\/home\/grupokey\/domains\/grupokey.com.br\/public_html\/storage\/uploads\/email-attachments\/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf","name":"1766087980706_6943ee982ce5f_1766059672.pdf"}
+Tentando anexar arquivo: /home/grupokey/domains/grupokey.com.br/public_html/storage/uploads/email-attachments/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf
+Nome do anexo: 1766087980706_6943ee982ce5f_1766059672.pdf
+Arquivo existe. Tamanho: 3134797 bytes
+✓ Anexo adicionado com sucesso: 1766087980706_6943ee982ce5f_1766059672.pdf
+Total de anexos adicionados ao PHPMailer: 1
+
+[2026-04-09 01:30:51] SUCESSO: Email enviado para contato@grupokey.com.br
+[2026-04-09 01:30:51] Aguardando 2 segundos antes do próximo envio...
+[2026-04-09 01:30:53] --- Processando item da fila ---
+[2026-04-09 01:30:53] Queue ID: 14
+[2026-04-09 01:30:53] Campanha ID: 12
+[2026-04-09 01:30:53] Destinatário: kennedy110295@gmail.com
+[2026-04-09 01:30:53] === BUSCANDO ANEXOS DA CAMPANHA ===
+[2026-04-09 01:30:53] Campaign ID: 12
+[2026-04-09 01:30:53] Total de anexos no banco: 1
+[2026-04-09 01:30:53] Anexo #0: {"id":4,"campaign_id":12,"file_path":"storage\/uploads\/email-attachments\/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf","file_name":"1766087980706_6943ee982ce5f_1766059672.pdf","file_size":3134797,"file_type":"application\/pdf","created_at":"2026-04-09 01:23:50"}
+[2026-04-09 01:30:53] Verificando arquivo: storage/uploads/email-attachments/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf
+[2026-04-09 01:30:53] Caminho relativo detectado. Construindo: /home/grupokey/domains/grupokey.com.br/public_html/storage/uploads/email-attachments/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf
+[2026-04-09 01:30:53] ✓ Arquivo existe. Tamanho: 3134797 bytes
+[2026-04-09 01:30:53] Anexos válidos preparados: 1
+[2026-04-09 01:30:53] Lista de anexos: [{"path":"\/home\/grupokey\/domains\/grupokey.com.br\/public_html\/storage\/uploads\/email-attachments\/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf","name":"1766087980706_6943ee982ce5f_1766059672.pdf"}]
+[2026-04-09 01:30:53] Tentando enviar email para: kennedy110295@gmail.com
+[2026-04-09 01:30:53] === ADICIONANDO ANEXOS ===
+Total de anexos recebidos: 1
+Processando anexo #0: {"path":"\/home\/grupokey\/domains\/grupokey.com.br\/public_html\/storage\/uploads\/email-attachments\/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf","name":"1766087980706_6943ee982ce5f_1766059672.pdf"}
+Tentando anexar arquivo: /home/grupokey/domains/grupokey.com.br/public_html/storage/uploads/email-attachments/4f030dc4-96af-4228-ac39-7d8a4c66ff19.pdf
+Nome do anexo: 1766087980706_6943ee982ce5f_1766059672.pdf
+Arquivo existe. Tamanho: 3134797 bytes
+✓ Anexo adicionado com sucesso: 1766087980706_6943ee982ce5f_1766059672.pdf
+Total de anexos adicionados ao PHPMailer: 1
+
+[2026-04-09 01:30:55] SUCESSO: Email enviado para kennedy110295@gmail.com
+[2026-04-09 01:30:55] === PROCESSAMENTO CONCLUÍDO ===
+[2026-04-09 01:30:55] Estatísticas: Processados=2, Enviados=2, Falhas=0
+[2026-04-10 20:00:55] Nenhum anexo fornecido ou array vazio
+[2026-04-10 20:11:00] Nenhum anexo fornecido ou array vazio

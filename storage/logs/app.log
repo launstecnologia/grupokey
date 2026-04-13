@@ -1,272 +1,1253 @@
-[2025-12-05 13:43:50] === BUSCANDO PLANOS SISTPAY ===
-[2025-12-05 13:43:50] URL: https://sistpay.com.br/api/plans
-[2025-12-05 13:43:50] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
-[2025-12-05 13:43:50] Auth Method: X-Api-Key
-[2025-12-05 13:43:51] Response HTTP Code: 0
-[2025-12-05 13:43:51] Response: 
-[2025-12-05 13:43:51] Erro cURL: SSL certificate problem: unable to get local issuer certificate
-[2025-12-05 13:43:51] Erro ao buscar planos no create: Erro na requisição: SSL certificate problem: unable to get local issuer certificate
-[2025-12-05 13:43:51] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\EstablishmentController.php(88): App\Services\SistPayApi->getPlans()
-#1 [internal function]: App\Controllers\EstablishmentController->create()
-#2 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
-#3 C:\Projetos\grupokey\app\Core\Router.php(213): App\Core\Router->executeHandler('EstablishmentCo...', Array)
-#4 C:\Projetos\grupokey\config\routes.php(171): App\Core\Router->dispatch()
-#5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
-#6 {main}
-[2025-12-05 13:46:10] === BUSCANDO PLANOS SISTPAY ===
-[2025-12-05 13:46:10] URL: https://sistpay.com.br/api/plans
-[2025-12-05 13:46:10] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
-[2025-12-05 13:46:10] Auth Method: X-Api-Key
-[2025-12-05 13:46:11] Response HTTP Code: 0
-[2025-12-05 13:46:11] Response: 
-[2025-12-05 13:46:11] Erro cURL: SSL certificate problem: unable to get local issuer certificate
-[2025-12-05 13:46:11] Erro ao buscar planos no create: Erro na requisição: SSL certificate problem: unable to get local issuer certificate
-[2025-12-05 13:46:11] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\EstablishmentController.php(88): App\Services\SistPayApi->getPlans()
-#1 [internal function]: App\Controllers\EstablishmentController->create()
-#2 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
-#3 C:\Projetos\grupokey\app\Core\Router.php(213): App\Core\Router->executeHandler('EstablishmentCo...', Array)
-#4 C:\Projetos\grupokey\config\routes.php(171): App\Core\Router->dispatch()
-#5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
-#6 {main}
-[2025-12-22 22:49:25] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1316 ===
-[2025-12-22 22:49:25] Produtos: {
-    "other": [
+[2026-02-06 12:31:07] === BUSCANDO PLANOS SISTPAY ===
+[2026-02-06 12:31:07] URL: https://sistpay.com.br/api/plans
+[2026-02-06 12:31:07] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-02-06 12:31:07] Auth Method: X-Api-Key
+[2026-02-06 12:31:07] Response HTTP Code: 200
+[2026-02-06 12:31:07] Response: {
+    "success": true,
+    "data": [
         {
-            "id": "69323674ae6dc",
-            "establishment_id": 1316,
-            "previsao_faturamento": null,
-            "tabela": null,
-            "modelo_maquininha": null,
-            "plan": null,
-            "meio_pagamento": null,
-            "valor": null,
-            "created_at": "2025-12-05 01:33:44",
-            "updated_at": "2025-12-05 01:33:44",
-            "product_type": "prod-pagbank",
-            "product_name": "prod-pagbank"
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
         }
     ]
 }
-[2025-12-22 22:49:25] Total de produtos em other: 1
-[2025-12-22 22:49:35] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1316 ===
-[2025-12-22 22:49:35] Produtos: {
-    "other": [
+[2026-02-06 12:31:07] Planos encontrados: 12
+[2026-02-06 12:31:07] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-02-06 12:31:07] Planos carregados com sucesso no create: 12
+[2026-02-06 12:41:32] === BUSCANDO PLANOS SISTPAY ===
+[2026-02-06 12:41:32] URL: https://sistpay.com.br/api/plans
+[2026-02-06 12:41:32] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-02-06 12:41:32] Auth Method: X-Api-Key
+[2026-02-06 12:41:32] Response HTTP Code: 200
+[2026-02-06 12:41:32] Response: {
+    "success": true,
+    "data": [
         {
-            "id": "69323674ae6dc",
-            "establishment_id": 1316,
-            "previsao_faturamento": null,
-            "tabela": null,
-            "modelo_maquininha": null,
-            "plan": null,
-            "meio_pagamento": null,
-            "valor": null,
-            "created_at": "2025-12-05 01:33:44",
-            "updated_at": "2025-12-05 01:33:44",
-            "product_type": "prod-pagbank",
-            "product_name": "prod-pagbank"
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
         }
     ]
 }
-[2025-12-22 22:49:35] Total de produtos em other: 1
-[2025-12-22 22:49:35] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1316 ===
-[2025-12-22 22:49:35] Produtos: {
-    "other": [
+[2026-02-06 12:41:32] Planos encontrados: 12
+[2026-02-06 12:41:32] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-02-06 12:41:32] Planos carregados com sucesso no create: 12
+[2026-02-06 17:50:23] === BUSCANDO PLANOS SISTPAY ===
+[2026-02-06 17:50:23] URL: https://sistpay.com.br/api/plans
+[2026-02-06 17:50:23] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-02-06 17:50:23] Auth Method: X-Api-Key
+[2026-02-06 17:50:23] Response HTTP Code: 200
+[2026-02-06 17:50:23] Response: {
+    "success": true,
+    "data": [
         {
-            "id": "69323674ae6dc",
-            "establishment_id": 1316,
-            "previsao_faturamento": null,
-            "tabela": null,
-            "modelo_maquininha": null,
-            "plan": null,
-            "meio_pagamento": null,
-            "valor": null,
-            "created_at": "2025-12-05 01:33:44",
-            "updated_at": "2025-12-05 01:33:44",
-            "product_type": "prod-pagbank",
-            "product_name": "prod-pagbank"
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
         }
     ]
 }
-[2025-12-22 22:49:35] Total de produtos em other: 1
-[2025-12-22 22:49:35] === VERIFICAÇÃO DE PRODUTOS PAGBANK ===
-[2025-12-22 22:49:35] Produtos encontrados: {"other":[{"id":"69323674ae6dc","establishment_id":1316,"previsao_faturamento":null,"tabela":null,"modelo_maquininha":null,"plan":null,"meio_pagamento":null,"valor":null,"created_at":"2025-12-05 01:33:44","updated_at":"2025-12-05 01:33:44","product_type":"prod-pagbank","product_name":"prod-pagbank"}]}
-[2025-12-22 22:49:35] Verificando produto: prod-pagbank
-[2025-12-22 22:49:35] Produto PagBank encontrado!
-[2025-12-22 22:49:35] === INICIANDO MIGRAÇÃO PARA SISTPAY ===
-[2025-12-22 22:49:35] ID do estabelecimento: 1316
-[2025-12-22 22:49:35] Configurações SistPay: {"id":1,"token":"dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728","auth_method":"X-Api-Key","default_plan":null,"is_sandbox":1,"is_active":0,"base_url":"https:\/\/sistpay.com.br\/api","created_at":"2025-12-02 04:19:16","updated_at":"2025-12-05 01:52:18"}
-[2025-12-22 22:49:35] Dados preparados para migração: {"nome_fantasia":"Wanessa Look Fashion","nome_completo":"Vanessa Santos Souza","cpf":"","cnpj":"49749391000130","email":"wanessamorbeck18@gmail.com","telefone":"79996900546","registration_type":"PJ","razao_social":"49.749.391 VANESSA SANTOS SOUZA","logradouro":"Rua pedro Alves feitosa, 169","numero":"169","complemento":null,"bairro":"Centro","cidade":"Aracaju","uf":"SE","cep":"49680000","segmento":"Moda"}
-[2025-12-22 22:49:35] Chamando integrateWithSistPay...
-[2025-12-22 22:49:35] === INTEGRATE WITH SISTPAY INICIADO ===
-[2025-12-22 22:49:35] Establishment ID: 1316
-[2025-12-22 22:49:35] Dados recebidos: {"nome_fantasia":"Wanessa Look Fashion","nome_completo":"Vanessa Santos Souza","cpf":"","cnpj":"49749391000130","email":"wanessamorbeck18@gmail.com","telefone":"79996900546","registration_type":"PJ","razao_social":"49.749.391 VANESSA SANTOS SOUZA","logradouro":"Rua pedro Alves feitosa, 169","numero":"169","complemento":null,"bairro":"Centro","cidade":"Aracaju","uf":"SE","cep":"49680000","segmento":"Moda"}
-[2025-12-22 22:49:35] Verificando se API está configurada...
-[2025-12-22 22:49:35] API está configurada, continuando...
-[2025-12-22 22:49:36] AVISO: Plano não configurado para o estabelecimento, usando fallback: 11
-[2025-12-22 22:49:36] Chamando API SistPay com dados: {"nome_fantasia":"Wanessa Look Fashion","nome_completo":"Vanessa Santos Souza","cpf":"","cnpj":"49749391000130","email":"wanessamorbeck18@gmail.com","telefone":"79996900546","registration_type":"PJ","razao_social":"49.749.391 VANESSA SANTOS SOUZA","logradouro":"Rua pedro Alves feitosa, 169","numero":"169","complemento":null,"bairro":"Centro","cidade":"Aracaju","uf":"SE","cep":"49680000","plan":11,"segment":6,"code":"EST-1316"}
-[2025-12-22 22:49:36] Dados preparados para API (antes de filtrar null): {"fant_name":"Wanessa Look Fashion","name":"Vanessa Santos Souza","cpf":"","cnpj":"49.749.391\/0001-30","email":"wanessamorbeck18@gmail.com","phone1":"(79) 99690-0546","phone2":"","person_type":"j","plan":11,"segment":6,"code":"EST-1316","corp_name":"49.749.391 VANESSA SANTOS SOUZA","ie":null,"open_date":null,"birth_date":null,"address":"Rua pedro Alves feitosa, 169","number":"169","complement":null,"district":"Centro","city":"Aracaju","state":"SE","zip_code":"49680-000"}
-[2025-12-22 22:49:36] Dados finais enviados para API: {"fant_name":"Wanessa Look Fashion","name":"Vanessa Santos Souza","cpf":"","cnpj":"49.749.391\/0001-30","email":"wanessamorbeck18@gmail.com","phone1":"(79) 99690-0546","phone2":"","person_type":"j","plan":11,"segment":6,"code":"EST-1316","corp_name":"49.749.391 VANESSA SANTOS SOUZA","address":"Rua pedro Alves feitosa, 169","number":"169","district":"Centro","city":"Aracaju","state":"SE","zip_code":"49680-000"}
-[2025-12-22 22:49:36] URL: https://sistpay.com.br/api/establishment
-[2025-12-22 22:49:36] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728","X-Sandbox-Mode: true"]
-[2025-12-22 22:49:36] === RESPOSTA DA API SISTPAY (createEstablishment) ===
-[2025-12-22 22:49:36] HTTP Code: 0
-[2025-12-22 22:49:36] Response: 
-[2025-12-22 22:49:36] cURL Error: SSL certificate problem: unable to get local issuer certificate
-[2025-12-22 22:49:36] Erro cURL: SSL certificate problem: unable to get local issuer certificate
-[2025-12-22 22:49:36] === ERRO NA INTEGRAÇÃO COM SISTPAY ===
-[2025-12-22 22:49:36] Mensagem: Erro na requisição: SSL certificate problem: unable to get local issuer certificate
-[2025-12-22 22:49:36] Arquivo: C:\Projetos\grupokey\app\Services\SistPayApi.php:175
-[2025-12-22 22:49:36] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\EstablishmentController.php(1018): App\Services\SistPayApi->createEstablishment(Array)
-#1 C:\Projetos\grupokey\app\Controllers\EstablishmentController.php(920): App\Controllers\EstablishmentController->integrateWithSistPay('1316', Array)
-#2 [internal function]: App\Controllers\EstablishmentController->migrateToSistPay('1316')
-#3 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
-#4 C:\Projetos\grupokey\app\Core\Router.php(234): App\Core\Router->executeHandler('EstablishmentCo...', Array)
-#5 C:\Projetos\grupokey\config\routes.php(171): App\Core\Router->dispatch()
-#6 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
-#7 {main}
-[2025-12-22 22:49:36] Erro na migração para SistPay: Erro na requisição: SSL certificate problem: unable to get local issuer certificate
-[2025-12-22 22:49:36] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\EstablishmentController.php(1018): App\Services\SistPayApi->createEstablishment(Array)
-#1 C:\Projetos\grupokey\app\Controllers\EstablishmentController.php(920): App\Controllers\EstablishmentController->integrateWithSistPay('1316', Array)
-#2 [internal function]: App\Controllers\EstablishmentController->migrateToSistPay('1316')
-#3 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
-#4 C:\Projetos\grupokey\app\Core\Router.php(234): App\Core\Router->executeHandler('EstablishmentCo...', Array)
-#5 C:\Projetos\grupokey\config\routes.php(171): App\Core\Router->dispatch()
-#6 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
-#7 {main}
-[2025-12-22 22:49:36] Dados do estabelecimento: {"id":1316,"sistpay_id":null,"registration_type":"PJ","cpf":null,"cnpj":"49749391000130","razao_social":"49.749.391 VANESSA SANTOS SOUZA","nome_completo":"Vanessa Santos Souza","nome_fantasia":"Wanessa Look Fashion","segmento":"Moda","telefone":"79996900546","banco":null,"agencia":null,"conta":null,"tipo_conta":null,"chave_pix":null,"observacoes":null,"email":"wanessamorbeck18@gmail.com","produto":null,"cep":"49680000","logradouro":"Rua pedro Alves feitosa, 169","numero":"169","complemento":null,"bairro":"Centro","cidade":"Aracaju","uf":"SE","product_data":null,"status":"APPROVED","created_at":"2025-12-05 01:33:44","updated_at":"2025-12-05 01:33:44","created_by_user_id":"1","created_by_representative_id":null,"created_by_user_name":"Lucas Moraes","created_by_representative_name":null,"approval_status":null,"approval_reason":null,"approval_observation":null,"approved_at":null,"reproved_at":null,"approved_by_name":null,"reproved_by_name":null,"products":{"other":[{"id":"69323674ae6dc","establishment_id":1316,"previsao_faturamento":null,"tabela":null,"modelo_maquininha":null,"plan":null,"meio_pagamento":null,"valor":null,"created_at":"2025-12-05 01:33:44","updated_at":"2025-12-05 01:33:44","product_type":"prod-pagbank","product_name":"prod-pagbank"}]}}
-[2025-12-22 22:49:36] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1316 ===
-[2025-12-22 22:49:36] Produtos: {
+[2026-02-06 17:50:23] Planos encontrados: 12
+[2026-02-06 17:50:23] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-02-06 17:50:23] Planos carregados com sucesso no create: 12
+[2026-02-06 17:58:32] Tipo de documento recebido: 'contrato_social_requerimento' -> normalizado: 'contrato_social_requerimento'
+[2026-02-06 17:58:32] addDocument - Tipo recebido: 'contrato_social_requerimento' -> Mapeado para: 'CONTRATO_SOCIAL'
+[2026-02-06 17:58:32] ENUM do banco encontrado: CONTRATO_SOCIAL, DOCUMENTO_FOTO_FRENTE, DOCUMENTO_FOTO_VERSO, COMPROVANTE_RESIDENCIA, FOTO_FACHADA, OUTROS_DOCUMENTOS, RG_CPF_CNH, COMPROVANTE_BANCARIO, SELFIE_DOCUMENTO, COMPROVANTE_ENDERECO, CARTAO_CNPJ, PRINT_INSTAGRAM, FOTO_TITULAR_LOJA
+[2026-02-06 17:58:32] Tipo de documento recebido: 'documento_foto_frente' -> normalizado: 'documento_foto_frente'
+[2026-02-06 17:58:32] addDocument - Tipo recebido: 'documento_foto_frente' -> Mapeado para: 'DOCUMENTO_FOTO_FRENTE'
+[2026-02-06 17:58:32] ENUM do banco encontrado: CONTRATO_SOCIAL, DOCUMENTO_FOTO_FRENTE, DOCUMENTO_FOTO_VERSO, COMPROVANTE_RESIDENCIA, FOTO_FACHADA, OUTROS_DOCUMENTOS, RG_CPF_CNH, COMPROVANTE_BANCARIO, SELFIE_DOCUMENTO, COMPROVANTE_ENDERECO, CARTAO_CNPJ, PRINT_INSTAGRAM, FOTO_TITULAR_LOJA
+[2026-02-06 17:58:32] Tipo de documento recebido: 'comprovante_residencia' -> normalizado: 'comprovante_residencia'
+[2026-02-06 17:58:32] addDocument - Tipo recebido: 'comprovante_residencia' -> Mapeado para: 'COMPROVANTE_RESIDENCIA'
+[2026-02-06 17:58:32] ENUM do banco encontrado: CONTRATO_SOCIAL, DOCUMENTO_FOTO_FRENTE, DOCUMENTO_FOTO_VERSO, COMPROVANTE_RESIDENCIA, FOTO_FACHADA, OUTROS_DOCUMENTOS, RG_CPF_CNH, COMPROVANTE_BANCARIO, SELFIE_DOCUMENTO, COMPROVANTE_ENDERECO, CARTAO_CNPJ, PRINT_INSTAGRAM, FOTO_TITULAR_LOJA
+[2026-02-06 17:58:35] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1728 ===
+[2026-02-06 17:58:35] Produtos: {
     "other": [
         {
-            "id": "69323674ae6dc",
-            "establishment_id": 1316,
-            "previsao_faturamento": null,
-            "tabela": null,
-            "modelo_maquininha": null,
-            "plan": null,
-            "meio_pagamento": null,
-            "valor": null,
-            "created_at": "2025-12-05 01:33:44",
-            "updated_at": "2025-12-05 01:33:44",
-            "product_type": "prod-pagbank",
-            "product_name": "prod-pagbank"
-        }
-    ]
-}
-[2025-12-22 22:49:36] Total de produtos em other: 1
-[2026-01-07 16:54:13] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1322 ===
-[2026-01-07 16:54:13] Produtos: {
-    "other": [
-        {
-            "id": "6949cb65b7af6",
-            "establishment_id": 1322,
-            "previsao_faturamento": "100.00",
-            "tabela": "D30",
-            "modelo_maquininha": "Chip3",
-            "plan": 14,
+            "id": "698655f84002c",
+            "establishment_id": 1728,
+            "previsao_faturamento": "2000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": 11,
             "meio_pagamento": "a_vista",
-            "valor": "1000.00",
-            "created_at": "2025-12-22 22:51:17",
-            "updated_at": "2025-12-22 22:51:17",
+            "valor": "457.00",
+            "created_at": "2026-02-06 17:58:32",
+            "updated_at": "2026-02-06 17:58:32",
             "product_type": "prod-pagbank",
             "product_name": "prod-pagbank"
         }
     ]
 }
-[2026-01-07 16:54:13] Total de produtos em other: 1
-[2026-01-07 16:54:17] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1322 ===
-[2026-01-07 16:54:17] Produtos: {
+[2026-02-06 17:58:35] Total de produtos em other: 1
+[2026-02-06 17:58:36] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1728 ===
+[2026-02-06 17:58:36] Produtos: {
     "other": [
         {
-            "id": "6949cb65b7af6",
-            "establishment_id": 1322,
-            "previsao_faturamento": "100.00",
-            "tabela": "D30",
-            "modelo_maquininha": "Chip3",
-            "plan": 14,
+            "id": "698655f84002c",
+            "establishment_id": 1728,
+            "previsao_faturamento": "2000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": 11,
             "meio_pagamento": "a_vista",
-            "valor": "1000.00",
-            "created_at": "2025-12-22 22:51:17",
-            "updated_at": "2025-12-22 22:51:17",
+            "valor": "457.00",
+            "created_at": "2026-02-06 17:58:32",
+            "updated_at": "2026-02-06 17:58:32",
             "product_type": "prod-pagbank",
             "product_name": "prod-pagbank"
         }
     ]
 }
-[2026-01-07 16:54:17] Total de produtos em other: 1
-[2026-01-07 17:08:03] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1692 ===
-[2026-01-07 17:08:03] Produtos: {
-    "other": []
+[2026-02-06 17:58:36] Total de produtos em other: 1
+[2026-02-06 17:58:36] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1728 ===
+[2026-02-06 17:58:36] Produtos: {
+    "other": [
+        {
+            "id": "698655f84002c",
+            "establishment_id": 1728,
+            "previsao_faturamento": "2000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": 11,
+            "meio_pagamento": "a_vista",
+            "valor": "457.00",
+            "created_at": "2026-02-06 17:58:32",
+            "updated_at": "2026-02-06 17:58:32",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
 }
-[2026-01-07 17:08:03] Total de produtos em other: 0
-[2026-01-07 17:09:39] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1692 ===
-[2026-01-07 17:09:39] Produtos: {
-    "other": []
+[2026-02-06 17:58:36] Total de produtos em other: 1
+[2026-02-06 17:58:39] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1728 ===
+[2026-02-06 17:58:39] Produtos: {
+    "other": [
+        {
+            "id": "698655f84002c",
+            "establishment_id": 1728,
+            "previsao_faturamento": "2000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": 11,
+            "meio_pagamento": "a_vista",
+            "valor": "457.00",
+            "created_at": "2026-02-06 17:58:32",
+            "updated_at": "2026-02-06 17:58:32",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
 }
-[2026-01-07 17:09:39] Total de produtos em other: 0
-[2026-01-07 17:09:39] === DADOS DO ESTABELECIMENTO ===
-[2026-01-07 17:09:39] Estabelecimento: {"id":1692,"sistpay_id":null,"registration_type":"PF","cpf":null,"cnpj":null,"razao_social":null,"nome_completo":"Cliente sem identifica\u00e7\u00e3o","nome_fantasia":"Cliente sem identifica\u00e7\u00e3o","segmento":"0","telefone":"","banco":null,"agencia":null,"conta":null,"tipo_conta":null,"chave_pix":null,"observacoes":null,"email":"","produto":null,"cep":"","logradouro":"","numero":"","complemento":null,"bairro":"","cidade":"","uf":"","product_data":null,"status":"PENDING","created_at":"2026-01-07 17:05:32","updated_at":"2026-01-07 17:05:32","created_by_user_id":null,"created_by_representative_id":null,"created_by_user_name":null,"created_by_representative_name":null,"approval_status":null,"approval_reason":null,"approval_observation":null,"approved_at":null,"reproved_at":null,"approved_by_name":null,"reproved_by_name":null,"products":{"other":[]}}
-[2026-01-07 17:09:39] Produtos do estabelecimento: {"other":[]}
-[2026-01-07 17:09:39] === BUSCANDO PLANOS SISTPAY ===
-[2026-01-07 17:09:39] URL: https://sistpay.com.br/api/plans
-[2026-01-07 17:09:39] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
-[2026-01-07 17:09:39] Auth Method: X-Api-Key
-[2026-01-07 17:09:40] Response HTTP Code: 0
-[2026-01-07 17:09:40] Response: 
-[2026-01-07 17:09:40] Erro cURL: SSL certificate problem: unable to get local issuer certificate
-[2026-01-07 17:09:40] Erro ao buscar planos no edit: Erro na requisição: SSL certificate problem: unable to get local issuer certificate
-[2026-01-07 17:09:40] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\EstablishmentController.php(281): App\Services\SistPayApi->getPlans()
-#1 [internal function]: App\Controllers\EstablishmentController->edit('1692')
-#2 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
-#3 C:\Projetos\grupokey\app\Core\Router.php(234): App\Core\Router->executeHandler('EstablishmentCo...', Array)
-#4 C:\Projetos\grupokey\config\routes.php(216): App\Core\Router->dispatch()
-#5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
-#6 {main}
-[2026-01-07 17:09:40] Produtos disponíveis: [{"id":"prod-cdc","name":"CDC","slug":"prod-cdc","description":"CDC - Cart\u00e3o de Cr\u00e9dito Consignado","is_active":1,"created_at":"2025-10-07 11:33:13","updated_at":"2025-12-02 02:11:47"},{"id":"prod-subaquirente","name":"CDX\/EVO","slug":"prod-subaquirente","description":"CDX\/EVO - Solu\u00e7\u00f5es de pagamento","is_active":1,"created_at":"2025-10-07 11:33:13","updated_at":"2025-12-02 01:00:44"},{"id":"prod-google","name":"Google","slug":"prod-google","description":"Google - Servi\u00e7os Google","is_active":1,"created_at":"2025-10-07 11:33:13","updated_at":"2025-10-07 14:35:27"},{"id":"prod-membro-key","name":"Membro Key","slug":"prod-membro-key","description":"Membro Key - Programa de fidelidade","is_active":1,"created_at":"2025-10-07 11:33:13","updated_at":"2025-10-07 14:35:27"},{"id":"prod-outros","name":"Outros","slug":"prod-outros","description":"Outros produtos e servi\u00e7os","is_active":1,"created_at":"2025-10-07 11:33:13","updated_at":"2025-10-07 14:35:27"},{"id":"prod-pagbank","name":"PagBank","slug":"prod-pagbank","description":"PagBank - Solu\u00e7\u00f5es de pagamento","is_active":1,"created_at":"2025-12-02 00:56:18","updated_at":"2025-12-02 00:56:18"}]
-[2026-01-07 17:09:40] === DEBUG PRODUTOS NA VIEW EDIT ===
-[2026-01-07 17:09:40] Estabelecimento ID: 1692
-[2026-01-07 17:09:40] ProductData: {
-    "other": []
+[2026-02-06 17:58:39] Total de produtos em other: 1
+[2026-02-06 17:58:39] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1728 ===
+[2026-02-06 17:58:39] Produtos: {
+    "other": [
+        {
+            "id": "698655f84002c",
+            "establishment_id": 1728,
+            "previsao_faturamento": "2000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": 11,
+            "meio_pagamento": "a_vista",
+            "valor": "457.00",
+            "created_at": "2026-02-06 17:58:32",
+            "updated_at": "2026-02-06 17:58:32",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
 }
-[2026-01-07 17:09:40] === VERIFICAÇÃO PRODUTO ===
-[2026-01-07 17:09:40] Produto ID: prod-cdc
-[2026-01-07 17:09:40] Display Name: CDC
-[2026-01-07 17:09:40] ProductData tem 'other': SIM (0 itens)
-[2026-01-07 17:09:40] ProductData tem 'brasilcard': NÃO
-[2026-01-07 17:09:40] ProductData tem 'pagseguro': NÃO
-[2026-01-07 17:09:40] Resultado: NÃO SELECIONADO
-[2026-01-07 17:09:40] === VERIFICAÇÃO PRODUTO ===
-[2026-01-07 17:09:40] Produto ID: prod-subaquirente
-[2026-01-07 17:09:40] Display Name: CDX/EVO
-[2026-01-07 17:09:40] ProductData tem 'other': SIM (0 itens)
-[2026-01-07 17:09:40] ProductData tem 'brasilcard': NÃO
-[2026-01-07 17:09:40] ProductData tem 'pagseguro': NÃO
-[2026-01-07 17:09:40] Resultado: NÃO SELECIONADO
-[2026-01-07 17:09:40] === VERIFICAÇÃO PRODUTO ===
-[2026-01-07 17:09:40] Produto ID: prod-google
-[2026-01-07 17:09:40] Display Name: Google
-[2026-01-07 17:09:40] ProductData tem 'other': SIM (0 itens)
-[2026-01-07 17:09:40] ProductData tem 'brasilcard': NÃO
-[2026-01-07 17:09:40] ProductData tem 'pagseguro': NÃO
-[2026-01-07 17:09:40] Resultado: NÃO SELECIONADO
-[2026-01-07 17:09:40] === VERIFICAÇÃO PRODUTO ===
-[2026-01-07 17:09:40] Produto ID: prod-membro-key
-[2026-01-07 17:09:40] Display Name: Membro Key
-[2026-01-07 17:09:40] ProductData tem 'other': SIM (0 itens)
-[2026-01-07 17:09:40] ProductData tem 'brasilcard': NÃO
-[2026-01-07 17:09:40] ProductData tem 'pagseguro': NÃO
-[2026-01-07 17:09:40] Resultado: NÃO SELECIONADO
-[2026-01-07 17:09:40] === VERIFICAÇÃO PRODUTO ===
-[2026-01-07 17:09:40] Produto ID: prod-outros
-[2026-01-07 17:09:40] Display Name: Outros
-[2026-01-07 17:09:40] ProductData tem 'other': SIM (0 itens)
-[2026-01-07 17:09:40] ProductData tem 'brasilcard': NÃO
-[2026-01-07 17:09:40] ProductData tem 'pagseguro': NÃO
-[2026-01-07 17:09:40] Resultado: NÃO SELECIONADO
-[2026-01-07 17:09:40] === VERIFICAÇÃO PRODUTO ===
-[2026-01-07 17:09:40] Produto ID: prod-pagbank
-[2026-01-07 17:09:40] Display Name: PagBank
-[2026-01-07 17:09:40] ProductData tem 'other': SIM (0 itens)
-[2026-01-07 17:09:40] ProductData tem 'brasilcard': NÃO
-[2026-01-07 17:09:40] ProductData tem 'pagseguro': NÃO
-[2026-01-07 17:09:40] Resultado: NÃO SELECIONADO
+[2026-02-06 17:58:39] Total de produtos em other: 1
+[2026-02-06 17:58:39] === VERIFICAÇÃO DE PRODUTOS PAGBANK ===
+[2026-02-06 17:58:39] Produtos encontrados: {"other":[{"id":"698655f84002c","establishment_id":1728,"previsao_faturamento":"2000.00","tabela":"Padr\u00e3o","modelo_maquininha":"pro2","plan":11,"meio_pagamento":"a_vista","valor":"457.00","created_at":"2026-02-06 17:58:32","updated_at":"2026-02-06 17:58:32","product_type":"prod-pagbank","product_name":"prod-pagbank"}]}
+[2026-02-06 17:58:39] Verificando produto: prod-pagbank
+[2026-02-06 17:58:39] Produto PagBank encontrado!
+[2026-02-06 17:58:39] === INICIANDO MIGRAÇÃO PARA SISTPAY ===
+[2026-02-06 17:58:39] ID do estabelecimento: 1728
+[2026-02-06 17:58:39] Configurações SistPay: {"id":1,"token":"dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728","auth_method":"X-Api-Key","default_plan":null,"is_sandbox":0,"is_active":1,"base_url":"https:\/\/sistpay.com.br\/api","created_at":"2025-12-02 01:19:16","updated_at":"2026-01-03 11:54:37"}
+[2026-02-06 17:58:39] Dados preparados para migração: {"nome_fantasia":"CARVAO BRASA QUENTE","nome_completo":"Leandre Ferreira dos Santos","cpf":"08074272680","cnpj":"44.101.752\/0001-14","email":"exatacontabil.cv@hotmail.com","telefone":"(35) 98893-6813","registration_type":"PJ","razao_social":"CARVAO BRASA QUENTE LTDA","logradouro":"Rua Licacio Batista de Carvalho","numero":"321","complemento":"","bairro":"São Batolomeu","cidade":"Cabo verde","uf":"MG","cep":"37880-000","segmento":"OUTROS","birth_date":"1985-09-16"}
+[2026-02-06 17:58:39] Chamando integrateWithSistPay...
+[2026-02-06 17:58:39] === INTEGRATE WITH SISTPAY INICIADO ===
+[2026-02-06 17:58:39] Establishment ID: 1728
+[2026-02-06 17:58:39] Dados recebidos: {"nome_fantasia":"CARVAO BRASA QUENTE","nome_completo":"Leandre Ferreira dos Santos","cpf":"08074272680","cnpj":"44.101.752\/0001-14","email":"exatacontabil.cv@hotmail.com","telefone":"(35) 98893-6813","registration_type":"PJ","razao_social":"CARVAO BRASA QUENTE LTDA","logradouro":"Rua Licacio Batista de Carvalho","numero":"321","complemento":"","bairro":"São Batolomeu","cidade":"Cabo verde","uf":"MG","cep":"37880-000","segmento":"OUTROS","birth_date":"1985-09-16"}
+[2026-02-06 17:58:39] Verificando se API está configurada...
+[2026-02-06 17:58:39] API está configurada, continuando...
+[2026-02-06 17:58:39] Chamando API SistPay com dados: {"nome_fantasia":"CARVAO BRASA QUENTE","nome_completo":"Leandre Ferreira dos Santos","cpf":"08074272680","cnpj":"44.101.752\/0001-14","email":"exatacontabil.cv@hotmail.com","telefone":"(35) 98893-6813","registration_type":"PJ","razao_social":"CARVAO BRASA QUENTE LTDA","logradouro":"Rua Licacio Batista de Carvalho","numero":"321","complemento":"","bairro":"São Batolomeu","cidade":"Cabo verde","uf":"MG","cep":"37880-000","plan":11,"segment":6,"code":"EST-1728","birth_date":"1985-09-16"}
+[2026-02-06 17:58:39] Dados preparados para API (antes de filtrar null): {"fant_name":"CARVAO BRASA QUENTE","name":"Leandre Ferreira dos Santos","cpf":"080.742.726-80","cnpj":"44.101.752\/0001-14","email":"exatacontabil.cv@hotmail.com","phone1":"(35) 98893-6813","phone2":"","person_type":"j","plan":11,"segment":6,"code":"EST-1728","corp_name":"CARVAO BRASA QUENTE LTDA","ie":null,"open_date":null,"birth_date":"1985-09-16","address":"Rua Licacio Batista de Carvalho","number":"321","complement":"","district":"São Batolomeu","city":"Cabo verde","state":"MG","zip_code":"37880-000"}
+[2026-02-06 17:58:39] Dados finais enviados para API: {"fant_name":"CARVAO BRASA QUENTE","name":"Leandre Ferreira dos Santos","cpf":"080.742.726-80","cnpj":"44.101.752\/0001-14","email":"exatacontabil.cv@hotmail.com","phone1":"(35) 98893-6813","phone2":"","person_type":"j","plan":11,"segment":6,"code":"EST-1728","corp_name":"CARVAO BRASA QUENTE LTDA","birth_date":"1985-09-16","address":"Rua Licacio Batista de Carvalho","number":"321","complement":"","district":"São Batolomeu","city":"Cabo verde","state":"MG","zip_code":"37880-000"}
+[2026-02-06 17:58:39] URL: https://sistpay.com.br/api/establishment
+[2026-02-06 17:58:39] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-02-06 17:58:40] === RESPOSTA DA API SISTPAY (createEstablishment) ===
+[2026-02-06 17:58:40] HTTP Code: 201
+[2026-02-06 17:58:40] Response: {
+    "success": true,
+    "message": "Estabelecimento cadastrado com sucesso",
+    "data": {
+        "id": "28166",
+        "fant_name": "CARVAO BRASA QUENTE",
+        "name": "Leandre Ferreira dos Santos",
+        "document_url": "https:\/\/sistpay.com.br\/envio-documento\/28166"
+    }
+}
+[2026-02-06 17:58:40] cURL Error: Nenhum
+[2026-02-06 17:58:40] Resultado decodificado: {"success":true,"message":"Estabelecimento cadastrado com sucesso","data":{"id":"28166","fant_name":"CARVAO BRASA QUENTE","name":"Leandre Ferreira dos Santos","document_url":"https:\/\/sistpay.com.br\/envio-documento\/28166"}}
+[2026-02-06 17:58:40] Integração com SistPay bem-sucedida: {"success":true,"data":{"id":"28166","fant_name":"CARVAO BRASA QUENTE","name":"Leandre Ferreira dos Santos","document_url":"https:\/\/sistpay.com.br\/envio-documento\/28166"},"message":"Estabelecimento cadastrado com sucesso"}
+[2026-02-06 17:58:40] Resultado de integrateWithSistPay: {"success":true,"data":{"id":"28166","fant_name":"CARVAO BRASA QUENTE","name":"Leandre Ferreira dos Santos","document_url":"https:\/\/sistpay.com.br\/envio-documento\/28166"},"message":"Estabelecimento cadastrado com sucesso"}
+[2026-02-06 17:58:40] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1728 ===
+[2026-02-06 17:58:40] Produtos: {
+    "other": [
+        {
+            "id": "698655f84002c",
+            "establishment_id": 1728,
+            "previsao_faturamento": "2000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": 11,
+            "meio_pagamento": "a_vista",
+            "valor": "457.00",
+            "created_at": "2026-02-06 17:58:32",
+            "updated_at": "2026-02-06 17:58:32",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-02-06 17:58:40] Total de produtos em other: 1
+[2026-02-12 15:35:19] === BUSCANDO PLANOS SISTPAY ===
+[2026-02-12 15:35:19] URL: https://sistpay.com.br/api/plans
+[2026-02-12 15:35:19] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-02-12 15:35:19] Auth Method: X-Api-Key
+[2026-02-12 15:35:20] Response HTTP Code: 200
+[2026-02-12 15:35:20] Response: {
+    "success": true,
+    "data": [
+        {
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
+        }
+    ]
+}
+[2026-02-12 15:35:20] Planos encontrados: 12
+[2026-02-12 15:35:20] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-02-12 15:35:20] Planos carregados com sucesso no create: 12
+[2026-02-12 15:59:26] Tipo de documento recebido: 'contrato_social_requerimento' -> normalizado: 'contrato_social_requerimento'
+[2026-02-12 15:59:26] addDocument - Tipo recebido: 'contrato_social_requerimento' -> Mapeado para: 'CONTRATO_SOCIAL'
+[2026-02-12 15:59:26] ENUM do banco encontrado: CONTRATO_SOCIAL, DOCUMENTO_FOTO_FRENTE, DOCUMENTO_FOTO_VERSO, COMPROVANTE_RESIDENCIA, FOTO_FACHADA, OUTROS_DOCUMENTOS, RG_CPF_CNH, COMPROVANTE_BANCARIO, SELFIE_DOCUMENTO, COMPROVANTE_ENDERECO, CARTAO_CNPJ, PRINT_INSTAGRAM, FOTO_TITULAR_LOJA
+[2026-02-12 15:59:32] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1729 ===
+[2026-02-12 15:59:32] Produtos: {
+    "other": [
+        {
+            "id": "698e230e5b85f",
+            "establishment_id": 1729,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": null,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-02-12 15:59:26",
+            "updated_at": "2026-02-12 15:59:26",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-02-12 15:59:32] Total de produtos em other: 1
+[2026-02-12 15:59:39] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1729 ===
+[2026-02-12 15:59:39] Produtos: {
+    "other": [
+        {
+            "id": "698e230e5b85f",
+            "establishment_id": 1729,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": null,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-02-12 15:59:26",
+            "updated_at": "2026-02-12 15:59:26",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-02-12 15:59:39] Total de produtos em other: 1
+[2026-02-12 15:59:39] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1729 ===
+[2026-02-12 15:59:39] Produtos: {
+    "other": [
+        {
+            "id": "698e230e5b85f",
+            "establishment_id": 1729,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": null,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-02-12 15:59:26",
+            "updated_at": "2026-02-12 15:59:26",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-02-12 15:59:39] Total de produtos em other: 1
+[2026-02-12 15:59:42] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1729 ===
+[2026-02-12 15:59:42] Produtos: {
+    "other": [
+        {
+            "id": "698e230e5b85f",
+            "establishment_id": 1729,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": null,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-02-12 15:59:26",
+            "updated_at": "2026-02-12 15:59:26",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-02-12 15:59:42] Total de produtos em other: 1
+[2026-02-12 15:59:42] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1729 ===
+[2026-02-12 15:59:42] Produtos: {
+    "other": [
+        {
+            "id": "698e230e5b85f",
+            "establishment_id": 1729,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": null,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-02-12 15:59:26",
+            "updated_at": "2026-02-12 15:59:26",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-02-12 15:59:42] Total de produtos em other: 1
+[2026-02-12 15:59:42] === VERIFICAÇÃO DE PRODUTOS PAGBANK ===
+[2026-02-12 15:59:42] Produtos encontrados: {"other":[{"id":"698e230e5b85f","establishment_id":1729,"previsao_faturamento":"5000.00","tabela":"Padr\u00e3o","modelo_maquininha":"pro2","plan":null,"meio_pagamento":"criacao","valor":"97.00","created_at":"2026-02-12 15:59:26","updated_at":"2026-02-12 15:59:26","product_type":"prod-pagbank","product_name":"prod-pagbank"}]}
+[2026-02-12 15:59:42] Verificando produto: prod-pagbank
+[2026-02-12 15:59:42] Produto PagBank encontrado!
+[2026-02-12 15:59:42] === INICIANDO MIGRAÇÃO PARA SISTPAY ===
+[2026-02-12 15:59:42] ID do estabelecimento: 1729
+[2026-02-12 15:59:42] Configurações SistPay: {"id":1,"token":"dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728","auth_method":"X-Api-Key","default_plan":null,"is_sandbox":0,"is_active":1,"base_url":"https:\/\/sistpay.com.br\/api","created_at":"2025-12-02 01:19:16","updated_at":"2026-01-03 11:54:37"}
+[2026-02-12 15:59:42] Dados preparados para migração: {"nome_fantasia":"Auto Mecanica do Waguinho","nome_completo":"WAGNER RIBEIRO DO PRADO","cpf":"03434308601","cnpj":"15.105.964\/0001-71","email":"tvwagnerribeiro@gmail.com","telefone":"(35) 99888-3982","registration_type":"PJ","razao_social":"WAGNER RIBEIRO DO PRADO 03434308601","logradouro":"RUA ROGERIO MOREIRA BUENO","numero":"02","complemento":"","bairro":"CENTRO","cidade":"MONTE BELO","uf":"MG","cep":"37115-000","segmento":"MECÂNICA","birth_date":"1977-04-09"}
+[2026-02-12 15:59:42] Chamando integrateWithSistPay...
+[2026-02-12 15:59:42] === INTEGRATE WITH SISTPAY INICIADO ===
+[2026-02-12 15:59:42] Establishment ID: 1729
+[2026-02-12 15:59:42] Dados recebidos: {"nome_fantasia":"Auto Mecanica do Waguinho","nome_completo":"WAGNER RIBEIRO DO PRADO","cpf":"03434308601","cnpj":"15.105.964\/0001-71","email":"tvwagnerribeiro@gmail.com","telefone":"(35) 99888-3982","registration_type":"PJ","razao_social":"WAGNER RIBEIRO DO PRADO 03434308601","logradouro":"RUA ROGERIO MOREIRA BUENO","numero":"02","complemento":"","bairro":"CENTRO","cidade":"MONTE BELO","uf":"MG","cep":"37115-000","segmento":"MECÂNICA","birth_date":"1977-04-09"}
+[2026-02-12 15:59:42] Verificando se API está configurada...
+[2026-02-12 15:59:42] API está configurada, continuando...
+[2026-02-12 15:59:42] AVISO: Plano não configurado para o estabelecimento, usando fallback: 11
+[2026-02-12 15:59:42] Chamando API SistPay com dados: {"nome_fantasia":"Auto Mecanica do Waguinho","nome_completo":"WAGNER RIBEIRO DO PRADO","cpf":"03434308601","cnpj":"15.105.964\/0001-71","email":"tvwagnerribeiro@gmail.com","telefone":"(35) 99888-3982","registration_type":"PJ","razao_social":"WAGNER RIBEIRO DO PRADO 03434308601","logradouro":"RUA ROGERIO MOREIRA BUENO","numero":"02","complemento":"","bairro":"CENTRO","cidade":"MONTE BELO","uf":"MG","cep":"37115-000","plan":11,"segment":6,"code":"EST-1729","birth_date":"1977-04-09"}
+[2026-02-12 15:59:42] Dados preparados para API (antes de filtrar null): {"fant_name":"Auto Mecanica do Waguinho","name":"WAGNER RIBEIRO DO PRADO","cpf":"034.343.086-01","cnpj":"15.105.964\/0001-71","email":"tvwagnerribeiro@gmail.com","phone1":"(35) 99888-3982","phone2":"","person_type":"j","plan":11,"segment":6,"code":"EST-1729","corp_name":"WAGNER RIBEIRO DO PRADO 03434308601","ie":null,"open_date":null,"birth_date":"1977-04-09","address":"RUA ROGERIO MOREIRA BUENO","number":"02","complement":"","district":"CENTRO","city":"MONTE BELO","state":"MG","zip_code":"37115-000"}
+[2026-02-12 15:59:42] Dados finais enviados para API: {"fant_name":"Auto Mecanica do Waguinho","name":"WAGNER RIBEIRO DO PRADO","cpf":"034.343.086-01","cnpj":"15.105.964\/0001-71","email":"tvwagnerribeiro@gmail.com","phone1":"(35) 99888-3982","phone2":"","person_type":"j","plan":11,"segment":6,"code":"EST-1729","corp_name":"WAGNER RIBEIRO DO PRADO 03434308601","birth_date":"1977-04-09","address":"RUA ROGERIO MOREIRA BUENO","number":"02","complement":"","district":"CENTRO","city":"MONTE BELO","state":"MG","zip_code":"37115-000"}
+[2026-02-12 15:59:42] URL: https://sistpay.com.br/api/establishment
+[2026-02-12 15:59:42] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-02-12 15:59:43] === RESPOSTA DA API SISTPAY (createEstablishment) ===
+[2026-02-12 15:59:43] HTTP Code: 201
+[2026-02-12 15:59:43] Response: {
+    "success": true,
+    "message": "Estabelecimento cadastrado com sucesso",
+    "data": {
+        "id": "28298",
+        "fant_name": "Auto Mecanica do Waguinho",
+        "name": "WAGNER RIBEIRO DO PRADO",
+        "document_url": "https:\/\/sistpay.com.br\/envio-documento\/28298"
+    }
+}
+[2026-02-12 15:59:43] cURL Error: Nenhum
+[2026-02-12 15:59:43] Resultado decodificado: {"success":true,"message":"Estabelecimento cadastrado com sucesso","data":{"id":"28298","fant_name":"Auto Mecanica do Waguinho","name":"WAGNER RIBEIRO DO PRADO","document_url":"https:\/\/sistpay.com.br\/envio-documento\/28298"}}
+[2026-02-12 15:59:43] Integração com SistPay bem-sucedida: {"success":true,"data":{"id":"28298","fant_name":"Auto Mecanica do Waguinho","name":"WAGNER RIBEIRO DO PRADO","document_url":"https:\/\/sistpay.com.br\/envio-documento\/28298"},"message":"Estabelecimento cadastrado com sucesso"}
+[2026-02-12 15:59:43] Resultado de integrateWithSistPay: {"success":true,"data":{"id":"28298","fant_name":"Auto Mecanica do Waguinho","name":"WAGNER RIBEIRO DO PRADO","document_url":"https:\/\/sistpay.com.br\/envio-documento\/28298"},"message":"Estabelecimento cadastrado com sucesso"}
+[2026-02-12 15:59:44] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1729 ===
+[2026-02-12 15:59:44] Produtos: {
+    "other": [
+        {
+            "id": "698e230e5b85f",
+            "establishment_id": 1729,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": null,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-02-12 15:59:26",
+            "updated_at": "2026-02-12 15:59:26",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-02-12 15:59:44] Total de produtos em other: 1
+[2026-02-19 15:03:42] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1729 ===
+[2026-02-19 15:03:42] Produtos: {
+    "other": [
+        {
+            "id": "698e230e5b85f",
+            "establishment_id": 1729,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Padrão",
+            "modelo_maquininha": "pro2",
+            "plan": null,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-02-12 15:59:26",
+            "updated_at": "2026-02-12 15:59:26",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-02-19 15:03:42] Total de produtos em other: 1
+[2026-03-30 17:51:37] === BUSCANDO PLANOS SISTPAY ===
+[2026-03-30 17:51:37] URL: https://sistpay.com.br/api/plans
+[2026-03-30 17:51:37] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-03-30 17:51:37] Auth Method: X-Api-Key
+[2026-03-30 17:51:38] Response HTTP Code: 200
+[2026-03-30 17:51:38] Response: {
+    "success": true,
+    "data": [
+        {
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
+        }
+    ]
+}
+[2026-03-30 17:51:38] Planos encontrados: 12
+[2026-03-30 17:51:38] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-03-30 17:51:38] Planos carregados com sucesso no create: 12
+[2026-04-08 17:47:35] === BUSCANDO PLANOS SISTPAY ===
+[2026-04-08 17:47:35] URL: https://sistpay.com.br/api/plans
+[2026-04-08 17:47:35] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-04-08 17:47:35] Auth Method: X-Api-Key
+[2026-04-08 17:47:36] Response HTTP Code: 200
+[2026-04-08 17:47:36] Response: {
+    "success": true,
+    "data": [
+        {
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
+        }
+    ]
+}
+[2026-04-08 17:47:36] Planos encontrados: 12
+[2026-04-08 17:47:36] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-04-08 17:47:36] Planos carregados com sucesso no create: 12
+[2026-04-08 17:53:53] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1727 ===
+[2026-04-08 17:53:53] Produtos: {
+    "other": [
+        {
+            "id": "6984aca80e719",
+            "establishment_id": 1727,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "",
+            "plan": 6,
+            "meio_pagamento": "cartao",
+            "valor": "321.00",
+            "created_at": "2026-02-05 11:43:52",
+            "updated_at": "2026-02-05 11:43:52",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 17:53:53] Total de produtos em other: 1
+[2026-04-08 17:53:56] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1727 ===
+[2026-04-08 17:53:56] Produtos: {
+    "other": [
+        {
+            "id": "6984aca80e719",
+            "establishment_id": 1727,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "",
+            "plan": 6,
+            "meio_pagamento": "cartao",
+            "valor": "321.00",
+            "created_at": "2026-02-05 11:43:52",
+            "updated_at": "2026-02-05 11:43:52",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 17:53:56] Total de produtos em other: 1
+[2026-04-08 17:53:57] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1727 ===
+[2026-04-08 17:53:57] Produtos: {
+    "other": [
+        {
+            "id": "6984aca80e719",
+            "establishment_id": 1727,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "",
+            "plan": 6,
+            "meio_pagamento": "cartao",
+            "valor": "321.00",
+            "created_at": "2026-02-05 11:43:52",
+            "updated_at": "2026-02-05 11:43:52",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 17:53:57] Total de produtos em other: 1
+[2026-04-08 17:55:27] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1727 ===
+[2026-04-08 17:55:27] Produtos: {
+    "other": [
+        {
+            "id": "6984aca80e719",
+            "establishment_id": 1727,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "",
+            "plan": 6,
+            "meio_pagamento": "cartao",
+            "valor": "321.00",
+            "created_at": "2026-02-05 11:43:52",
+            "updated_at": "2026-02-05 11:43:52",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 17:55:27] Total de produtos em other: 1
+[2026-04-08 17:55:27] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1727 ===
+[2026-04-08 17:55:27] Produtos: {
+    "other": [
+        {
+            "id": "6984aca80e719",
+            "establishment_id": 1727,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "",
+            "plan": 6,
+            "meio_pagamento": "cartao",
+            "valor": "321.00",
+            "created_at": "2026-02-05 11:43:52",
+            "updated_at": "2026-02-05 11:43:52",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 17:55:27] Total de produtos em other: 1
+[2026-04-08 17:55:31] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1727 ===
+[2026-04-08 17:55:31] Produtos: {
+    "other": [
+        {
+            "id": "6984aca80e719",
+            "establishment_id": 1727,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "",
+            "plan": 6,
+            "meio_pagamento": "cartao",
+            "valor": "321.00",
+            "created_at": "2026-02-05 11:43:52",
+            "updated_at": "2026-02-05 11:43:52",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 17:55:31] Total de produtos em other: 1
+[2026-04-08 17:55:37] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1730 ===
+[2026-04-08 17:55:37] Produtos: {
+    "other": [
+        {
+            "id": "69d6c0575aa65",
+            "establishment_id": 1730,
+            "previsao_faturamento": "3000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "Chip3",
+            "plan": 6,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-04-08 17:53:43",
+            "updated_at": "2026-04-08 17:53:43",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 17:55:37] Total de produtos em other: 1
+[2026-04-08 17:55:40] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1730 ===
+[2026-04-08 17:55:40] Produtos: {
+    "other": [
+        {
+            "id": "69d6c0575aa65",
+            "establishment_id": 1730,
+            "previsao_faturamento": "3000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "Chip3",
+            "plan": 6,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-04-08 17:53:43",
+            "updated_at": "2026-04-08 17:53:43",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 17:55:40] Total de produtos em other: 1
+[2026-04-08 17:55:40] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1730 ===
+[2026-04-08 17:55:40] Produtos: {
+    "other": [
+        {
+            "id": "69d6c0575aa65",
+            "establishment_id": 1730,
+            "previsao_faturamento": "3000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "Chip3",
+            "plan": 6,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-04-08 17:53:43",
+            "updated_at": "2026-04-08 17:53:43",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 17:55:40] Total de produtos em other: 1
+[2026-04-08 18:02:15] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1727 ===
+[2026-04-08 18:02:15] Produtos: {
+    "other": [
+        {
+            "id": "6984aca80e719",
+            "establishment_id": 1727,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "",
+            "plan": 6,
+            "meio_pagamento": "cartao",
+            "valor": "321.00",
+            "created_at": "2026-02-05 11:43:52",
+            "updated_at": "2026-02-05 11:43:52",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 18:02:15] Total de produtos em other: 1
+[2026-04-08 18:02:16] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1727 ===
+[2026-04-08 18:02:16] Produtos: {
+    "other": [
+        {
+            "id": "6984aca80e719",
+            "establishment_id": 1727,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "",
+            "plan": 6,
+            "meio_pagamento": "cartao",
+            "valor": "321.00",
+            "created_at": "2026-02-05 11:43:52",
+            "updated_at": "2026-02-05 11:43:52",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 18:02:16] Total de produtos em other: 1
+[2026-04-08 18:02:17] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1727 ===
+[2026-04-08 18:02:17] Produtos: {
+    "other": [
+        {
+            "id": "6984aca80e719",
+            "establishment_id": 1727,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "",
+            "plan": 6,
+            "meio_pagamento": "cartao",
+            "valor": "321.00",
+            "created_at": "2026-02-05 11:43:52",
+            "updated_at": "2026-02-05 11:43:52",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 18:02:17] Total de produtos em other: 1
+[2026-04-08 18:04:37] === BUSCANDO PLANOS SISTPAY ===
+[2026-04-08 18:04:37] URL: https://sistpay.com.br/api/plans
+[2026-04-08 18:04:37] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-04-08 18:04:37] Auth Method: X-Api-Key
+[2026-04-08 18:04:38] Response HTTP Code: 200
+[2026-04-08 18:04:38] Response: {
+    "success": true,
+    "data": [
+        {
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
+        }
+    ]
+}
+[2026-04-08 18:04:38] Planos encontrados: 12
+[2026-04-08 18:04:38] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-04-08 18:04:38] Planos carregados com sucesso no create: 12
+[2026-04-08 18:12:56] === BUSCANDO PLANOS SISTPAY ===
+[2026-04-08 18:12:56] URL: https://sistpay.com.br/api/plans
+[2026-04-08 18:12:56] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-04-08 18:12:56] Auth Method: X-Api-Key
+[2026-04-08 18:12:56] Response HTTP Code: 200
+[2026-04-08 18:12:56] Response: {
+    "success": true,
+    "data": [
+        {
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
+        }
+    ]
+}
+[2026-04-08 18:12:56] Planos encontrados: 12
+[2026-04-08 18:12:56] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-04-08 18:12:56] Planos carregados com sucesso no create: 12
+[2026-04-08 18:16:37] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1731 ===
+[2026-04-08 18:16:37] Produtos: {
+    "other": [
+        {
+            "id": "69d6c5b395472",
+            "establishment_id": 1731,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "pro2",
+            "plan": 6,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-04-08 18:16:35",
+            "updated_at": "2026-04-08 18:16:35",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 18:16:37] Total de produtos em other: 1
+[2026-04-08 18:16:38] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1731 ===
+[2026-04-08 18:16:38] Produtos: {
+    "other": [
+        {
+            "id": "69d6c5b395472",
+            "establishment_id": 1731,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "pro2",
+            "plan": 6,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-04-08 18:16:35",
+            "updated_at": "2026-04-08 18:16:35",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 18:16:38] Total de produtos em other: 1
+[2026-04-08 18:16:38] === PRODUTOS ENCONTRADOS PARA ESTABELECIMENTO 1731 ===
+[2026-04-08 18:16:38] Produtos: {
+    "other": [
+        {
+            "id": "69d6c5b395472",
+            "establishment_id": 1731,
+            "previsao_faturamento": "5000.00",
+            "tabela": "Super",
+            "modelo_maquininha": "pro2",
+            "plan": 6,
+            "meio_pagamento": "criacao",
+            "valor": "97.00",
+            "created_at": "2026-04-08 18:16:35",
+            "updated_at": "2026-04-08 18:16:35",
+            "product_type": "prod-pagbank",
+            "product_name": "prod-pagbank"
+        }
+    ]
+}
+[2026-04-08 18:16:38] Total de produtos em other: 1
+[2026-04-08 18:41:44] === BUSCANDO PLANOS SISTPAY ===
+[2026-04-08 18:41:44] URL: https://sistpay.com.br/api/plans
+[2026-04-08 18:41:44] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-04-08 18:41:44] Auth Method: X-Api-Key
+[2026-04-08 18:41:45] Response HTTP Code: 200
+[2026-04-08 18:41:45] Response: {
+    "success": true,
+    "data": [
+        {
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
+        }
+    ]
+}
+[2026-04-08 18:41:45] Planos encontrados: 12
+[2026-04-08 18:41:45] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-04-08 18:41:45] Planos carregados com sucesso no create: 12
+[2026-04-09 13:54:05] === BUSCANDO PLANOS SISTPAY ===
+[2026-04-09 13:54:05] URL: https://sistpay.com.br/api/plans
+[2026-04-09 13:54:05] Headers: ["Content-Type: application\/json","X-Api-Key: dc3fece4c31d01c573c59d3f5e6d8d2fb024ac82f4ac4ed6014ac0ffd1c3a728"]
+[2026-04-09 13:54:05] Auth Method: X-Api-Key
+[2026-04-09 13:54:06] Response HTTP Code: 200
+[2026-04-09 13:54:06] Response: {
+    "success": true,
+    "data": [
+        {
+            "id": 16,
+            "name": "D+0 - FIT (RECEBA NA HORA!)"
+        },
+        {
+            "id": 17,
+            "name": "D+0 - PLUS (RECEBA NA HORA!)"
+        },
+        {
+            "id": 7,
+            "name": "D+1 - ESPECIAL "
+        },
+        {
+            "id": 12,
+            "name": "D+1 - FIT"
+        },
+        {
+            "id": 14,
+            "name": "D+1 - MASTER"
+        },
+        {
+            "id": 11,
+            "name": "D+1 - PADRÃO"
+        },
+        {
+            "id": 13,
+            "name": "D+1 - PLUS"
+        },
+        {
+            "id": 10,
+            "name": "D+1 - PRIME"
+        },
+        {
+            "id": 8,
+            "name": "D+1 - PRO"
+        },
+        {
+            "id": 9,
+            "name": "D+1 - SMART"
+        },
+        {
+            "id": 6,
+            "name": "D+1 - SUPER"
+        },
+        {
+            "id": 15,
+            "name": "D1 - ELITE"
+        }
+    ]
+}
+[2026-04-09 13:54:06] Planos encontrados: 12
+[2026-04-09 13:54:06] Planos: [{"id":16,"name":"D+0 - FIT (RECEBA NA HORA!)"},{"id":17,"name":"D+0 - PLUS (RECEBA NA HORA!)"},{"id":7,"name":"D+1 - ESPECIAL "},{"id":12,"name":"D+1 - FIT"},{"id":14,"name":"D+1 - MASTER"},{"id":11,"name":"D+1 - PADR\u00c3O"},{"id":13,"name":"D+1 - PLUS"},{"id":10,"name":"D+1 - PRIME"},{"id":8,"name":"D+1 - PRO"},{"id":9,"name":"D+1 - SMART"},{"id":6,"name":"D+1 - SUPER"},{"id":15,"name":"D1 - ELITE"}]
+[2026-04-09 13:54:06] Planos carregados com sucesso no create: 12

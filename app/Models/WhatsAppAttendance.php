@@ -48,6 +48,21 @@ class WhatsAppAttendance
     }
     
     /**
+     * Buscar último atendimento de uma conversa (qualquer status) - para carregar mídia de conversas encerradas
+     */
+    public function findLatestByConversation($conversationId)
+    {
+        $sql = "SELECT a.*, u.name as user_name, u.email as user_email
+                FROM whatsapp_attendances a
+                INNER JOIN users u ON a.user_id = u.id
+                WHERE a.conversation_id = ?
+                ORDER BY a.started_at DESC
+                LIMIT 1";
+        
+        return $this->db->fetch($sql, [$conversationId]);
+    }
+    
+    /**
      * Buscar por ID
      */
     public function findById($id)

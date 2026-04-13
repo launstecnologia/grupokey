@@ -183,50 +183,53 @@ $connectedInstances = $connected_instances ?? [];
             <!-- Área de Chat -->
             <div class="lg:col-span-2">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm" id="chat-container" style="display: none;">
-                    <!-- Header do Chat -->
-                    <div class="p-4 border-b border-gray-200 dark:border-gray-700" id="chat-header">
+                    <!-- Header do Chat (estilo WhatsApp Web) -->
+                    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80" id="chat-header">
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div id="chat-contact-avatar"></div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900 dark:text-white" id="chat-contact-name"></h3>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400" id="chat-contact-phone"></p>
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div id="chat-contact-avatar" class="flex-shrink-0"></div>
+                                <div class="min-w-0">
+                                    <h3 class="font-medium text-gray-900 dark:text-white truncate" id="chat-contact-name"></h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate" id="chat-contact-phone"></p>
                                 </div>
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="closeChat()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            <div class="flex gap-2 items-center">
+                                <button type="button" id="btn-close-attendance" onclick="closeAttendance()" 
+                                        class="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 text-sm font-medium px-3 py-1.5 rounded border border-amber-500/50 hover:bg-amber-500/10" title="Encerrar esta conversa">
+                                    <i class="fas fa-flag-checkered mr-1"></i> Encerrar conversa
+                                </button>
+                                <button onclick="closeChat()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1" title="Fechar painel">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Mensagens -->
-                    <div class="h-[500px] overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900" id="chat-messages">
+                    <!-- Mensagens (fundo padrão WhatsApp Web) -->
+                    <div class="h-[500px] overflow-y-auto px-4 py-2 space-y-1 bg-[#e5ddd5] dark:bg-gray-900" id="chat-messages" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23d4c4b0\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
                         <!-- Mensagens serão carregadas aqui via JavaScript -->
                     </div>
 
-                    <!-- Campo de envio -->
-                    <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <!-- Campo de envio (estilo WhatsApp Web) -->
+                    <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80">
                         <form id="message-form" onsubmit="sendMessage(event)">
                             <input type="file" id="file-attach" class="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx">
-                            <div class="flex gap-2 items-center">
+                            <div class="flex gap-1 items-end">
                                 <button type="button" onclick="document.getElementById('file-attach').click()" 
-                                        class="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white" title="Anexar imagem, vídeo, áudio ou documento">
+                                        class="p-2.5 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white transition-colors" title="Anexar">
                                     <i class="fas fa-paperclip"></i>
                                 </button>
                                 <button type="button" id="btn-record-audio" onclick="toggleRecordAudio()" 
-                                        class="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white" title="Gravar áudio">
+                                        class="p-2.5 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white transition-colors" title="Gravar áudio">
                                     <i class="fas fa-microphone"></i>
                                 </button>
                                 <input type="text" 
                                        id="message-input" 
-                                       placeholder="Digite sua mensagem ou anexe um arquivo..."
-                                       class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                       placeholder="Digite uma mensagem"
+                                       class="flex-1 rounded-2xl border border-gray-300 dark:border-gray-600 px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-500">
                                 <button type="submit" id="btn-send" 
-                                        class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors">
-                                    <i class="fab fa-whatsapp mr-2"></i>
-                                    Enviar
+                                        class="p-2.5 rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors shadow" title="Enviar">
+                                    <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
                             <div id="attach-preview" class="mt-2 hidden text-sm text-gray-600 dark:text-gray-400"></div>
@@ -246,11 +249,26 @@ $connectedInstances = $connected_instances ?? [];
 
 <script>
 let currentConversationId = null;
+let currentAttendanceId = null;
 let lastMessageId = 0;
 let pollingInterval = null;
 let pendingMedia = null; // { url, type, file_name }
 let mediaRecorder = null;
 let recordedChunks = [];
+
+// Se a URL tiver ?phone= (ex: vindo do CRM ou Agenda), abrir modal e preencher número
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const phone = params.get('phone');
+    if (phone) {
+        const modal = document.getElementById('modal-new-conversation');
+        const input = document.getElementById('new-phone-number');
+        if (modal && input) {
+            input.value = phone.replace(/\D/g, '');
+            modal.classList.remove('hidden');
+        }
+    }
+});
 
 // Iniciar conversa por número (adicionar número)
 async function startConversationByNumber(event) {
@@ -280,11 +298,11 @@ async function startConversationByNumber(event) {
             document.getElementById('modal-new-conversation').classList.add('hidden');
             phoneInput.value = '';
             currentConversationId = data.conversation_id;
+            currentAttendanceId = data.attendance ? data.attendance.id : null;
             lastMessageId = 0;
             document.getElementById('chat-container').style.display = 'block';
             document.getElementById('chat-placeholder').style.display = 'none';
-            document.getElementById('chat-contact-name').textContent = data.conversation.contact_name || data.conversation.phone_number;
-            document.getElementById('chat-contact-phone').textContent = data.conversation.phone_number;
+            setChatHeader(data.conversation);
             renderMessages(data.messages || []);
             startPolling();
         } else {
@@ -296,6 +314,20 @@ async function startConversationByNumber(event) {
     }
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-comment-dots mr-2"></i> Iniciar conversa';
+}
+
+function setChatHeader(conversation) {
+    const name = conversation.contact_name || conversation.phone_number || 'Contato';
+    const phone = conversation.phone_number || '';
+    document.getElementById('chat-contact-name').textContent = name;
+    document.getElementById('chat-contact-phone').textContent = phone;
+    const avatarEl = document.getElementById('chat-contact-avatar');
+    if (conversation.contact_picture) {
+        avatarEl.innerHTML = '<img src="' + escapeHtml(conversation.contact_picture) + '" alt="" class="w-10 h-10 rounded-full object-cover">';
+    } else {
+        const initial = name.trim() ? name.trim().charAt(0).toUpperCase() : '?';
+        avatarEl.innerHTML = '<div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-lg">' + escapeHtml(initial) + '</div>';
+    }
 }
 
 // Abrir conversa
@@ -325,11 +357,8 @@ async function openConversation(conversationId) {
             return;
         }
         if (data.success) {
-            // Atualizar header
-            document.getElementById('chat-contact-name').textContent = data.conversation.contact_name || data.conversation.phone_number;
-            document.getElementById('chat-contact-phone').textContent = data.conversation.phone_number;
-            
-            // Renderizar mensagens
+            currentAttendanceId = data.attendance ? data.attendance.id : null;
+            setChatHeader(data.conversation);
             renderMessages(data.messages);
             
             // Iniciar polling
@@ -354,19 +383,29 @@ function renderMessages(messages, options) {
     if (!append) container.innerHTML = '';
     
     messages.forEach(msg => {
+        if (append) {
+            const alreadyRendered = container.querySelector('[data-message-id="' + msg.id + '"]');
+            if (alreadyRendered) return;
+        }
         if (msg.id > lastMessageId) lastMessageId = msg.id;
         
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex ${msg.from_me ? 'justify-end' : 'justify-start'}`;
+        messageDiv.setAttribute('data-message-id', msg.id);
         
         let mediaHtml = '';
         const type = (msg.message_type || '').toUpperCase();
-        const mediaUrl = msg.media_url || '';
+        let mediaUrl = msg.media_url || '';
+        // Áudio/vídeo recebidos usam URL da Evolution (exige API key). Usar proxy para reproduzir.
+        const useMediaProxy = (type === 'AUDIO' || type === 'VIDEO' || type === 'IMAGE') && msg.id && !msg.from_me;
+        if (useMediaProxy) {
+            mediaUrl = '<?= url('whatsapp/attendance/media') ?>?message_id=' + encodeURIComponent(msg.id);
+        }
         if (mediaUrl) {
             if (type === 'IMAGE') {
                 mediaHtml = `<img src="${escapeHtml(mediaUrl)}" alt="Imagem" class="max-w-full max-h-64 rounded object-contain my-1" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'"><a href="${escapeHtml(mediaUrl)}" target="_blank" class="text-blue-400 underline text-sm" style="display:none">Ver imagem</a>`;
             } else if (type === 'AUDIO') {
-                mediaHtml = `<audio controls class="max-w-full my-1" src="${escapeHtml(mediaUrl)}">Não suportado. <a href="${escapeHtml(mediaUrl)}" target="_blank">Baixar áudio</a></audio>`;
+                mediaHtml = `<audio controls preload="metadata" class="max-w-full my-1" src="${escapeHtml(mediaUrl)}" onerror="var l=this.nextElementSibling;if(l)l.style.display='inline'">Não suportado. <a href="${escapeHtml(mediaUrl)}" target="_blank" rel="noopener" style="display:none">Abrir áudio em nova aba</a></audio>`;
             } else if (type === 'VIDEO') {
                 mediaHtml = `<video controls class="max-w-full max-h-48 rounded my-1" src="${escapeHtml(mediaUrl)}">Não suportado. <a href="${escapeHtml(mediaUrl)}" target="_blank">Ver vídeo</a></video>`;
             } else {
@@ -374,13 +413,19 @@ function renderMessages(messages, options) {
             }
         }
         const bodyHtml = msg.body ? `<p class="break-words">${escapeHtml(msg.body)}</p>` : '';
-        const timeHtml = `<p class="text-xs opacity-75 mt-1">${formatTime(msg.created_at)}</p>`;
+        const sent = msg.from_me;
+        const bubbleClass = sent
+            ? 'chat-msg-sent bg-[#d9fdd3] dark:bg-green-800 text-gray-900 dark:text-green-50 rounded-lg rounded-br-none shadow-sm'
+            : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg rounded-bl-none shadow-sm';
+        const timeClass = sent
+            ? 'text-[10px] opacity-90 mt-1 inline-block text-gray-700 dark:text-green-100'
+            : 'text-[10px] opacity-80 mt-1 inline-block text-gray-600 dark:text-gray-300';
         messageDiv.innerHTML = `
-            <div class="max-w-[70%] chat-msg-bubble ${msg.from_me ? 'chat-msg-sent bg-green-500 text-white' : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'} rounded-lg px-4 py-2">
-                ${type !== 'TEXT' && type ? `<p class="text-xs opacity-75">${escapeHtml(type)}</p>` : ''}
+            <div class="max-w-[75%] sm:max-w-[65%] chat-msg-bubble ${bubbleClass} px-3 py-2">
+                ${type !== 'TEXT' && type ? `<p class="text-xs opacity-90 mb-1 ${sent ? 'text-gray-700 dark:text-green-100' : 'text-gray-600 dark:text-gray-300'}">${escapeHtml(type)}</p>` : ''}
                 ${mediaHtml}
                 ${bodyHtml}
-                ${timeHtml}
+                <div class="flex justify-end"><span class="${timeClass}">${formatTime(msg.created_at)}</span></div>
             </div>
         `;
         container.appendChild(messageDiv);
@@ -542,8 +587,31 @@ function startPolling() {
 }
 
 // Fechar chat
+// Encerrar atendimento (fechar conversa no sistema) e fechar o painel
+async function closeAttendance() {
+    if (!currentAttendanceId) {
+        closeChat();
+        return;
+    }
+    if (!confirm('Encerrar esta conversa? O atendimento será marcado como fechado.')) return;
+    try {
+        const response = await fetch('<?= url('whatsapp/attendance') ?>/' + currentAttendanceId + '/close', { method: 'POST' });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data.success !== false) {
+            closeChat();
+            refreshConversations();
+        } else {
+            alert(data.message || 'Não foi possível encerrar a conversa.');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Erro ao encerrar conversa.');
+    }
+}
+
 function closeChat() {
     currentConversationId = null;
+    currentAttendanceId = null;
     if (pollingInterval) {
         clearInterval(pollingInterval);
     }

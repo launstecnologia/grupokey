@@ -1,0 +1,54 @@
+[2026-02-06 17:58:40] Webhook SistPay recebido: {"event":"establishment.created","establishment_id":28166,"fant_name":"CARVAO BRASA QUENTE","name":"Leandre Ferreira dos Santos","status":4,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/28166","timestamp":"2026-02-06 17:58:39"}
+[2026-02-06 17:58:40] Processando evento: establishment.created, SistPay ID: 28166
+[2026-02-06 17:58:40] Estabelecimento criado no SistPay: {"event":"establishment.created","establishment_id":28166,"fant_name":"CARVAO BRASA QUENTE","name":"Leandre Ferreira dos Santos","status":4,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/28166","timestamp":"2026-02-06 17:58:39"}
+[2026-02-06 18:09:55] Webhook SistPay recebido: {"event":"establishment.status_changed","establishment_id":28166,"fant_name":"CARVAO BRASA QUENTE","name":"Leandre Ferreira dos Santos","old_status":6,"new_status":1,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/28166","timestamp":"2026-02-06 18:09:55"}
+[2026-02-06 18:09:55] Processando evento: establishment.status_changed, SistPay ID: 28166
+[2026-02-06 18:09:55] Status alterado: 6 -> 1 (SistPay ID: 28166)
+[2026-02-06 18:09:55] Status atualizado com sucesso para estabelecimento ID: 1728 (SistPay ID: 28166)
+[2026-02-12 15:59:43] Webhook SistPay recebido: {"event":"establishment.created","establishment_id":28298,"fant_name":"Auto Mecanica do Waguinho","name":"WAGNER RIBEIRO DO PRADO","status":4,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/28298","timestamp":"2026-02-12 15:59:42"}
+[2026-02-12 15:59:43] Processando evento: establishment.created, SistPay ID: 28298
+[2026-02-12 15:59:43] Estabelecimento criado no SistPay: {"event":"establishment.created","establishment_id":28298,"fant_name":"Auto Mecanica do Waguinho","name":"WAGNER RIBEIRO DO PRADO","status":4,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/28298","timestamp":"2026-02-12 15:59:42"}
+[2026-02-12 16:04:20] Webhook SistPay recebido: {"event":"establishment.status_changed","establishment_id":28298,"fant_name":"Auto Mecanica do Waguinho","name":"WAGNER RIBEIRO DO PRADO","old_status":6,"new_status":3,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/28298","timestamp":"2026-02-12 16:04:19"}
+[2026-02-12 16:04:20] Processando evento: establishment.status_changed, SistPay ID: 28298
+[2026-02-12 16:04:20] Status alterado: 6 -> 3 (SistPay ID: 28298)
+[2026-02-12 16:04:20] Status atualizado com sucesso para estabelecimento ID: 1729 (SistPay ID: 28298)
+[2026-02-12 16:12:30] Webhook SistPay recebido: {"event":"establishment.status_changed","establishment_id":28298,"fant_name":"Auto Mecanica do Waguinho","name":"WAGNER RIBEIRO DO PRADO","old_status":3,"new_status":1,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/28298","timestamp":"2026-02-12 16:12:28"}
+[2026-02-12 16:12:30] Processando evento: establishment.status_changed, SistPay ID: 28298
+[2026-02-12 16:12:30] Status alterado: 3 -> 1 (SistPay ID: 28298)
+[2026-02-12 16:12:30] Status atualizado com sucesso para estabelecimento ID: 1729 (SistPay ID: 28298)
+[2026-03-24 13:02:07] Webhook SistPay recebido: {"event":"establishment.status_changed","establishment_id":29228,"fant_name":"","name":"MARIANE ALVES SANTANA SILVA","old_status":6,"new_status":1,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/29228","timestamp":"2026-03-24 13:01:52"}
+[2026-03-24 13:02:07] Processando evento: establishment.status_changed, SistPay ID: 29228
+[2026-03-24 13:02:07] Status alterado: 6 -> 1 (SistPay ID: 29228)
+[2026-03-24 13:02:07] Estabelecimento não encontrado para SistPay ID: 29228
+[2026-03-24 13:02:07] Erro ao processar webhook: Estabelecimento não encontrado para SistPay ID: 29228
+[2026-03-24 13:02:07] Stack trace: #0 /home/grupokey/domains/grupokey.com.br/public_html/app/Controllers/SistPayWebhookController.php(61): App\Controllers\SistPayWebhookController->handleStatusChanged()
+#1 [internal function]: App\Controllers\SistPayWebhookController->handle()
+#2 /home/grupokey/domains/grupokey.com.br/public_html/app/Core/Router.php(283): call_user_func_array()
+#3 /home/grupokey/domains/grupokey.com.br/public_html/app/Core/Router.php(213): App\Core\Router->executeHandler()
+#4 /home/grupokey/domains/grupokey.com.br/public_html/config/routes.php(264): App\Core\Router->dispatch()
+#5 /home/grupokey/domains/grupokey.com.br/public_html/index.php(37): require_once('...')
+#6 {main}
+[2026-03-31 15:13:45] Webhook SistPay recebido: {"event":"establishment.status_changed","establishment_id":29408,"fant_name":"OMAR MOTOS","name":"APARECIDA ASSIS RIBOLI","old_status":6,"new_status":3,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/29408","timestamp":"2026-03-31 15:13:27"}
+[2026-03-31 15:13:45] Processando evento: establishment.status_changed, SistPay ID: 29408
+[2026-03-31 15:13:45] Status alterado: 6 -> 3 (SistPay ID: 29408)
+[2026-03-31 15:13:45] Estabelecimento não encontrado para SistPay ID: 29408
+[2026-03-31 15:13:45] Erro ao processar webhook: Estabelecimento não encontrado para SistPay ID: 29408
+[2026-03-31 15:13:45] Stack trace: #0 /home/grupokey/domains/grupokey.com.br/public_html/app/Controllers/SistPayWebhookController.php(61): App\Controllers\SistPayWebhookController->handleStatusChanged()
+#1 [internal function]: App\Controllers\SistPayWebhookController->handle()
+#2 /home/grupokey/domains/grupokey.com.br/public_html/app/Core/Router.php(283): call_user_func_array()
+#3 /home/grupokey/domains/grupokey.com.br/public_html/app/Core/Router.php(213): App\Core\Router->executeHandler()
+#4 /home/grupokey/domains/grupokey.com.br/public_html/config/routes.php(264): App\Core\Router->dispatch()
+#5 /home/grupokey/domains/grupokey.com.br/public_html/index.php(37): require_once('...')
+#6 {main}
+[2026-03-31 15:36:49] Webhook SistPay recebido: {"event":"establishment.status_changed","establishment_id":29408,"fant_name":"OMAR MOTOS","name":"APARECIDA ASSIS RIBOLI","old_status":3,"new_status":1,"document_url":"https:\/\/sistpay.com.br\/envio-documento\/29408","timestamp":"2026-03-31 15:36:32"}
+[2026-03-31 15:36:49] Processando evento: establishment.status_changed, SistPay ID: 29408
+[2026-03-31 15:36:49] Status alterado: 3 -> 1 (SistPay ID: 29408)
+[2026-03-31 15:36:49] Estabelecimento não encontrado para SistPay ID: 29408
+[2026-03-31 15:36:49] Erro ao processar webhook: Estabelecimento não encontrado para SistPay ID: 29408
+[2026-03-31 15:36:49] Stack trace: #0 /home/grupokey/domains/grupokey.com.br/public_html/app/Controllers/SistPayWebhookController.php(61): App\Controllers\SistPayWebhookController->handleStatusChanged()
+#1 [internal function]: App\Controllers\SistPayWebhookController->handle()
+#2 /home/grupokey/domains/grupokey.com.br/public_html/app/Core/Router.php(283): call_user_func_array()
+#3 /home/grupokey/domains/grupokey.com.br/public_html/app/Core/Router.php(213): App\Core\Router->executeHandler()
+#4 /home/grupokey/domains/grupokey.com.br/public_html/config/routes.php(264): App\Core\Router->dispatch()
+#5 /home/grupokey/domains/grupokey.com.br/public_html/index.php(37): require_once('...')
+#6 {main}

@@ -693,6 +693,8 @@ class EstablishmentController
         } else {
             $cnpj = sanitize_input($_POST['cnpj'] ?? '');
             $razaoSocial = sanitize_input($_POST['razao_social'] ?? '');
+            $cpfPj = sanitize_input($_POST['cpf_pj'] ?? '');
+            $dataNascimento = trim($_POST['data_nascimento'] ?? '');
             if (empty($cnpj)) {
                 $errors[] = 'CNPJ é obrigatório para pessoa jurídica';
             } elseif (!$this->validateCNPJ($cnpj)) {
@@ -700,6 +702,16 @@ class EstablishmentController
             }
             if (empty($razaoSocial)) {
                 $errors[] = 'Razão social é obrigatória para pessoa jurídica';
+            }
+            if (empty($cpfPj)) {
+                $errors[] = 'CPF do responsável é obrigatório para pessoa jurídica (exigido para PagBank)';
+            } elseif (!$this->validateCPF($cpfPj)) {
+                $errors[] = 'CPF do responsável inválido';
+            }
+            if (empty($dataNascimento)) {
+                $errors[] = 'Data de nascimento do responsável é obrigatória para pessoa jurídica (exigido para PagBank)';
+            } elseif (strtotime($dataNascimento) === false || date('Y-m-d', strtotime($dataNascimento)) !== $dataNascimento) {
+                $errors[] = 'Data de nascimento do responsável inválida';
             }
         }
         
@@ -776,6 +788,9 @@ class EstablishmentController
         } else {
             $data['cnpj'] = sanitize_input($_POST['cnpj'] ?? '');
             $data['razao_social'] = $razaoSocial;
+            $data['cpf'] = sanitize_input($_POST['cpf_pj'] ?? '');
+            $dataNasc = trim($_POST['data_nascimento'] ?? '');
+            $data['birth_date'] = !empty($dataNasc) ? date('Y-m-d', strtotime($dataNasc)) : null;
         }
         
         // Dados específicos dos produtos
@@ -894,7 +909,7 @@ class EstablishmentController
             $settings = $settingsModel->getActiveSettings();
             write_log('Configurações SistPay: ' . json_encode($settings), 'app.log');
             
-            // Preparar dados do estabelecimento
+            // Preparar dados do estabelecimento (CPF e birth_date obrigatórios para PJ na API PagBank)
             $data = [
                 'nome_fantasia' => $establishment['nome_fantasia'] ?? '',
                 'nome_completo' => $establishment['nome_completo'] ?? '',
@@ -911,7 +926,8 @@ class EstablishmentController
                 'cidade' => $establishment['cidade'] ?? '',
                 'uf' => $establishment['uf'] ?? '',
                 'cep' => $establishment['cep'] ?? '',
-                'segmento' => $establishment['segmento'] ?? ''
+                'segmento' => $establishment['segmento'] ?? '',
+                'birth_date' => !empty($establishment['birth_date']) ? (is_string($establishment['birth_date']) ? $establishment['birth_date'] : date('Y-m-d', strtotime($establishment['birth_date']))) : null
             ];
             
             write_log('Dados preparados para migração: ' . json_encode($data, JSON_UNESCAPED_UNICODE), 'app.log');
@@ -990,7 +1006,7 @@ class EstablishmentController
                 write_log('AVISO: Plano não configurado para o estabelecimento, usando fallback: ' . $planId, 'app.log');
             }
             
-            // Preparar dados para a API
+            // Preparar dados para a API (CPF e birth_date enviados para PagBank/SistPay)
             $apiData = [
                 'nome_fantasia' => $data['nome_fantasia'] ?? '',
                 'nome_completo' => $data['nome_completo'] ?? '',
@@ -1009,7 +1025,8 @@ class EstablishmentController
                 'cep' => $data['cep'] ?? '',
                 'plan' => $planId,
                 'segment' => $segmentId,
-                'code' => 'EST-' . $establishmentId // Código único baseado no ID do estabelecimento
+                'code' => 'EST-' . $establishmentId, // Código único baseado no ID do estabelecimento
+                'birth_date' => $data['birth_date'] ?? null
             ];
             
             // Chamar API

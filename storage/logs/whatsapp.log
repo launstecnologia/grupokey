@@ -1,68 +1,154 @@
-[2026-01-07 21:54:58] Erro ao criar instância na Evolution API: Erro da API (404): Erro desconhecido
-[2026-01-07 22:00:18] Tentando conectar instância: testeprincipal
-[2026-01-07 22:00:18] URL da API: https://evolutionapi.launs.com.br
-[2026-01-07 22:00:18] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/testeprincipal/qrcode
-[2026-01-07 22:00:19] Evolution API Response: HTTP 404
-[2026-01-07 22:00:19] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot GET /instance/testeprincipal/qrcode"]}}
-[2026-01-07 22:00:19] API Error (404): Not Found
-[2026-01-07 22:00:19] Erro ao obter QR Code do endpoint /qrcode: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]}
-[2026-01-07 22:00:19] Endpoint /qrcode retornou 404, tentando criar instância primeiro
-[2026-01-07 22:00:19] Evolution API Request: POST https://evolutionapi.launs.com.br/instance/testeprincipal/create
-[2026-01-07 22:00:19] Request Data: {"instanceName":"testeprincipal","qrcode":true,"integration":"WHATSAPP-BAILEYS"}
-[2026-01-07 22:00:19] Evolution API Response: HTTP 404
-[2026-01-07 22:00:19] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot POST /instance/testeprincipal/create"]}}
-[2026-01-07 22:00:19] API Error (404): Not Found
-[2026-01-07 22:00:19] Erro ao obter QR Code: Erro ao obter QR Code: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]} | Erro da API (404): Not Found - {"message":["Cannot POST \/instance\/testeprincipal\/create"]}
-[2026-01-07 22:00:19] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\WhatsAppController.php(153): App\Services\EvolutionApiService->getQrCode()
-#1 [internal function]: App\Controllers\WhatsAppController->connect('1')
-#2 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
-#3 C:\Projetos\grupokey\app\Core\Router.php(234): App\Core\Router->executeHandler('WhatsAppControl...', Array)
-#4 C:\Projetos\grupokey\config\routes.php(247): App\Core\Router->dispatch()
-#5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
-#6 {main}
-[2026-01-07 22:08:12] Tentando conectar instância: testeprincipal
-[2026-01-07 22:08:12] URL da API: https://evolutionapi.launs.com.br
-[2026-01-07 22:08:12] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/testeprincipal/qrcode
-[2026-01-07 22:08:12] Evolution API Response: HTTP 404
-[2026-01-07 22:08:12] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot GET /instance/testeprincipal/qrcode"]}}
-[2026-01-07 22:08:12] API Error (404): Not Found
-[2026-01-07 22:08:12] Erro ao obter QR Code do endpoint /qrcode: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]}
-[2026-01-07 22:08:12] Endpoint /qrcode retornou 404, tentando criar instância primeiro
-[2026-01-07 22:08:12] Evolution API Request: POST https://evolutionapi.launs.com.br/instance/testeprincipal/create
-[2026-01-07 22:08:12] Request Data: {"instanceName":"testeprincipal","qrcode":true,"integration":"WHATSAPP-BAILEYS"}
-[2026-01-07 22:08:12] Evolution API Response: HTTP 404
-[2026-01-07 22:08:12] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot POST /instance/testeprincipal/create"]}}
-[2026-01-07 22:08:12] API Error (404): Not Found
-[2026-01-07 22:08:12] Erro ao obter QR Code: Erro ao obter QR Code: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]} | Erro da API (404): Not Found - {"message":["Cannot POST \/instance\/testeprincipal\/create"]}
-[2026-01-07 22:08:12] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\WhatsAppController.php(153): App\Services\EvolutionApiService->getQrCode()
-#1 [internal function]: App\Controllers\WhatsAppController->connect('1')
-#2 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
-#3 C:\Projetos\grupokey\app\Core\Router.php(234): App\Core\Router->executeHandler('WhatsAppControl...', Array)
-#4 C:\Projetos\grupokey\config\routes.php(247): App\Core\Router->dispatch()
-#5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
-#6 {main}
-[2026-01-07 22:08:16] Tentando conectar instância: testeprincipal
-[2026-01-07 22:08:16] URL da API: https://evolutionapi.launs.com.br
-[2026-01-07 22:08:16] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/testeprincipal/qrcode
-[2026-01-07 22:08:16] Evolution API Response: HTTP 404
-[2026-01-07 22:08:16] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot GET /instance/testeprincipal/qrcode"]}}
-[2026-01-07 22:08:16] API Error (404): Not Found
-[2026-01-07 22:08:16] Erro ao obter QR Code do endpoint /qrcode: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]}
-[2026-01-07 22:08:16] Endpoint /qrcode retornou 404, tentando criar instância primeiro
-[2026-01-07 22:08:16] Evolution API Request: POST https://evolutionapi.launs.com.br/instance/testeprincipal/create
-[2026-01-07 22:08:16] Request Data: {"instanceName":"testeprincipal","qrcode":true,"integration":"WHATSAPP-BAILEYS"}
-[2026-01-07 22:08:16] Evolution API Response: HTTP 404
-[2026-01-07 22:08:16] Response Body: {"status":404,"error":"Not Found","response":{"message":["Cannot POST /instance/testeprincipal/create"]}}
-[2026-01-07 22:08:16] API Error (404): Not Found
-[2026-01-07 22:08:16] Erro ao obter QR Code: Erro ao obter QR Code: Erro da API (404): Not Found - {"message":["Cannot GET \/instance\/testeprincipal\/qrcode"]} | Erro da API (404): Not Found - {"message":["Cannot POST \/instance\/testeprincipal\/create"]}
-[2026-01-07 22:08:16] Stack trace: #0 C:\Projetos\grupokey\app\Controllers\WhatsAppController.php(153): App\Services\EvolutionApiService->getQrCode()
-#1 [internal function]: App\Controllers\WhatsAppController->connect('1')
-#2 C:\Projetos\grupokey\app\Core\Router.php(281): call_user_func_array(Array, Array)
-#3 C:\Projetos\grupokey\app\Core\Router.php(234): App\Core\Router->executeHandler('WhatsAppControl...', Array)
-#4 C:\Projetos\grupokey\config\routes.php(247): App\Core\Router->dispatch()
-#5 C:\Projetos\grupokey\index.php(37): require_once('C:\\Projetos\\gru...')
-#6 {main}
-[2026-02-04 00:16:07] Evolution API Request: POST https://evolutionapi.launs.com.br/message/sendText/teste-key
-[2026-02-04 00:16:07] Request Data: {"number":"5516992422354","text":"eai"}
-[2026-02-04 00:16:09] Evolution API Response: HTTP 201
-[2026-02-04 00:16:09] Response Body: {"key":{"remoteJid":"5516992422354@s.whatsapp.net","fromMe":true,"id":"3EB066D50E2A589CEE5300"},"pushName":"Você","status":"PENDING","message":{"conversation":"eai"},"contextInfo":{"mentionedJid":[],"groupMentions":[],"ephemeralSettingTimestamp":{"low":1769987768,"high":0,"unsigned":false},"disappearingMode":{"initiator":0}},"messageType":"conversation","messageTimestamp":1770160568,"instanceId":"a013e0cd-de64-428b-bf57-c609418275a1","source":"web"}
+[2026-02-06 12:42:43] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/teste-key
+[2026-02-06 12:42:43] Evolution API Response: HTTP 200
+[2026-02-06 12:42:43] Response Body: {"instance":{"instanceName":"teste-key","state":"open"}}
+[2026-02-06 12:42:45] Evolution API Request: DELETE https://evolutionapi.launs.com.br/instance/delete/teste-key
+[2026-02-06 12:42:46] Evolution API Response: HTTP 200
+[2026-02-06 12:42:46] Response Body: {"status":"SUCCESS","error":false,"response":{"message":"Instance deleted"}}
+[2026-02-06 12:44:17] Evolution API Request: POST https://evolutionapi.launs.com.br/instance/create
+[2026-02-06 12:44:17] Request Data: {"instanceName":"teste","qrcode":true,"integration":"WHATSAPP-BAILEYS"}
+[2026-02-06 12:44:23] Evolution API Response: HTTP 201
+[2026-02-06 12:44:23] Response Body: {"instance":{"instanceName":"teste","instanceId":"bf2dccbc-675d-4c80-bc13-acfb33b2b46a","integration":"WHATSAPP-BAILEYS","webhookWaBusiness":null,"accessTokenWaBusiness":"","status":"connecting"},"hash":"ED384BF5-0A91-46D6-920B-BB0DB36C329E","webhook":{},"websocket":{},"rabbitmq":{},"nats":{},"sqs":{},"settings":{"rejectCall":false,"msgCall":"","groupsIgnore":false,"alwaysOnline":false,"readMessages":false,"readStatus":false,"syncFullHistory":false,"wavoipToken":""},"qrcode":{"pairingCode":null,
+[2026-02-06 12:44:23] Evolution API Request: POST https://evolutionapi.launs.com.br/webhook/set/teste
+[2026-02-06 12:44:23] Request Data: {"webhook":{"enabled":true,"url":"https:\/\/grupokey.com.br\/whatsapp\/webhook","byEvents":false,"base64":false,"events":["MESSAGES_UPSERT","MESSAGES_UPDATE","CONNECTION_UPDATE","QRCODE_UPDATED"]}}
+[2026-02-06 12:44:23] Evolution API Response: HTTP 201
+[2026-02-06 12:44:23] Response Body: {"id":"cmlb22y4970f9or4dv2htdhve","url":"https://grupokey.com.br/whatsapp/webhook","headers":null,"enabled":true,"events":["MESSAGES_UPSERT","MESSAGES_UPDATE","CONNECTION_UPDATE","QRCODE_UPDATED"],"webhookByEvents":false,"webhookBase64":false,"createdAt":"2026-02-06T15:44:23.864Z","updatedAt":"2026-02-06T15:44:23.864Z","instanceId":"bf2dccbc-675d-4c80-bc13-acfb33b2b46a"}
+[2026-02-06 12:44:23] Webhook configurado automaticamente: https://grupokey.com.br/whatsapp/webhook
+[2026-02-06 12:44:23] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/teste
+[2026-02-06 12:44:23] Evolution API Response: HTTP 200
+[2026-02-06 12:44:23] Response Body: {"instance":{"instanceName":"teste","state":"connecting"}}
+[2026-02-06 12:44:50] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/teste
+[2026-02-06 12:44:50] Evolution API Response: HTTP 200
+[2026-02-06 12:44:50] Response Body: {"instance":{"instanceName":"teste","state":"connecting"}}
+[2026-02-06 12:44:51] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/teste
+[2026-02-06 12:44:52] Evolution API Response: HTTP 200
+[2026-02-06 12:44:52] Response Body: {"instance":{"instanceName":"teste","state":"connecting"}}
+[2026-02-06 12:44:52] Tentando conectar instância: teste
+[2026-02-06 12:44:52] URL da API: https://evolutionapi.launs.com.br
+[2026-02-06 12:44:52] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connect/teste
+[2026-02-06 12:44:52] Evolution API Response: HTTP 200
+[2026-02-06 12:44:52] Response Body: {"pairingCode":null,"code":"2@5R2D8JggAPbx605vJgi8TWgll4ClM4p7PteuBGqQOH8Td/BA3Fy5seAWnHXfDT45asNs3HA1xeB9yhPQCgZFsIDEJiZ8robkzEE=,7Q5ZM0xeoAz0IQZOTJs52JJS57nTwmBCB/CGDSg4i3w=,cAY5ag9OHXlwlanWQ6GJZJNc0QzVSHtqnGlk90pWlFU=,Cx9DXLch7OWf2eREX/I1biC1LvFGhnDLHDy+ORGHD4g=","base64":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVwAAAFcCAYAAACEFgYsAAAjD0lEQVR4AezBwZFk2a5syZVHggrjC7yABOMFfIGN7BpitEX2d49TdV9D9c/ff7DWWuvXPay11nrFw1prrVc8rLXWesXDWmutVzystdZ6xcNaa61XPKy11nrFw1prrVc8rLXWesXDWmutVzystdZ6xQ+X5
+[2026-02-06 12:44:52] QR Code extraído: 13234 chars, starts: data:image/png;base64,iVBORw0K
+[2026-02-06 12:44:52] QR Code obtido com sucesso
+[2026-02-06 12:44:52] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/teste
+[2026-02-06 12:44:52] Evolution API Response: HTTP 200
+[2026-02-06 12:44:52] Response Body: {"instance":{"instanceName":"teste","state":"connecting"}}
+[2026-02-06 12:45:03] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/teste
+[2026-02-06 12:45:03] Evolution API Response: HTTP 200
+[2026-02-06 12:45:03] Response Body: {"instance":{"instanceName":"teste","state":"connecting"}}
+[2026-02-06 12:45:13] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/teste
+[2026-02-06 12:45:13] Evolution API Response: HTTP 200
+[2026-02-06 12:45:13] Response Body: {"instance":{"instanceName":"teste","state":"connecting"}}
+[2026-02-06 12:45:16] Evolution API Request: DELETE https://evolutionapi.launs.com.br/instance/delete/teste
+[2026-02-06 12:45:16] Evolution API Response: HTTP 200
+[2026-02-06 12:45:16] Response Body: {"status":"SUCCESS","error":false,"response":{"message":"Instance deleted"}}
+[2026-02-10 09:23:00] Evolution API Request: POST https://evolutionapi.launs.com.br/instance/create
+[2026-02-10 09:23:00] Request Data: {"instanceName":"Comercial","qrcode":true,"integration":"WHATSAPP-BAILEYS"}
+[2026-02-10 09:23:06] Evolution API Response: HTTP 201
+[2026-02-10 09:23:06] Response Body: {"instance":{"instanceName":"Comercial","instanceId":"a2eb539a-1e32-480a-848a-db7c049966f0","integration":"WHATSAPP-BAILEYS","webhookWaBusiness":null,"accessTokenWaBusiness":"","status":"connecting"},"hash":"42FCD118-0070-43C8-BD19-0703A4C20112","webhook":{},"websocket":{},"rabbitmq":{},"nats":{},"sqs":{},"settings":{"rejectCall":false,"msgCall":"","groupsIgnore":false,"alwaysOnline":false,"readMessages":false,"readStatus":false,"syncFullHistory":false,"wavoipToken":""},"qrcode":{"pairingCode":n
+[2026-02-10 09:23:06] Evolution API Request: POST https://evolutionapi.launs.com.br/webhook/set/Comercial
+[2026-02-10 09:23:06] Request Data: {"webhook":{"enabled":true,"url":"https:\/\/grupokey.com.br\/whatsapp\/webhook","byEvents":false,"base64":false,"events":["MESSAGES_UPSERT","MESSAGES_UPDATE","CONNECTION_UPDATE","QRCODE_UPDATED"]}}
+[2026-02-10 09:23:06] Evolution API Response: HTTP 201
+[2026-02-10 09:23:06] Response Body: {"id":"cmlgknhw401y0o64cs6a9hdxr","url":"https://grupokey.com.br/whatsapp/webhook","headers":null,"enabled":true,"events":["MESSAGES_UPSERT","MESSAGES_UPDATE","CONNECTION_UPDATE","QRCODE_UPDATED"],"webhookByEvents":false,"webhookBase64":false,"createdAt":"2026-02-10T12:23:06.579Z","updatedAt":"2026-02-10T12:23:06.579Z","instanceId":"a2eb539a-1e32-480a-848a-db7c049966f0"}
+[2026-02-10 09:23:06] Webhook configurado automaticamente: https://grupokey.com.br/whatsapp/webhook
+[2026-02-10 09:23:06] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:23:06] Evolution API Response: HTTP 200
+[2026-02-10 09:23:06] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:23:16] Tentando conectar instância: Comercial
+[2026-02-10 09:23:16] URL da API: https://evolutionapi.launs.com.br
+[2026-02-10 09:23:16] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connect/Comercial
+[2026-02-10 09:23:16] Evolution API Response: HTTP 200
+[2026-02-10 09:23:16] Response Body: {"pairingCode":null,"code":"2@uQRZIZRvGo1nI93PT/+EJTKDio/DtpTetDZbYzLYv7FSL7wi4abmetRIJxYFrzyORLQqmlSeHn2JLNtGxd906UQMRZQvy1K7r3w=,uZEdunJ41o4OLWYY1avE/kknMG5MulfqB79whZlDH1E=,15VQcrbwJJ9/Y/BrdvqQCkTzU9JhMtCtyw/GxeriMFY=,S8VbDnjBRB8DW4AQtncjKeGZIEuwdKjmzgn2uVtU/N0=","base64":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVwAAAFcCAYAAACEFgYsAAAi/ElEQVR4AezBwa0ly65kwVWJIwX1oi4uAnVxvahGdQ05CiCw98n7Pppmf/7+w1prrV/3sNZa6xUPa621XvGw1lrrFQ9rrbVe8bDWWusVD2uttV7xsNZa6xUPa621XvGw1lrrFQ9rrbVe8bDWWusVP1yKS
+[2026-02-10 09:23:16] QR Code extraído: 13402 chars, starts: data:image/png;base64,iVBORw0K
+[2026-02-10 09:23:16] QR Code obtido com sucesso
+[2026-02-10 09:23:16] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:23:16] Evolution API Response: HTTP 200
+[2026-02-10 09:23:16] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:23:26] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:23:26] Evolution API Response: HTTP 200
+[2026-02-10 09:23:26] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:23:36] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:23:36] Evolution API Response: HTTP 200
+[2026-02-10 09:23:36] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:23:46] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:23:46] Evolution API Response: HTTP 200
+[2026-02-10 09:23:46] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:23:56] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:23:56] Evolution API Response: HTTP 200
+[2026-02-10 09:23:56] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:24:06] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:24:06] Evolution API Response: HTTP 200
+[2026-02-10 09:24:06] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:24:17] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:24:17] Evolution API Response: HTTP 200
+[2026-02-10 09:24:17] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:24:27] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:24:27] Evolution API Response: HTTP 200
+[2026-02-10 09:24:27] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:24:37] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:24:37] Evolution API Response: HTTP 200
+[2026-02-10 09:24:37] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:24:48] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:24:48] Evolution API Response: HTTP 200
+[2026-02-10 09:24:48] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:24:59] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:24:59] Evolution API Response: HTTP 200
+[2026-02-10 09:24:59] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:25:10] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:25:10] Evolution API Response: HTTP 200
+[2026-02-10 09:25:10] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:25:21] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:25:21] Evolution API Response: HTTP 200
+[2026-02-10 09:25:21] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:25:32] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:25:32] Evolution API Response: HTTP 200
+[2026-02-10 09:25:32] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:25:43] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:25:43] Evolution API Response: HTTP 200
+[2026-02-10 09:25:43] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:25:54] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:25:54] Evolution API Response: HTTP 200
+[2026-02-10 09:25:54] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:26:05] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:26:05] Evolution API Response: HTTP 200
+[2026-02-10 09:26:05] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:26:16] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:26:16] Evolution API Response: HTTP 200
+[2026-02-10 09:26:16] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:26:26] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:26:26] Evolution API Response: HTTP 200
+[2026-02-10 09:26:26] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:26:37] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:26:37] Evolution API Response: HTTP 200
+[2026-02-10 09:26:37] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:26:37] Tentando conectar instância: Comercial
+[2026-02-10 09:26:37] URL da API: https://evolutionapi.launs.com.br
+[2026-02-10 09:26:37] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connect/Comercial
+[2026-02-10 09:26:37] Evolution API Response: HTTP 200
+[2026-02-10 09:26:37] Response Body: {"pairingCode":null,"code":"2@aetZ9eyq+WF5MFcV7TIEQI0sFoVKtk6WO1Q9LhAWsdicr0uA2PrjUnM/TprJHCojdDCHuBEvwpZx9WO3MXQrPbKB55sRqt3pWX4=,uZEdunJ41o4OLWYY1avE/kknMG5MulfqB79whZlDH1E=,15VQcrbwJJ9/Y/BrdvqQCkTzU9JhMtCtyw/GxeriMFY=,S8VbDnjBRB8DW4AQtncjKeGZIEuwdKjmzgn2uVtU/N0=","base64":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVwAAAFcCAYAAACEFgYsAAAjI0lEQVR4AezBwbEcy65swcUySgG9oAtEgC6hV6jBzyFGaZbWvYvnvg/3X3/+Yq211o97WGut9YqHtdZar3hYa631ioe11lqveFhrrfWKh7XWWq94WGut9YqHtdZar3hYa631ioe11lqveFhrrfWK31yKT
+[2026-02-10 09:26:37] QR Code extraído: 13226 chars, starts: data:image/png;base64,iVBORw0K
+[2026-02-10 09:26:37] QR Code obtido com sucesso
+[2026-02-10 09:26:37] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:26:37] Evolution API Response: HTTP 200
+[2026-02-10 09:26:37] Response Body: {"instance":{"instanceName":"Comercial","state":"connecting"}}
+[2026-02-10 09:26:47] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:26:47] Evolution API Response: HTTP 200
+[2026-02-10 09:26:47] Response Body: {"instance":{"instanceName":"Comercial","state":"open"}}
+[2026-02-10 09:27:12] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:27:12] Evolution API Response: HTTP 200
+[2026-02-10 09:27:12] Response Body: {"instance":{"instanceName":"Comercial","state":"open"}}
+[2026-02-10 09:27:22] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:27:22] Evolution API Response: HTTP 200
+[2026-02-10 09:27:22] Response Body: {"instance":{"instanceName":"Comercial","state":"open"}}
+[2026-02-10 09:27:24] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:27:24] Evolution API Response: HTTP 200
+[2026-02-10 09:27:24] Response Body: {"instance":{"instanceName":"Comercial","state":"open"}}
+[2026-02-10 09:27:27] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 09:27:27] Evolution API Response: HTTP 200
+[2026-02-10 09:27:27] Response Body: {"instance":{"instanceName":"Comercial","state":"open"}}
+[2026-02-10 13:32:11] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-02-10 13:32:11] Evolution API Response: HTTP 200
+[2026-02-10 13:32:11] Response Body: {"instance":{"instanceName":"Comercial","state":"open"}}
+[2026-04-09 01:21:45] Evolution API Request: GET https://evolutionapi.launs.com.br/instance/connectionState/Comercial
+[2026-04-09 01:21:45] Evolution API Response: HTTP 200
+[2026-04-09 01:21:45] Response Body: {"instance":{"instanceName":"Comercial","state":"close"}}
+[2026-04-09 01:21:45] getStatus DISCONNECTED - instance_key=Comercial, response_keys=["instance"]

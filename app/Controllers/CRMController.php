@@ -280,12 +280,34 @@ class CRMController
             write_log('Erro ao buscar tarefas: ' . $e->getMessage(), 'app.log');
         }
         
+        // Telefone para "Chamar no WhatsApp": estabelecimento ou representante
+        $dealWhatsAppPhone = null;
+        if (!empty($deal['establishment_id'])) {
+            $establishment = $this->establishmentModel->findById($deal['establishment_id']);
+            if (!empty($establishment['telefone'])) {
+                $dealWhatsAppPhone = preg_replace('/\D/', '', $establishment['telefone']);
+                if (strlen($dealWhatsAppPhone) === 10 || strlen($dealWhatsAppPhone) === 11) {
+                    $dealWhatsAppPhone = '55' . $dealWhatsAppPhone;
+                }
+            }
+        }
+        if (!$dealWhatsAppPhone && !empty($deal['representative_id'])) {
+            $representative = $this->representativeModel->findById($deal['representative_id']);
+            if (!empty($representative['telefone'])) {
+                $dealWhatsAppPhone = preg_replace('/\D/', '', $representative['telefone']);
+                if (strlen($dealWhatsAppPhone) === 10 || strlen($dealWhatsAppPhone) === 11) {
+                    $dealWhatsAppPhone = '55' . $dealWhatsAppPhone;
+                }
+            }
+        }
+        
         $data = [
             'title' => 'Detalhes do Negócio',
             'currentPage' => 'crm',
             'deal' => $deal,
             'activities' => $activities,
-            'tasks' => $tasks
+            'tasks' => $tasks,
+            'deal_whatsapp_phone' => $dealWhatsAppPhone
         ];
         
         view('crm/deals/show', $data);

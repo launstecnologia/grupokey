@@ -122,6 +122,14 @@ $router->put('/segmentos/{id}', 'SegmentController@update');
 $router->delete('/segmentos/{id}', 'SegmentController@destroy');
 $router->post('/segmentos/{id}/toggle-status', 'SegmentController@toggleStatus');
 
+// Rotas da Agenda de Contatos
+$router->get('/agenda', 'AgendaController@index');
+$router->get('/agenda/create', 'AgendaController@create');
+$router->post('/agenda', 'AgendaController@store');
+$router->get('/agenda/{id}/edit', 'AgendaController@edit');
+$router->put('/agenda/{id}', 'AgendaController@update');
+$router->delete('/agenda/{id}', 'AgendaController@destroy');
+
 // Rotas de perfil
 $router->get('/perfil', 'ProfileController@index');
 $router->get('/perfil/edit', 'ProfileController@edit');
@@ -250,6 +258,7 @@ $router->post('/whatsapp/attendance/upload-media', 'WhatsAppAttendanceController
 $router->post('/whatsapp/attendance/{id}/close', 'WhatsAppAttendanceController@closeAttendance');
 $router->post('/whatsapp/attendance/{id}/transfer', 'WhatsAppAttendanceController@transferAttendance');
 $router->get('/whatsapp/attendance/conversations/{id}/messages', 'WhatsAppAttendanceController@getNewMessages');
+$router->get('/whatsapp/attendance/media', 'WhatsAppAttendanceController@getMedia');
 
 // Executar roteamento
 $router->dispatch();

@@ -358,6 +358,17 @@ class EvolutionApiService
     }
 
     /**
+     * Enviar áudio como mensagem de voz (v2: POST /message/sendAudio/{{instance}})
+     * Garante que o destinatário receba como áudio no WhatsApp.
+     */
+    public function sendWhatsAppAudio($number, $mediaUrl, $fileName = null)
+    {
+        $data = ['number' => $number, 'audio' => $mediaUrl];
+        if ($fileName) $data['fileName'] = $fileName;
+        return $this->requestResourceAction('POST', 'message', 'sendAudio', $data);
+    }
+
+    /**
      * Marcar mensagens como lidas (v2.3: POST /chat/markMessageAsRead/{{instance}})
      */
     public function markAsRead($number, $messageIds = [])
@@ -419,6 +430,96 @@ class EvolutionApiService
     {
         $data = ['number' => $number, 'limit' => $limit];
         return $this->requestResourceAction('POST', 'chat', 'findMessages', $data);
+    }
+
+    /**
+     * Baixar mídia via Evolution API Launs: POST /message/downloadMedia/{{instance}}
+     * Payload: { "message": { "key": { remoteJid, fromMe, id }, "message": { audioMessage: {} } } }
+     * Retorna ['base64' => '...'] ou null.
+     */
+    public function downloadMediaMessage($key, $messageType = 'AUDIO')
+    {
+        if (empty($key['remoteJid']) || empty($key['id'])) {
+            return null;
+        }
+        $type = strtolower($messageType);
+        $messageContent = new \stdClass();
+        if ($type === 'audio') {
+            $messageContent->audioMessage = new \stdClass();
+        } elseif ($type === 'image') {
+            $messageContent->imageMessage = new \stdClass();
+        } elseif ($type === 'video') {
+            $messageContent->videoMessage = new \stdClass();
+        } elseif ($type === 'document') {
+            $messageContent->documentMessage = new \stdClass();
+        } else {
+            $messageContent->audioMessage = new \stdClass();
+        }
+        $payload = [
+            'message' => [
+                'key' => [
+                    'remoteJid' => $key['remoteJid'],
+                    'fromMe' => !empty($key['fromMe']),
+                    'id' => $key['id']
+                ],
+                'message' => $messageContent
+            ]
+        ];
+        try {
+            $response = $this->requestResourceAction('POST', 'message', 'downloadMedia', $payload);
+            $base64 = $response['base64'] ?? $response['result']['base64'] ?? $response['data']['base64'] ?? null;
+            return $base64 ? ['base64' => $base64] : null;
+        } catch (\Exception $e) {
+            if (function_exists('write_log')) {
+                write_log('downloadMediaMessage: ' . $e->getMessage(), 'whatsapp.log');
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Obter mídia de uma mensagem em base64.
+     * Tenta primeiro message/downloadMedia (Launs), depois getBase64FromMediaMessage, getBase64.
+     */
+    public function getMediaBase64($key, $messageType = 'AUDIO')
+    {
+        if (empty($key['remoteJid']) || empty($key['id'])) {
+            return null;
+        }
+        $result = $this->downloadMediaMessage($key, $messageType);
+        if ($result) {
+            return $result;
+        }
+        $keyPayload = [
+            'remoteJid' => $key['remoteJid'],
+            'fromMe' => !empty($key['fromMe']),
+            'id' => $key['id']
+        ];
+        $body = ['key' => $keyPayload];
+        $pathsToTry = [
+            ['message', 'getBase64FromMediaMessage'],
+            ['chat', 'getBase64FromMediaMessage'],
+            ['chat', 'getBase64']
+        ];
+        foreach ($pathsToTry as $path) {
+            try {
+                $response = $this->requestResourceAction('POST', $path[0], $path[1], $body);
+                $base64 = $response['base64'] ?? $response['result']['base64'] ?? $response['data']['base64'] ?? null;
+                if ($base64) {
+                    return ['base64' => $base64];
+                }
+            } catch (\Exception $e) {
+                $is404 = (strpos($e->getMessage(), '404') !== false);
+                if (function_exists('write_log') && !$is404) {
+                    write_log('getMediaBase64 ' . $path[0] . '/' . $path[1] . ': ' . $e->getMessage(), 'whatsapp.log');
+                }
+                if (!$is404) {
+                    return null;
+                }
+                continue;
+            }
+        }
+        return null;
     }
 }
 

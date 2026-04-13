@@ -21,7 +21,13 @@ $activities = $activities ?? [];
                 <?= htmlspecialchars($deal['stage_name'] ?? '') ?>
             </p>
         </div>
-        <div>
+        <div class="flex gap-2">
+            <?php if (!empty($deal_whatsapp_phone)): ?>
+            <a href="<?= url('whatsapp/attendance') ?>?phone=<?= urlencode($deal_whatsapp_phone) ?>" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
+                <i class="fab fa-whatsapp mr-2"></i>
+                Chamar no WhatsApp
+            </a>
+            <?php endif; ?>
             <a href="<?= url('crm/deals/' . ($deal['id'] ?? '') . '/edit') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
                 <i class="fas fa-edit mr-2"></i>
                 Editar

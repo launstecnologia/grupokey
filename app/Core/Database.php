@@ -30,14 +30,7 @@ class Database
         ];
         
         try {
-            // Definir timeout máximo de execução para conexão
             set_time_limit(10);
-            
-            // Log da tentativa de conexão (apenas em modo debug)
-            if (defined('APP_DEBUG') && APP_DEBUG && function_exists('write_log')) {
-                write_log("Tentando conectar ao banco: {$host}:{$port}/{$database} (usuário: {$username})", 'database.log');
-            }
-            
             $this->pdo = new PDO($dsn, $username, $password, $options);
             
             // Garantir que não há transação aberta

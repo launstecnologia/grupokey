@@ -167,7 +167,7 @@ $segments = $segments ?? [];
                     </div>
                 </div>
 
-                <!-- Campos PJ -->
+                <!-- Campos PJ (Pessoa Jurídica: CPF e Data de Nascimento do responsável são exigidos para PagBank) -->
                 <div id="pj-fields" class="hidden">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -187,6 +187,19 @@ $segments = $segments ?? [];
                             <input type="text" name="razao_social" value="<?= htmlspecialchars(old('razao_social')) ?>" 
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Digite a razão social">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
+                            <input type="text" name="cpf_pj" id="cpf-pj" value="<?= htmlspecialchars(old('cpf_pj', old('cpf'))) ?>" 
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="000.000.000-00">
+                            <small class="text-gray-500">CPF do sócio/responsável (exigido para PagBank)</small>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
+                            <input type="date" name="data_nascimento" value="<?= htmlspecialchars(old('data_nascimento')) ?>" 
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <small class="text-gray-500">Exigido para envio à API PagBank</small>
                         </div>
                     </div>
                 </div>
@@ -734,6 +747,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.value === 'PF') {
                 pfFields.classList.remove('hidden');
                 pjFields.classList.add('hidden');
+                const cpfPj = document.querySelector('input[name="cpf_pj"]');
+                const dataNasc = document.querySelector('input[name="data_nascimento"]');
+                if (cpfPj) cpfPj.removeAttribute('required');
+                if (dataNasc) dataNasc.removeAttribute('required');
                 // Mostrar botão de busca de CEP para Pessoa Física
                 if (btnBuscarCep) {
                     btnBuscarCep.classList.remove('hidden');
@@ -744,6 +761,11 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (this.value === 'PJ') {
                 pfFields.classList.add('hidden');
                 pjFields.classList.remove('hidden');
+                // Campos obrigatórios para PJ (CPF e Data de Nascimento do responsável)
+                const cpfPj = document.querySelector('input[name="cpf_pj"]');
+                const dataNasc = document.querySelector('input[name="data_nascimento"]');
+                if (cpfPj) cpfPj.setAttribute('required', 'required');
+                if (dataNasc) dataNasc.setAttribute('required', 'required');
                 // Ocultar botão de busca de CEP para Pessoa Jurídica
                 if (btnBuscarCep) {
                     btnBuscarCep.classList.add('hidden');
@@ -754,6 +776,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Definir required nos campos PJ ao carregar se tipo for PJ
+    (function setPjRequired() {
+        const tipo = document.querySelector('input[name="registration_type"]:checked');
+        if (tipo && tipo.value === 'PJ') {
+            const cpfPj = document.querySelector('input[name="cpf_pj"]');
+            const dataNasc = document.querySelector('input[name="data_nascimento"]');
+            if (cpfPj) cpfPj.setAttribute('required', 'required');
+            if (dataNasc) dataNasc.setAttribute('required', 'required');
+        } else {
+            const cpfPj = document.querySelector('input[name="cpf_pj"]');
+            const dataNasc = document.querySelector('input[name="data_nascimento"]');
+            if (cpfPj) cpfPj.removeAttribute('required');
+            if (dataNasc) dataNasc.removeAttribute('required');
+        }
+    })();
     
     // Verificar tipo inicial ao carregar a página
     const tipoInicial = document.querySelector('input[name="registration_type"]:checked');
