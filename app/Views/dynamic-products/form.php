@@ -144,7 +144,7 @@ if (empty($initialFields)) {
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Provider/API</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Provedor/API</label>
                     <input type="text" name="api_provider" value="<?= htmlspecialchars($formApiProvider) ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="ex: MUSE">
                 </div>
                 <div class="md:col-span-2">
@@ -167,11 +167,11 @@ if (empty($initialFields)) {
                     <div class="field-row border border-gray-200 rounded-lg p-4">
                         <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
                             <div>
-                                <label class="text-xs font-medium text-gray-600">Key *</label>
+                                <label class="text-xs font-medium text-gray-600">Chave *</label>
                                 <input type="text" name="field_key[]" value="<?= htmlspecialchars($field['field_key']) ?>" class="w-full px-2 py-2 border border-gray-300 rounded-md" placeholder="previsao_faturamento">
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-gray-600">Label *</label>
+                                <label class="text-xs font-medium text-gray-600">Rótulo *</label>
                                 <input type="text" name="field_label[]" value="<?= htmlspecialchars($field['label']) ?>" class="w-full px-2 py-2 border border-gray-300 rounded-md" placeholder="Previsão de Faturamento">
                             </div>
                             <div>
@@ -179,18 +179,31 @@ if (empty($initialFields)) {
                                 <select name="field_type[]" class="w-full px-2 py-2 border border-gray-300 rounded-md field-type-select">
                                     <?php
                                     $types = ['text', 'number', 'email', 'date', 'datetime-local', 'textarea', 'select', 'currency', 'phone', 'cpf', 'cnpj'];
+                                    $typeLabels = [
+                                        'text' => 'Texto',
+                                        'number' => 'Número',
+                                        'email' => 'E-mail',
+                                        'date' => 'Data',
+                                        'datetime-local' => 'Data e Hora',
+                                        'textarea' => 'Texto Longo',
+                                        'select' => 'Seleção',
+                                        'currency' => 'Moeda',
+                                        'phone' => 'Telefone',
+                                        'cpf' => 'CPF',
+                                        'cnpj' => 'CNPJ'
+                                    ];
                                     foreach ($types as $type):
                                     ?>
-                                        <option value="<?= $type ?>" <?= $field['field_type'] === $type ? 'selected' : '' ?>><?= $type ?></option>
+                                        <option value="<?= $type ?>" <?= $field['field_type'] === $type ? 'selected' : '' ?>><?= $typeLabels[$type] ?? $type ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-gray-600">Placeholder</label>
+                                <label class="text-xs font-medium text-gray-600">Texto de apoio</label>
                                 <input type="text" name="field_placeholder[]" value="<?= htmlspecialchars($field['placeholder']) ?>" class="w-full px-2 py-2 border border-gray-300 rounded-md">
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-gray-600">Help text</label>
+                                <label class="text-xs font-medium text-gray-600">Texto de ajuda</label>
                                 <input type="text" name="field_help_text[]" value="<?= htmlspecialchars($field['help_text']) ?>" class="w-full px-2 py-2 border border-gray-300 rounded-md">
                             </div>
                             <div class="flex items-end gap-2">
@@ -226,35 +239,35 @@ if (empty($initialFields)) {
     <div class="field-row border border-gray-200 rounded-lg p-4">
         <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
             <div>
-                <label class="text-xs font-medium text-gray-600">Key *</label>
+                <label class="text-xs font-medium text-gray-600">Chave *</label>
                 <input type="text" name="field_key[]" value="" class="w-full px-2 py-2 border border-gray-300 rounded-md" placeholder="novo_campo">
             </div>
             <div>
-                <label class="text-xs font-medium text-gray-600">Label *</label>
+                <label class="text-xs font-medium text-gray-600">Rótulo *</label>
                 <input type="text" name="field_label[]" value="" class="w-full px-2 py-2 border border-gray-300 rounded-md" placeholder="Novo Campo">
             </div>
             <div>
                 <label class="text-xs font-medium text-gray-600">Tipo *</label>
                 <select name="field_type[]" class="w-full px-2 py-2 border border-gray-300 rounded-md field-type-select">
-                    <option value="text">text</option>
-                    <option value="number">number</option>
-                    <option value="email">email</option>
-                    <option value="date">date</option>
-                    <option value="datetime-local">datetime-local</option>
-                    <option value="textarea">textarea</option>
-                    <option value="select">select</option>
-                    <option value="currency">currency</option>
-                    <option value="phone">phone</option>
-                    <option value="cpf">cpf</option>
-                    <option value="cnpj">cnpj</option>
+                    <option value="text">Texto</option>
+                    <option value="number">Número</option>
+                    <option value="email">E-mail</option>
+                    <option value="date">Data</option>
+                    <option value="datetime-local">Data e Hora</option>
+                    <option value="textarea">Texto Longo</option>
+                    <option value="select">Seleção</option>
+                    <option value="currency">Moeda</option>
+                    <option value="phone">Telefone</option>
+                    <option value="cpf">CPF</option>
+                    <option value="cnpj">CNPJ</option>
                 </select>
             </div>
             <div>
-                <label class="text-xs font-medium text-gray-600">Placeholder</label>
+                <label class="text-xs font-medium text-gray-600">Texto de apoio</label>
                 <input type="text" name="field_placeholder[]" value="" class="w-full px-2 py-2 border border-gray-300 rounded-md">
             </div>
             <div>
-                <label class="text-xs font-medium text-gray-600">Help text</label>
+                <label class="text-xs font-medium text-gray-600">Texto de ajuda</label>
                 <input type="text" name="field_help_text[]" value="" class="w-full px-2 py-2 border border-gray-300 rounded-md">
             </div>
             <div class="flex items-end gap-2">
