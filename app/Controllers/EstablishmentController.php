@@ -714,6 +714,24 @@ class EstablishmentController
                 $errors[] = 'Data de nascimento do responsável inválida';
             }
         }
+
+        // Validar representante selecionado (apenas admin)
+        $selectedRepresentativeId = null;
+        if (Auth::isAdmin() && isset($_POST['representative_id']) && $_POST['representative_id'] !== '') {
+            $selectedRepresentativeId = (int) $_POST['representative_id'];
+
+            if ($selectedRepresentativeId <= 0) {
+                $errors[] = 'Representante selecionado é inválido';
+            } else {
+                $selectedRepresentative = $this->representativeModel->findById($selectedRepresentativeId);
+
+                if (!$selectedRepresentative) {
+                    $errors[] = 'Representante selecionado não foi encontrado';
+                } elseif (($selectedRepresentative['status'] ?? '') !== 'ACTIVE') {
+                    $errors[] = 'Apenas representantes ativos podem ser vinculados ao estabelecimento';
+                }
+            }
+        }
         
         // Verificar se email já existe (exceto para o próprio registro)
         if ($id) {
@@ -800,8 +818,8 @@ class EstablishmentController
         // Definir quem criou/atualizou
         if (Auth::isAdmin()) {
             $data['created_by_user_id'] = Auth::user()['id'];
-            if (isset($_POST['representative_id']) && !empty($_POST['representative_id'])) {
-                $data['created_by_representative_id'] = (int)$_POST['representative_id'];
+            if (!empty($selectedRepresentativeId)) {
+                $data['created_by_representative_id'] = $selectedRepresentativeId;
             }
         } else {
             $representative = Auth::representative();
