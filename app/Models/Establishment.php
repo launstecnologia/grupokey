@@ -94,6 +94,7 @@ class Establishment
                                 $establishmentProduct->createCdxEvo($establishmentId, $productData);
                                 break;
                             case 'prod-brasil-card':
+                            case 'prod-cdc':
                                 $establishmentProduct->createBrasilCard($establishmentId, $productData);
                                 break;
                             default:
@@ -422,6 +423,7 @@ class Establishment
                                 $establishmentProduct->createCdxEvo($id, $productData);
                                 break;
                             case 'prod-brasil-card':
+                            case 'prod-cdc':
                                 $establishmentProduct->createBrasilCard($id, $productData);
                                 break;
                             default:

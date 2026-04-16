@@ -857,10 +857,13 @@ class EstablishmentController
                     break;
                     
                 case 'prod-brasil-card':
+                case 'prod-cdc':
+                    // O bloco de configuração do formulário usa sempre o prefixo prod-brasil-card nos names
+                    $formKey = 'prod-brasil-card';
                     $data[$productType] = [
-                        'taxa' => sanitize_input($_POST['taxa_' . $productType] ?? ''),
-                        'meio_pagamento' => sanitize_input($_POST['meio_pagamento_' . $productType] ?? ''),
-                        'valor' => parse_currency($_POST['valor_' . $productType] ?? '0')
+                        'taxa' => sanitize_input($_POST['taxa_' . $formKey] ?? ''),
+                        'meio_pagamento' => sanitize_input($_POST['meio_pagamento_' . $formKey] ?? ''),
+                        'valor' => parse_currency($_POST['valor_' . $formKey] ?? '0')
                     ];
                     break;
                     
