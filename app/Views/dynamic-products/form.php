@@ -10,9 +10,6 @@ if (!empty($oldInput)) {
     $formName = $oldInput['name'] ?? '';
     $formSlug = $oldInput['slug'] ?? '';
     $formDescription = $oldInput['description'] ?? '';
-    $formHasApi = isset($oldInput['has_api']) && $oldInput['has_api'] === '1';
-    $formApiProvider = $oldInput['api_provider'] ?? '';
-    $formApiConfig = $oldInput['api_config_json'] ?? '';
 
     $fieldKeys = $oldInput['field_key'] ?? [];
     $fieldLabels = $oldInput['field_label'] ?? [];
@@ -39,9 +36,6 @@ if (!empty($oldInput)) {
     $formName = $product['name'] ?? '';
     $formSlug = $product['slug'] ?? '';
     $formDescription = $product['description'] ?? '';
-    $formHasApi = (int) ($product['has_api'] ?? 0) === 1;
-    $formApiProvider = $product['api_provider'] ?? '';
-    $formApiConfig = $product['api_config_json'] ?? '';
 
     $initialFields = [];
     if (!empty($product['fields'])) {
@@ -130,26 +124,6 @@ if (empty($initialFields)) {
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
                     <textarea name="description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md"><?= htmlspecialchars($formDescription) ?></textarea>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Integração API</h3>
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="has_api" value="1" <?= $formHasApi ? 'checked' : '' ?> class="mr-2">
-                    <span class="text-sm text-gray-700">Produto possui API</span>
-                </label>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Provedor/API</label>
-                    <input type="text" name="api_provider" value="<?= htmlspecialchars($formApiProvider) ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600" placeholder="ex: MUSE" autocomplete="off">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Configuração JSON</label>
-                    <textarea name="api_config_json" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600" placeholder='{"endpoint":"https://api.exemplo.com","auth":"bearer"}' autocomplete="off"><?= htmlspecialchars($formApiConfig) ?></textarea>
                 </div>
             </div>
         </div>

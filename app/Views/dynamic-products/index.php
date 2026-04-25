@@ -54,14 +54,13 @@ $filters = $filters ?? [];
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campos</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">API</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 <?php if (empty($products)): ?>
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">Nenhum produto dinâmico cadastrado.</td>
+                        <td colspan="4" class="px-6 py-8 text-center text-gray-500">Nenhum produto dinâmico cadastrado.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($products as $product): ?>
@@ -72,15 +71,6 @@ $filters = $filters ?? [];
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-700"><?= htmlspecialchars($product['slug']) ?></td>
                             <td class="px-6 py-4 text-sm text-gray-700"><?= (int) ($product['total_fields'] ?? 0) ?></td>
-                            <td class="px-6 py-4">
-                                <?php if ((int) ($product['has_api'] ?? 0) === 1): ?>
-                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                                        <?= htmlspecialchars($product['api_provider'] ?: 'Configurada') ?>
-                                    </span>
-                                <?php else: ?>
-                                    <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">Sem API</span>
-                                <?php endif; ?>
-                            </td>
                             <td class="px-6 py-4 text-right">
                                 <a href="<?= url('produtos-dinamicos/' . $product['id'] . '/edit') ?>" class="text-blue-600 hover:text-blue-900 mr-3">
                                     <i class="fas fa-edit"></i>
