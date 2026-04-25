@@ -145,11 +145,11 @@ if (empty($initialFields)) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Provedor/API</label>
-                    <input type="text" name="api_provider" value="<?= htmlspecialchars($formApiProvider) ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="ex: MUSE">
+                    <input type="text" name="api_provider" value="<?= htmlspecialchars($formApiProvider) ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600" placeholder="ex: MUSE" autocomplete="off">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Configuração JSON</label>
-                    <textarea name="api_config_json" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder='{"endpoint":"https://api.exemplo.com","auth":"bearer"}'><?= htmlspecialchars($formApiConfig) ?></textarea>
+                    <textarea name="api_config_json" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600" placeholder='{"endpoint":"https://api.exemplo.com","auth":"bearer"}' autocomplete="off"><?= htmlspecialchars($formApiConfig) ?></textarea>
                 </div>
             </div>
         </div>
@@ -176,27 +176,32 @@ if (empty($initialFields)) {
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-gray-600">Tipo *</label>
-                                <select name="field_type[]" class="w-full px-2 py-2 border border-gray-300 rounded-md field-type-select">
-                                    <?php
-                                    $types = ['text', 'number', 'email', 'date', 'datetime-local', 'textarea', 'select', 'currency', 'phone', 'cpf', 'cnpj'];
-                                    $typeLabels = [
-                                        'text' => 'Texto',
-                                        'number' => 'Número',
-                                        'email' => 'E-mail',
-                                        'date' => 'Data',
-                                        'datetime-local' => 'Data e Hora',
-                                        'textarea' => 'Texto Longo',
-                                        'select' => 'Seleção',
-                                        'currency' => 'Moeda',
-                                        'phone' => 'Telefone',
-                                        'cpf' => 'CPF',
-                                        'cnpj' => 'CNPJ'
-                                    ];
-                                    foreach ($types as $type):
-                                    ?>
-                                        <option value="<?= $type ?>" <?= $field['field_type'] === $type ? 'selected' : '' ?>><?= $typeLabels[$type] ?? $type ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <div class="relative">
+                                    <select name="field_type[]" class="w-full px-2 py-2 pr-10 border border-gray-300 rounded-md field-type-select select-padronizado">
+                                        <?php
+                                        $types = ['text', 'number', 'email', 'date', 'datetime-local', 'textarea', 'select', 'currency', 'phone', 'cpf', 'cnpj'];
+                                        $typeLabels = [
+                                            'text' => 'Texto',
+                                            'number' => 'Número',
+                                            'email' => 'E-mail',
+                                            'date' => 'Data',
+                                            'datetime-local' => 'Data e Hora',
+                                            'textarea' => 'Texto Longo',
+                                            'select' => 'Seleção',
+                                            'currency' => 'Moeda',
+                                            'phone' => 'Telefone',
+                                            'cpf' => 'CPF',
+                                            'cnpj' => 'CNPJ'
+                                        ];
+                                        foreach ($types as $type):
+                                        ?>
+                                            <option value="<?= $type ?>" <?= $field['field_type'] === $type ? 'selected' : '' ?>><?= $typeLabels[$type] ?? $type ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </span>
+                                </div>
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-gray-600">Texto de apoio</label>
@@ -248,19 +253,24 @@ if (empty($initialFields)) {
             </div>
             <div>
                 <label class="text-xs font-medium text-gray-600">Tipo *</label>
-                <select name="field_type[]" class="w-full px-2 py-2 border border-gray-300 rounded-md field-type-select">
-                    <option value="text">Texto</option>
-                    <option value="number">Número</option>
-                    <option value="email">E-mail</option>
-                    <option value="date">Data</option>
-                    <option value="datetime-local">Data e Hora</option>
-                    <option value="textarea">Texto Longo</option>
-                    <option value="select">Seleção</option>
-                    <option value="currency">Moeda</option>
-                    <option value="phone">Telefone</option>
-                    <option value="cpf">CPF</option>
-                    <option value="cnpj">CNPJ</option>
-                </select>
+                <div class="relative">
+                    <select name="field_type[]" class="w-full px-2 py-2 pr-10 border border-gray-300 rounded-md field-type-select select-padronizado">
+                        <option value="text">Texto</option>
+                        <option value="number">Número</option>
+                        <option value="email">E-mail</option>
+                        <option value="date">Data</option>
+                        <option value="datetime-local">Data e Hora</option>
+                        <option value="textarea">Texto Longo</option>
+                        <option value="select">Seleção</option>
+                        <option value="currency">Moeda</option>
+                        <option value="phone">Telefone</option>
+                        <option value="cpf">CPF</option>
+                        <option value="cnpj">CNPJ</option>
+                    </select>
+                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </span>
+                </div>
             </div>
             <div>
                 <label class="text-xs font-medium text-gray-600">Texto de apoio</label>
@@ -287,6 +297,16 @@ if (empty($initialFields)) {
         </div>
     </div>
 </template>
+
+<style>
+.select-padronizado {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: none;
+    background-color: #fff;
+    line-height: 1.25rem;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
