@@ -10,7 +10,7 @@ ob_start();
             <i class="fas fa-file-upload mr-2"></i>
             Importar Estabelecimentos (CSV)
         </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">Importe estabelecimentos do PagSeguro via arquivo CSV com produto PagBank</p>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Importe estabelecimentos do PagSeguro via arquivo CSV com produto PagSeguro</p>
     </div>
 
     <?php if (isset($_SESSION['success'])): ?>
@@ -105,7 +105,7 @@ ob_start();
         <ul class="list-disc list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
             <li>O arquivo CSV deve usar ponto e vírgula (;) como separador</li>
             <li>A primeira linha deve conter os cabeçalhos das colunas</li>
-            <li>Todos os estabelecimentos importados receberão automaticamente o produto <strong>PagBank</strong></li>
+            <li>Todos os estabelecimentos importados receberão automaticamente o produto <strong>PagSeguro</strong></li>
             <li>O campo CADASTRO deve conter "PF" para Pessoa Física ou "PJ" para Pessoa Jurídica</li>
             <li>CPF e CNPJ devem estar formatados (com pontos e traços) ou apenas números</li>
             <li>Registros com CPF/CNPJ duplicados serão ignorados se a opção estiver marcada</li>

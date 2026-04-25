@@ -171,7 +171,7 @@ class Establishment
                            IF((SELECT COUNT(*) FROM establishment_cdc WHERE establishment_id = e.id) > 0, 'CDC', NULL),
                            IF((SELECT COUNT(*) FROM establishment_google WHERE establishment_id = e.id) > 0, 'Google', NULL),
                            IF((SELECT COUNT(*) FROM establishment_membro_key WHERE establishment_id = e.id) > 0, 'Membro Key', NULL),
-                           IF((SELECT COUNT(*) FROM establishment_pagbank WHERE establishment_id = e.id) > 0, 'PagBank', NULL),
+                           IF((SELECT COUNT(*) FROM establishment_pagbank WHERE establishment_id = e.id) > 0, 'PagSeguro', NULL),
                            IF((SELECT COUNT(*) FROM establishment_outros WHERE establishment_id = e.id) > 0, 'Outros', NULL)
                        )) as produtos_adicionais,
                        (SELECT GROUP_CONCAT(DISTINCT dp.name ORDER BY dp.name SEPARATOR ', ')
@@ -419,7 +419,7 @@ class Establishment
                 throw new \Exception('Falha ao atualizar estabelecimento no banco de dados');
             }
             
-            // Atualizar produtos manuais (PagBank)
+            // Atualizar produtos manuais (PagSeguro)
             $establishmentProduct = new EstablishmentProduct();
             $establishmentProduct->deleteAllProducts($id);
             if (isset($data['products']) && is_array($data['products']) && !empty($data['products'])) {

@@ -136,7 +136,7 @@ ob_start();
                             </label>
                         </div>
                         <p class="text-xs text-gray-500 dark:text-gray-400 -mt-4">
-                            Quando ativado, a integração será usada automaticamente para estabelecimentos com produto PagBank
+                            Quando ativado, a integração será usada automaticamente para estabelecimentos com produto PagSeguro
                         </p>
                     </div>
                     
@@ -167,7 +167,7 @@ ob_start();
                                 Quando a API é usada?
                             </h4>
                             <p class="text-xs text-gray-600">
-                                A API SistPay será usada automaticamente apenas quando o estabelecimento tiver o produto <strong>PagBank</strong> selecionado. Outros produtos não utilizam esta integração.
+                                A API SistPay será usada automaticamente apenas quando o estabelecimento tiver o produto <strong>PagSeguro</strong> selecionado. Outros produtos não utilizam esta integração.
                             </p>
                         </div>
                         
@@ -223,7 +223,7 @@ ob_start();
                             <li>• Certifique-se de que o token está correto</li>
                             <li>• Verifique se a URL base está correta</li>
                             <li>• Use o modo sandbox para testes</li>
-                            <li>• A API só funciona para estabelecimentos com PagBank</li>
+                            <li>• A API só funciona para estabelecimentos com PagSeguro</li>
                         </ul>
                     </div>
                 </div>

@@ -243,7 +243,7 @@ class EstablishmentProduct
         $id = uniqid();
         $valor = $this->normalizeNumericValue($data['valor'] ?? null);
         
-        // PagBank tem campos adicionais como CDX/EVO
+        // PagSeguro tem campos adicionais como CDX/EVO
         if ($productType === 'prod-pagbank') {
             $previsaoFaturamento = $this->normalizeNumericValue($data['previsao_faturamento'] ?? null);
             $plan = !empty($data['plan']) ? (int)$data['plan'] : null;
@@ -302,7 +302,7 @@ class EstablishmentProduct
         
         $valor = $this->normalizeNumericValue($data['valor'] ?? null);
         
-        // PagBank tem campos adicionais
+        // PagSeguro tem campos adicionais
         if ($productType === 'prod-pagbank') {
             $previsaoFaturamento = $this->normalizeNumericValue($data['previsao_faturamento'] ?? null);
             $plan = !empty($data['plan']) ? (int)$data['plan'] : null;
@@ -334,7 +334,7 @@ class EstablishmentProduct
     
     // Métodos legados para compatibilidade
     // Métodos legados removidos - tabela establishment_other_products não existe mais
-    // Use os métodos específicos: createGoogle, createMembroKey, createPagBank, createOutros
+    // Use os métodos específicos: createGoogle, createMembroKey, createPagSeguro, createOutros
     
     public function getOtherProducts($establishmentId)
     {
@@ -354,7 +354,7 @@ class EstablishmentProduct
                 $products[] = $membroKey;
             }
             
-            // PagBank
+            // PagSeguro
             $pagbank = $this->db->fetch("SELECT *, 'prod-pagbank' as product_type, 'prod-pagbank' as product_name FROM establishment_pagbank WHERE establishment_id = ?", [$establishmentId]);
             if ($pagbank) {
                 $products[] = $pagbank;
@@ -471,7 +471,7 @@ class EstablishmentProduct
                     $products['other'][] = array_merge($pagbank, ['product_type' => 'prod-pagbank', 'product_name' => 'prod-pagbank']);
                 }
             } catch (\Exception $e) {
-                write_log('Aviso: Erro ao buscar PagBank para estabelecimento ' . $establishmentId . ': ' . $e->getMessage(), 'app.log');
+                write_log('Aviso: Erro ao buscar PagSeguro para estabelecimento ' . $establishmentId . ': ' . $e->getMessage(), 'app.log');
             }
             
             try {

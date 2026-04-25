@@ -243,7 +243,7 @@ function isProductSelected($productId, $productData) {
                     </div>
                 </div>
 
-                <!-- Campos PJ (CPF e Data de Nascimento do responsável exigidos para PagBank) -->
+                <!-- Campos PJ (CPF e Data de Nascimento do responsável exigidos para PagSeguro) -->
                 <div id="pj-fields" class="<?= ($establishment['registration_type'] ?? '') === 'PJ' ? '' : 'hidden' ?>">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -272,14 +272,14 @@ function isProductSelected($productId, $productData) {
                                    value="<?= htmlspecialchars($establishment['cpf'] ?? '') ?>"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="000.000.000-00">
-                            <small class="text-gray-500">CPF do sócio/responsável (exigido para PagBank)</small>
+                            <small class="text-gray-500">CPF do sócio/responsável (exigido para PagSeguro)</small>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
                             <input type="date" name="data_nascimento" 
                                    value="<?= htmlspecialchars(isset($establishment['birth_date']) && $establishment['birth_date'] ? date('Y-m-d', strtotime($establishment['birth_date'])) : '') ?>"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <small class="text-gray-500">Exigido para envio à API PagBank</small>
+                            <small class="text-gray-500">Exigido para envio à API PagSeguro</small>
                         </div>
                     </div>
                 </div>
@@ -431,7 +431,7 @@ function isProductSelected($productId, $productData) {
                     <i class="fas fa-star mr-2 text-blue-600"></i>
                     Produtos
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                     <?php 
                     // Mapeamento de nomes de produtos
                     $productNameMap = [
@@ -526,7 +526,7 @@ function isProductSelected($productId, $productData) {
                     <i class="fas fa-layer-group mr-2 text-blue-600"></i>
                     Produtos Dinâmicos
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
                     <?php foreach ($dynamicProductsCatalog as $dynamicProduct): ?>
                         <?php
                             $dynamicProductId = (int) ($dynamicProduct['id'] ?? 0);
@@ -720,12 +720,12 @@ function isProductSelected($productId, $productData) {
                             }
                         }
                     }
-                    $isPagBank = ($product['id'] === 'prod-pagbank');
+                    $isPagSeguro = ($product['id'] === 'prod-pagbank');
                     ?>
                     <div id="<?= $product['id'] ?>-config" class="<?= $isOtherProductSelected ? '' : 'hidden' ?> mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
                         <h5 class="font-medium text-white mb-3"><?= htmlspecialchars($product['name']) ?></h5>
-                        <?php if ($isPagBank): ?>
-                        <!-- PagBank - Campos adicionais como CDX/EVO -->
+                        <?php if ($isPagSeguro): ?>
+                        <!-- PagSeguro - Campos adicionais como CDX/EVO -->
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Previsão de Faturamento</label>
@@ -776,7 +776,7 @@ function isProductSelected($productId, $productData) {
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                        placeholder="R$ 0,00" data-mask="currency">
                             </div>
-                            <?php if ($isPagBank): ?>
+                            <?php if ($isPagSeguro): ?>
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Plano SistPay</label>
                                 <select name="plan_<?= $product['id'] ?>" 
@@ -903,7 +903,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnBuscarCep = document.getElementById('btn-buscar-cep');
     const cepHelp = document.getElementById('cep-help');
 
-    function syncPagBankPjRequired() {
+    function syncPagSeguroPjRequired() {
         const tipoSelecionado = document.querySelector('input[name="registration_type"]:checked');
         const isPj = tipoSelecionado && tipoSelecionado.value === 'PJ';
         const pagBankSelected = !!document.querySelector('input[name="products[]"][value="prod-pagbank"]:checked');
@@ -932,7 +932,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.value === 'PF') {
                 pfFields.classList.remove('hidden');
                 pjFields.classList.add('hidden');
-                syncPagBankPjRequired();
+                syncPagSeguroPjRequired();
                 // Mostrar botão de busca de CEP para Pessoa Física
                 if (btnBuscarCep) {
                     btnBuscarCep.classList.remove('hidden');
@@ -943,7 +943,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (this.value === 'PJ') {
                 pfFields.classList.add('hidden');
                 pjFields.classList.remove('hidden');
-                syncPagBankPjRequired();
+                syncPagSeguroPjRequired();
                 // Ocultar botão de busca de CEP para Pessoa Jurídica
                 if (btnBuscarCep) {
                     btnBuscarCep.classList.add('hidden');
@@ -955,8 +955,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Required dos campos PJ depende de selecionar PagBank manual
-    syncPagBankPjRequired();
+    // Required dos campos PJ depende de selecionar PagSeguro manual
+    syncPagSeguroPjRequired();
     
     // Lista de produtos que NÃO devem mostrar campos bancários
     // Função para verificar se deve mostrar campos bancários (apenas CDC ou EVO)
@@ -989,7 +989,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // PagBank NÃO precisa de dados bancários, então não adicionar aqui
+            // PagSeguro NÃO precisa de dados bancários, então não adicionar aqui
         });
         
         if (deveMostrar) {
@@ -1056,7 +1056,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Verificar campos bancários quando produto mudar
             verificarCamposBancarios();
-            syncPagBankPjRequired();
+            syncPagSeguroPjRequired();
         });
         
         // Verificar estado inicial (se já estiver marcado)

@@ -151,7 +151,7 @@ $representatives = $representatives ?? [];
                     <option value="CDC" <?= ($filters['produto'] ?? '') === 'CDC' ? 'selected' : '' ?>>CDC</option>
                     <option value="GOOGLE" <?= ($filters['produto'] ?? '') === 'GOOGLE' ? 'selected' : '' ?>>Google</option>
                     <option value="MEMBRO_KEY" <?= ($filters['produto'] ?? '') === 'MEMBRO_KEY' ? 'selected' : '' ?>>Membro Key</option>
-                    <option value="PAGBANK" <?= ($filters['produto'] ?? '') === 'PAGBANK' ? 'selected' : '' ?>>PagBank</option>
+                    <option value="PAGBANK" <?= ($filters['produto'] ?? '') === 'PAGBANK' ? 'selected' : '' ?>>PagSeguro</option>
                     <option value="OUTROS" <?= ($filters['produto'] ?? '') === 'OUTROS' ? 'selected' : '' ?>>Outros</option>
                 </select>
             </div>
@@ -273,7 +273,7 @@ $representatives = $representatives ?? [];
                                     foreach ($produtosAdicionais as $prod) {
                                         $prod = trim($prod);
                                         // Só adicionar produtos válidos que realmente existem nas tabelas
-                                        $produtosValidos = ['CDX/EVO', 'CDC', 'Google', 'Membro Key', 'PagBank', 'Outros'];
+                                        $produtosValidos = ['CDX/EVO', 'CDC', 'Google', 'Membro Key', 'PagSeguro', 'Outros'];
                                         if (!empty($prod) && in_array($prod, $produtosValidos) && !in_array($prod, $produtos)) {
                                             $produtos[] = $prod;
                                         }
@@ -301,7 +301,7 @@ $representatives = $representatives ?? [];
                                         'BRASILCARD' => 'CDC', // Valor antigo
                                         'GOOGLE' => 'Google',
                                         'MEMBRO_KEY' => 'Membro Key',
-                                        'PAGBANK' => 'PagBank',
+                                        'PAGBANK' => 'PagSeguro',
                                         'OUTROS' => 'Outros',
                                     ];
                                     $produtoNome = $produtoMap[$produtoEnum] ?? null;

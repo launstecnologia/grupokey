@@ -642,7 +642,7 @@ class EstablishmentController
             $errors[] = 'Email válido é obrigatório';
         }
         
-        // Produtos manuais: manter somente PagBank
+        // Produtos manuais: manter somente PagSeguro
         $productsRaw = $_POST['products'] ?? [];
         $productsRaw = is_array($productsRaw) ? $productsRaw : [];
         $products = [];
@@ -666,7 +666,7 @@ class EstablishmentController
         $dynamicProducts = array_values(array_unique($dynamicProducts));
 
         if (empty($products) && empty($dynamicProducts)) {
-            $errors[] = 'Selecione pelo menos um produto (PagBank ou produto dinâmico).';
+            $errors[] = 'Selecione pelo menos um produto (PagSeguro ou produto dinâmico).';
             error_log('ERRO: Nenhum produto selecionado');
         } else {
             error_log('SUCESSO: Produtos validados');
@@ -705,7 +705,7 @@ class EstablishmentController
                 $errors[] = 'CPF inválido';
             }
         } else {
-            $hasManualPagBank = in_array('prod-pagbank', $products, true);
+            $hasManualPagSeguro = in_array('prod-pagbank', $products, true);
             $cnpj = sanitize_input($_POST['cnpj'] ?? '');
             $razaoSocial = sanitize_input($_POST['razao_social'] ?? '');
             $cpfPj = sanitize_input($_POST['cpf_pj'] ?? '');
@@ -718,13 +718,13 @@ class EstablishmentController
             if (empty($razaoSocial)) {
                 $errors[] = 'Razão social é obrigatória para pessoa jurídica';
             }
-            if ($hasManualPagBank && empty($cpfPj)) {
-                $errors[] = 'CPF do responsável é obrigatório para pessoa jurídica (exigido para PagBank)';
+            if ($hasManualPagSeguro && empty($cpfPj)) {
+                $errors[] = 'CPF do responsável é obrigatório para pessoa jurídica (exigido para PagSeguro)';
             } elseif (!empty($cpfPj) && !$this->validateCPF($cpfPj)) {
                 $errors[] = 'CPF do responsável inválido';
             }
-            if ($hasManualPagBank && empty($dataNascimento)) {
-                $errors[] = 'Data de nascimento do responsável é obrigatória para pessoa jurídica (exigido para PagBank)';
+            if ($hasManualPagSeguro && empty($dataNascimento)) {
+                $errors[] = 'Data de nascimento do responsável é obrigatória para pessoa jurídica (exigido para PagSeguro)';
             } elseif (!empty($dataNascimento) && (strtotime($dataNascimento) === false || date('Y-m-d', strtotime($dataNascimento)) !== $dataNascimento)) {
                 $errors[] = 'Data de nascimento do responsável inválida';
             }
@@ -861,7 +861,7 @@ class EstablishmentController
                 case 'prod-pagseguro':
                 case 'prod-subaquirente':
                 case 'prod-pagbank':
-                    // CDX/EVO e PagBank têm os mesmos campos
+                    // CDX/EVO e PagSeguro têm os mesmos campos
                     // Usar prod-pagseguro como chave para campos do formulário (compatibilidade)
                     $formKey = ($productType === 'prod-subaquirente') ? 'prod-pagseguro' : $productType;
                     $data[$productType] = [
@@ -939,7 +939,7 @@ class EstablishmentController
     }
     
     /**
-     * Migra estabelecimento para SistPay (apenas se tiver produto PagBank)
+     * Migra estabelecimento para SistPay (apenas se tiver produto PagSeguro)
      */
     public function migrateToSistPay($id)
     {
@@ -953,7 +953,7 @@ class EstablishmentController
         }
         
         // Verificar se tem prod-pagbank
-        $hasPagBank = false;
+        $hasPagSeguro = false;
         $products = $this->establishmentProductModel->getAllProducts($id);
         
         write_log('=== VERIFICAÇÃO DE PRODUTOS PAGBANK ===', 'app.log');
@@ -965,16 +965,16 @@ class EstablishmentController
                 $productType = $product['product_type'] ?? $product['product_name'] ?? '';
                 write_log('Verificando produto: ' . $productType, 'app.log');
                 if ($productType === 'prod-pagbank') {
-                    $hasPagBank = true;
-                    write_log('Produto PagBank encontrado!', 'app.log');
+                    $hasPagSeguro = true;
+                    write_log('Produto PagSeguro encontrado!', 'app.log');
                     break;
                 }
             }
         }
         
-        if (!$hasPagBank) {
-            write_log('ERRO: Estabelecimento não possui produto PagBank', 'app.log');
-            $_SESSION['error'] = 'Este estabelecimento não possui o produto PagBank. A migração só é permitida para estabelecimentos com PagBank.';
+        if (!$hasPagSeguro) {
+            write_log('ERRO: Estabelecimento não possui produto PagSeguro', 'app.log');
+            $_SESSION['error'] = 'Este estabelecimento não possui o produto PagSeguro. A migração só é permitida para estabelecimentos com PagSeguro.';
             redirect(url('estabelecimentos/' . $id));
         }
         
@@ -987,7 +987,7 @@ class EstablishmentController
             $settings = $settingsModel->getActiveSettings();
             write_log('Configurações SistPay: ' . json_encode($settings), 'app.log');
             
-            // Preparar dados do estabelecimento (CPF e birth_date obrigatórios para PJ na API PagBank)
+            // Preparar dados do estabelecimento (CPF e birth_date obrigatórios para PJ na API PagSeguro)
             $data = [
                 'nome_fantasia' => $establishment['nome_fantasia'] ?? '',
                 'nome_completo' => $establishment['nome_completo'] ?? '',
@@ -1044,7 +1044,7 @@ class EstablishmentController
     
     /**
      * Integra com a API SistPay
-     * Nota: A verificação de produto PagBank já foi feita antes de chamar este método
+     * Nota: A verificação de produto PagSeguro já foi feita antes de chamar este método
      */
     private function integrateWithSistPay($establishmentId, $data)
     {
@@ -1068,7 +1068,7 @@ class EstablishmentController
             $registrationType = $data['registration_type'] ?? 'PF';
             $segmentId = ($registrationType === 'PF') ? 7 : 6;
             
-            // Buscar plano do estabelecimento (do produto PagBank)
+            // Buscar plano do estabelecimento (do produto PagSeguro)
             $pagBankProduct = $this->establishmentProductModel->getOtherProducts($establishmentId);
             $planId = null;
             foreach ($pagBankProduct as $product) {
@@ -1084,7 +1084,7 @@ class EstablishmentController
                 write_log('AVISO: Plano não configurado para o estabelecimento, usando fallback: ' . $planId, 'app.log');
             }
             
-            // Preparar dados para a API (CPF e birth_date enviados para PagBank/SistPay)
+            // Preparar dados para a API (CPF e birth_date enviados para PagSeguro/SistPay)
             $apiData = [
                 'nome_fantasia' => $data['nome_fantasia'] ?? '',
                 'nome_completo' => $data['nome_completo'] ?? '',
@@ -1213,7 +1213,7 @@ class EstablishmentController
             'CDC' => 'CDC',
             'GOOGLE' => 'Google',
             'MEMBRO_KEY' => 'Membro Key',
-            'PAGBANK' => 'PagBank',
+            'PAGBANK' => 'PagSeguro',
             'OUTROS' => 'Outros'
         ];
         
@@ -1244,8 +1244,13 @@ class EstablishmentController
             $slug = strtolower((string) ($product['slug'] ?? ''));
             $name = strtolower((string) ($product['name'] ?? ''));
 
-            // PagBank permanece manual
-            if (strpos($slug, 'pagbank') !== false || strpos($name, 'pagbank') !== false) {
+            // PagSeguro permanece manual
+            if (
+                strpos($slug, 'pagbank') !== false ||
+                strpos($name, 'pagbank') !== false ||
+                strpos($slug, 'pagseguro') !== false ||
+                strpos($name, 'pagseguro') !== false
+            ) {
                 continue;
             }
 
@@ -1878,7 +1883,7 @@ class EstablishmentController
                         'cidade' => $data['cidade'] ?? '',
                         'uf' => strtoupper(trim($data['uf'] ?? '')),
                         'status' => $autoApprove ? 'APPROVED' : 'PENDING',
-                        'products' => ['prod-pagbank'], // Sempre adicionar PagBank
+                        'products' => ['prod-pagbank'], // Sempre adicionar PagSeguro
                         'product_data' => []
                     ];
                     

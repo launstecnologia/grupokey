@@ -298,18 +298,18 @@ $statusLabels = [
 
             <!-- Dados Bancários -->
             <?php
-            // Verificar se tem PagBank selecionado
-            $hasPagBank = false;
+            // Verificar se tem PagSeguro selecionado
+            $hasPagSeguro = false;
             if (isset($productData['other']) && is_array($productData['other'])) {
                 foreach ($productData['other'] as $product) {
                     if (($product['product_type'] ?? $product['product_name'] ?? '') === 'prod-pagbank') {
-                        $hasPagBank = true;
+                        $hasPagSeguro = true;
                         break;
                     }
                 }
             }
-            // Só mostrar dados bancários se NÃO tiver PagBank
-            if (!$hasPagBank):
+            // Só mostrar dados bancários se NÃO tiver PagSeguro
+            if (!$hasPagSeguro):
             ?>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -484,7 +484,7 @@ $statusLabels = [
                                 'prod-outros' => 'Outros Produtos',
                                 'prod-membro-key' => 'Membro Key',
                                 'prod-google' => 'Google',
-                                'prod-pagbank' => 'PagBank',
+                                'prod-pagbank' => 'PagSeguro',
                                 'prod-cdc' => 'CDC',
                                 'prod-subaquirente' => 'CDX/EVO',
                             ];
@@ -501,7 +501,7 @@ $statusLabels = [
                                 }
                                 
                                 $displayName = $productNameMap[$productName] ?? $productName;
-                                $isPagBank = ($productName === 'prod-pagbank');
+                                $isPagSeguro = ($productName === 'prod-pagbank');
                             ?>
                             <div class="p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
@@ -509,19 +509,19 @@ $statusLabels = [
                                     <?= htmlspecialchars($displayName) ?>
                                 </h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                                    <?php if ($isPagBank && !empty($otherProduct['previsao_faturamento'])): ?>
+                                    <?php if ($isPagSeguro && !empty($otherProduct['previsao_faturamento'])): ?>
                                     <div>
                                         <span class="text-gray-600 dark:text-gray-400">Previsão de Faturamento:</span>
                                         <span class="font-medium text-gray-900 dark:text-white">R$ <?= number_format($otherProduct['previsao_faturamento'], 2, ',', '.') ?></span>
                                     </div>
                                     <?php endif; ?>
-                                    <?php if ($isPagBank && !empty($otherProduct['tabela'])): ?>
+                                    <?php if ($isPagSeguro && !empty($otherProduct['tabela'])): ?>
                                     <div>
                                         <span class="text-gray-600 dark:text-gray-400">Tabela:</span>
                                         <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars($otherProduct['tabela']) ?></span>
                                     </div>
                                     <?php endif; ?>
-                                    <?php if ($isPagBank && !empty($otherProduct['modelo_maquininha'])): ?>
+                                    <?php if ($isPagSeguro && !empty($otherProduct['modelo_maquininha'])): ?>
                                     <div>
                                         <span class="text-gray-600 dark:text-gray-400">Modelo de Maquininha:</span>
                                         <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars($otherProduct['modelo_maquininha']) ?></span>
@@ -661,11 +661,11 @@ $statusLabels = [
                     <div class="flex flex-col gap-4">
                         <?php 
                         // Verificar se tem prod-pagbank
-                        $hasPagBank = false;
+                        $hasPagSeguro = false;
                         if (isset($productData['other']) && is_array($productData['other'])) {
                             foreach ($productData['other'] as $product) {
                                 if (($product['product_type'] ?? $product['product_name'] ?? '') === 'prod-pagbank') {
-                                    $hasPagBank = true;
+                                    $hasPagSeguro = true;
                                     break;
                                 }
                             }
@@ -677,7 +677,7 @@ $statusLabels = [
                         $isSandbox = !empty($sistPaySettings['is_sandbox'] ?? false);
                         ?>
                         
-                        <?php if ($hasPagBank && $sistPayApiActive): ?>
+                        <?php if ($hasPagSeguro && $sistPayApiActive): ?>
                         <form method="POST" action="<?= url('estabelecimentos/' . ($establishment['id'] ?? '') . '/migrate-sistpay') ?>" class="w-full" onsubmit="return confirm('<?= $isSandbox ? 'Tem certeza que deseja testar a migração para SistPay em modo SANDBOX? Os dados serão validados mas não serão salvos no banco da SistPay.' : 'Tem certeza que deseja migrar este estabelecimento para SistPay?' ?>')">
                             <?= csrf_field() ?>
                             <button type="submit" class="w-full <?= $isSandbox ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-blue-600 hover:bg-blue-700' ?> text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors">

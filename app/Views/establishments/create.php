@@ -214,13 +214,13 @@ $segments = $segments ?? [];
                             <input type="text" name="cpf_pj" id="cpf-pj" value="<?= htmlspecialchars(old('cpf_pj', old('cpf'))) ?>" 
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="000.000.000-00">
-                            <small class="text-gray-500">CPF do sócio/responsável (exigido para PagBank)</small>
+                            <small class="text-gray-500">CPF do sócio/responsável (exigido para PagSeguro)</small>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
                             <input type="date" name="data_nascimento" value="<?= htmlspecialchars(old('data_nascimento')) ?>" 
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <small class="text-gray-500">Exigido para envio à API PagBank</small>
+                            <small class="text-gray-500">Exigido para envio à API PagSeguro</small>
                         </div>
                     </div>
                 </div>
@@ -331,7 +331,7 @@ $segments = $segments ?? [];
                     <i class="fas fa-star mr-2 text-blue-600"></i>
                     Produtos
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                     <?php 
                     // Mapeamento de nomes de produtos
                     $productNameMap = [
@@ -414,7 +414,7 @@ $segments = $segments ?? [];
                     <i class="fas fa-layer-group mr-2 text-blue-600"></i>
                     Produtos Dinâmicos
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
                     <?php foreach ($dynamicProductsCatalog as $dynamicProduct): ?>
                         <?php
                             $dynamicProductId = (int) ($dynamicProduct['id'] ?? 0);
@@ -614,12 +614,12 @@ $segments = $segments ?? [];
                             $displayName = 'CDX/EVO';
                         }
                         
-                        $isPagBank = ($product['id'] === 'prod-pagbank');
+                        $isPagSeguro = ($product['id'] === 'prod-pagbank');
                     ?>
                     <div id="<?= $product['id'] ?>-config" class="hidden mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
                         <h5 class="font-medium text-white mb-3"><?= htmlspecialchars($displayName) ?></h5>
-                        <?php if ($isPagBank): ?>
-                        <!-- PagBank - Campos adicionais como CDX/EVO -->
+                        <?php if ($isPagSeguro): ?>
+                        <!-- PagSeguro - Campos adicionais como CDX/EVO -->
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Previsão de Faturamento</label>
@@ -668,7 +668,7 @@ $segments = $segments ?? [];
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                        placeholder="R$ 0,00" data-mask="currency">
                             </div>
-                            <?php if ($isPagBank): ?>
+                            <?php if ($isPagSeguro): ?>
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Plano SistPay</label>
                                 <select name="plan_<?= $product['id'] ?>" 
@@ -915,7 +915,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // PagBank NÃO precisa de dados bancários, então não adicionar aqui
+            // PagSeguro NÃO precisa de dados bancários, então não adicionar aqui
         });
         
         if (deveMostrar) {

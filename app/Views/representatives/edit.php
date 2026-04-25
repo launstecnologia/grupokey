@@ -289,9 +289,9 @@ ob_start();
                         'MercadoPago' => 'CDX/EVO',
                         'PAGSEGURO_MP' => 'CDX/EVO',
                         'PagSeguro/MP' => 'CDX/EVO',
-                        'PagBank' => 'PagBank',
-                        'PAGBANK' => 'PagBank',
-                        'pagbank' => 'PagBank',
+                        'PagSeguro' => 'PagSeguro',
+                        'PAGBANK' => 'PagSeguro',
+                        'pagbank' => 'PagSeguro',
                         'Conteúdo Digital' => null, // Remover
                         'CONTEUDO_DIGITAL' => null, // Remover
                         'Conteudo Digital' => null, // Remover
@@ -376,7 +376,7 @@ ob_start();
                         } elseif (stripos($productId, 'PAGSEGURO_MP') !== false || stripos($productName, 'PagSeguro/MP') !== false || stripos($productName, 'MercadoPago') !== false || stripos($productName, 'Mercado Pago') !== false) {
                             $displayName = 'CDX/EVO';
                         } elseif (stripos($productNameUpper, 'PAGBANK') !== false || stripos($productId, 'PAGBANK') !== false) {
-                            $displayName = 'PagBank';
+                            $displayName = 'PagSeguro';
                         }
                         
                         // Mapear para valor do ENUM do banco
@@ -385,13 +385,13 @@ ob_start();
                             $enumValue = 'CDC';
                         } elseif (stripos($productId, 'PAGSEGURO_MP') !== false || stripos($productId, 'CDX') !== false || stripos($productId, 'EVO') !== false || $displayName === 'CDX/EVO') {
                             $enumValue = 'CDX_EVO';
-                        } elseif (stripos($productId, 'PAGSEGURO') !== false || $displayName === 'PagSeguro') {
+                        } elseif ((stripos($productId, 'PAGSEGURO') !== false && stripos($productId, 'PAGBANK') === false)) {
                             $enumValue = 'PAGSEGURO';
                         } elseif (stripos($productNameUpper, 'GOOGLE') !== false) {
                             $enumValue = 'GOOGLE';
                         } elseif (stripos($productNameUpper, 'MEMBRO') !== false) {
                             $enumValue = 'MEMBRO_KEY';
-                        } elseif (stripos($productNameUpper, 'PAGBANK') !== false || stripos($productId, 'PAGBANK') !== false || $displayName === 'PagBank') {
+                        } elseif (stripos($productNameUpper, 'PAGBANK') !== false || stripos($productId, 'PAGBANK') !== false || $displayName === 'PagSeguro') {
                             $enumValue = 'PAGBANK';
                         } elseif (stripos($productNameUpper, 'DIVERSOS') !== false) {
                             $enumValue = 'DIVERSOS';

@@ -129,7 +129,7 @@ $filters = $filters ?? [];
                     <option value="GOOGLE" <?= ($filters['produto'] ?? '') === 'GOOGLE' ? 'selected' : '' ?>>Google</option>
                     <option value="MEMBRO_KEY" <?= ($filters['produto'] ?? '') === 'MEMBRO_KEY' ? 'selected' : '' ?>>Membro Key</option>
                     <option value="OUTROS" <?= ($filters['produto'] ?? '') === 'OUTROS' ? 'selected' : '' ?>>Outros</option>
-                    <option value="PAGBANK" <?= ($filters['produto'] ?? '') === 'PAGBANK' ? 'selected' : '' ?>>PagBank</option>
+                    <option value="PAGBANK" <?= ($filters['produto'] ?? '') === 'PAGBANK' ? 'selected' : '' ?>>PagSeguro</option>
                 </select>
             </div>
 
@@ -237,7 +237,7 @@ $filters = $filters ?? [];
                                     'GOOGLE' => 'Google',
                                     'MEMBRO_KEY' => 'Membro Key',
                                     'OUTROS' => 'Outros',
-                                    'PAGBANK' => 'PagBank',
+                                    'PAGBANK' => 'PagSeguro',
                                     // Valores antigos para compatibilidade
                                     'PAGSEGURO' => 'CDX/EVO',
                                     'PAGSEGURO_MP' => 'CDX/EVO',

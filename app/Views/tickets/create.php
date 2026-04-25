@@ -73,7 +73,7 @@ ob_start();
                                 <option value="GOOGLE" <?= ($_POST['produto'] ?? '') === 'GOOGLE' ? 'selected' : '' ?>>Google</option>
                                 <option value="MEMBRO_KEY" <?= ($_POST['produto'] ?? '') === 'MEMBRO_KEY' ? 'selected' : '' ?>>Membro Key</option>
                                 <option value="OUTROS" <?= ($_POST['produto'] ?? '') === 'OUTROS' ? 'selected' : '' ?>>Outros</option>
-                                <option value="PAGBANK" <?= ($_POST['produto'] ?? '') === 'PAGBANK' ? 'selected' : '' ?>>PagBank</option>
+                                <option value="PAGBANK" <?= ($_POST['produto'] ?? '') === 'PAGBANK' ? 'selected' : '' ?>>PagSeguro</option>
                             </select>
                         </div>
                     </div>

@@ -59,7 +59,7 @@ ob_start();
                             'GOOGLE' => 'Google',
                             'MEMBRO_KEY' => 'Membro Key',
                             'OUTROS' => 'Outros',
-                            'PAGBANK' => 'PagBank',
+                            'PAGBANK' => 'PagSeguro',
                             // Valores antigos para compatibilidade
                             'PAGSEGURO' => 'CDX/EVO',
                             'PAGSEGURO_MP' => 'CDX/EVO',
