@@ -1,5 +1,7 @@
 <?php
 $currentPage = 'representantes';
+$oldInput = $_SESSION['old_input'] ?? [];
+$productOptions = $productOptions ?? [];
 ob_start();
 ?>
 
@@ -138,7 +140,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
                         <input type="text" name="nome_completo" required 
-                               value="<?= htmlspecialchars($_POST['nome_completo'] ?? $representative['nome_completo']) ?>"
+                               value="<?= htmlspecialchars($oldInput['nome_completo'] ?? $representative['nome_completo']) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome completo">
                     </div>
@@ -155,7 +157,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                         <input type="email" name="email" required 
-                               value="<?= htmlspecialchars($_POST['email'] ?? $representative['email']) ?>"
+                               value="<?= htmlspecialchars($oldInput['email'] ?? $representative['email']) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
@@ -163,7 +165,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Telefone *</label>
                         <input type="text" name="telefone" required 
-                               value="<?= htmlspecialchars($_POST['telefone'] ?? $representative['telefone']) ?>"
+                               value="<?= htmlspecialchars($oldInput['telefone'] ?? $representative['telefone']) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="(11) 99999-9999">
                     </div>
@@ -182,7 +184,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">CEP *</label>
                         <div class="flex gap-2">
                             <input type="text" name="cep" id="cep" required 
-                                   value="<?= htmlspecialchars($_POST['cep'] ?? $representative['cep']) ?>"
+                                   value="<?= htmlspecialchars($oldInput['cep'] ?? $representative['cep']) ?>"
                                    class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="00000-000">
                             <button type="button" id="btn-buscar-cep" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -195,7 +197,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Logradouro *</label>
                         <input type="text" name="logradouro" required 
-                               value="<?= htmlspecialchars($_POST['logradouro'] ?? $representative['logradouro']) ?>"
+                               value="<?= htmlspecialchars($oldInput['logradouro'] ?? $representative['logradouro']) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nome da rua/avenida">
                     </div>
@@ -203,7 +205,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Número *</label>
                         <input type="text" name="numero" required 
-                               value="<?= htmlspecialchars($_POST['numero'] ?? $representative['numero']) ?>"
+                               value="<?= htmlspecialchars($oldInput['numero'] ?? $representative['numero']) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="123">
                     </div>
@@ -211,7 +213,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
                         <input type="text" name="complemento" 
-                               value="<?= htmlspecialchars($_POST['complemento'] ?? $representative['complemento']) ?>"
+                               value="<?= htmlspecialchars($oldInput['complemento'] ?? $representative['complemento']) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Apto, sala, etc.">
                     </div>
@@ -219,7 +221,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Bairro *</label>
                         <input type="text" name="bairro" required 
-                               value="<?= htmlspecialchars($_POST['bairro'] ?? $representative['bairro']) ?>"
+                               value="<?= htmlspecialchars($oldInput['bairro'] ?? $representative['bairro']) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nome do bairro">
                     </div>
@@ -227,7 +229,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Cidade *</label>
                         <input type="text" name="cidade" required 
-                               value="<?= htmlspecialchars($_POST['cidade'] ?? $representative['cidade']) ?>"
+                               value="<?= htmlspecialchars($oldInput['cidade'] ?? $representative['cidade']) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nome da cidade">
                     </div>
@@ -237,33 +239,33 @@ ob_start();
                         <select name="uf" required 
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Selecione</option>
-                            <option value="AC" <?= ($_POST['uf'] ?? $representative['uf']) === 'AC' ? 'selected' : '' ?>>AC</option>
-                            <option value="AL" <?= ($_POST['uf'] ?? $representative['uf']) === 'AL' ? 'selected' : '' ?>>AL</option>
-                            <option value="AP" <?= ($_POST['uf'] ?? $representative['uf']) === 'AP' ? 'selected' : '' ?>>AP</option>
-                            <option value="AM" <?= ($_POST['uf'] ?? $representative['uf']) === 'AM' ? 'selected' : '' ?>>AM</option>
-                            <option value="BA" <?= ($_POST['uf'] ?? $representative['uf']) === 'BA' ? 'selected' : '' ?>>BA</option>
-                            <option value="CE" <?= ($_POST['uf'] ?? $representative['uf']) === 'CE' ? 'selected' : '' ?>>CE</option>
-                            <option value="DF" <?= ($_POST['uf'] ?? $representative['uf']) === 'DF' ? 'selected' : '' ?>>DF</option>
-                            <option value="ES" <?= ($_POST['uf'] ?? $representative['uf']) === 'ES' ? 'selected' : '' ?>>ES</option>
-                            <option value="GO" <?= ($_POST['uf'] ?? $representative['uf']) === 'GO' ? 'selected' : '' ?>>GO</option>
-                            <option value="MA" <?= ($_POST['uf'] ?? $representative['uf']) === 'MA' ? 'selected' : '' ?>>MA</option>
-                            <option value="MT" <?= ($_POST['uf'] ?? $representative['uf']) === 'MT' ? 'selected' : '' ?>>MT</option>
-                            <option value="MS" <?= ($_POST['uf'] ?? $representative['uf']) === 'MS' ? 'selected' : '' ?>>MS</option>
-                            <option value="MG" <?= ($_POST['uf'] ?? $representative['uf']) === 'MG' ? 'selected' : '' ?>>MG</option>
-                            <option value="PA" <?= ($_POST['uf'] ?? $representative['uf']) === 'PA' ? 'selected' : '' ?>>PA</option>
-                            <option value="PB" <?= ($_POST['uf'] ?? $representative['uf']) === 'PB' ? 'selected' : '' ?>>PB</option>
-                            <option value="PR" <?= ($_POST['uf'] ?? $representative['uf']) === 'PR' ? 'selected' : '' ?>>PR</option>
-                            <option value="PE" <?= ($_POST['uf'] ?? $representative['uf']) === 'PE' ? 'selected' : '' ?>>PE</option>
-                            <option value="PI" <?= ($_POST['uf'] ?? $representative['uf']) === 'PI' ? 'selected' : '' ?>>PI</option>
-                            <option value="RJ" <?= ($_POST['uf'] ?? $representative['uf']) === 'RJ' ? 'selected' : '' ?>>RJ</option>
-                            <option value="RN" <?= ($_POST['uf'] ?? $representative['uf']) === 'RN' ? 'selected' : '' ?>>RN</option>
-                            <option value="RS" <?= ($_POST['uf'] ?? $representative['uf']) === 'RS' ? 'selected' : '' ?>>RS</option>
-                            <option value="RO" <?= ($_POST['uf'] ?? $representative['uf']) === 'RO' ? 'selected' : '' ?>>RO</option>
-                            <option value="RR" <?= ($_POST['uf'] ?? $representative['uf']) === 'RR' ? 'selected' : '' ?>>RR</option>
-                            <option value="SC" <?= ($_POST['uf'] ?? $representative['uf']) === 'SC' ? 'selected' : '' ?>>SC</option>
-                            <option value="SP" <?= ($_POST['uf'] ?? $representative['uf']) === 'SP' ? 'selected' : '' ?>>SP</option>
-                            <option value="SE" <?= ($_POST['uf'] ?? $representative['uf']) === 'SE' ? 'selected' : '' ?>>SE</option>
-                            <option value="TO" <?= ($_POST['uf'] ?? $representative['uf']) === 'TO' ? 'selected' : '' ?>>TO</option>
+                            <option value="AC" <?= ($oldInput['uf'] ?? $representative['uf']) === 'AC' ? 'selected' : '' ?>>AC</option>
+                            <option value="AL" <?= ($oldInput['uf'] ?? $representative['uf']) === 'AL' ? 'selected' : '' ?>>AL</option>
+                            <option value="AP" <?= ($oldInput['uf'] ?? $representative['uf']) === 'AP' ? 'selected' : '' ?>>AP</option>
+                            <option value="AM" <?= ($oldInput['uf'] ?? $representative['uf']) === 'AM' ? 'selected' : '' ?>>AM</option>
+                            <option value="BA" <?= ($oldInput['uf'] ?? $representative['uf']) === 'BA' ? 'selected' : '' ?>>BA</option>
+                            <option value="CE" <?= ($oldInput['uf'] ?? $representative['uf']) === 'CE' ? 'selected' : '' ?>>CE</option>
+                            <option value="DF" <?= ($oldInput['uf'] ?? $representative['uf']) === 'DF' ? 'selected' : '' ?>>DF</option>
+                            <option value="ES" <?= ($oldInput['uf'] ?? $representative['uf']) === 'ES' ? 'selected' : '' ?>>ES</option>
+                            <option value="GO" <?= ($oldInput['uf'] ?? $representative['uf']) === 'GO' ? 'selected' : '' ?>>GO</option>
+                            <option value="MA" <?= ($oldInput['uf'] ?? $representative['uf']) === 'MA' ? 'selected' : '' ?>>MA</option>
+                            <option value="MT" <?= ($oldInput['uf'] ?? $representative['uf']) === 'MT' ? 'selected' : '' ?>>MT</option>
+                            <option value="MS" <?= ($oldInput['uf'] ?? $representative['uf']) === 'MS' ? 'selected' : '' ?>>MS</option>
+                            <option value="MG" <?= ($oldInput['uf'] ?? $representative['uf']) === 'MG' ? 'selected' : '' ?>>MG</option>
+                            <option value="PA" <?= ($oldInput['uf'] ?? $representative['uf']) === 'PA' ? 'selected' : '' ?>>PA</option>
+                            <option value="PB" <?= ($oldInput['uf'] ?? $representative['uf']) === 'PB' ? 'selected' : '' ?>>PB</option>
+                            <option value="PR" <?= ($oldInput['uf'] ?? $representative['uf']) === 'PR' ? 'selected' : '' ?>>PR</option>
+                            <option value="PE" <?= ($oldInput['uf'] ?? $representative['uf']) === 'PE' ? 'selected' : '' ?>>PE</option>
+                            <option value="PI" <?= ($oldInput['uf'] ?? $representative['uf']) === 'PI' ? 'selected' : '' ?>>PI</option>
+                            <option value="RJ" <?= ($oldInput['uf'] ?? $representative['uf']) === 'RJ' ? 'selected' : '' ?>>RJ</option>
+                            <option value="RN" <?= ($oldInput['uf'] ?? $representative['uf']) === 'RN' ? 'selected' : '' ?>>RN</option>
+                            <option value="RS" <?= ($oldInput['uf'] ?? $representative['uf']) === 'RS' ? 'selected' : '' ?>>RS</option>
+                            <option value="RO" <?= ($oldInput['uf'] ?? $representative['uf']) === 'RO' ? 'selected' : '' ?>>RO</option>
+                            <option value="RR" <?= ($oldInput['uf'] ?? $representative['uf']) === 'RR' ? 'selected' : '' ?>>RR</option>
+                            <option value="SC" <?= ($oldInput['uf'] ?? $representative['uf']) === 'SC' ? 'selected' : '' ?>>SC</option>
+                            <option value="SP" <?= ($oldInput['uf'] ?? $representative['uf']) === 'SP' ? 'selected' : '' ?>>SP</option>
+                            <option value="SE" <?= ($oldInput['uf'] ?? $representative['uf']) === 'SE' ? 'selected' : '' ?>>SE</option>
+                            <option value="TO" <?= ($oldInput['uf'] ?? $representative['uf']) === 'TO' ? 'selected' : '' ?>>TO</option>
                         </select>
                     </div>
                 </div>
@@ -277,139 +279,37 @@ ob_start();
                 </h4>
                 <p class="text-sm text-gray-600 mb-4">Selecione quais produtos este representante poderá cadastrar nos estabelecimentos:</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <?php 
-                    // Mapeamento de nomes de produtos (mesmo do estabelecimento)
-                    $productNameMap = [
-                        'BrasilCard' => 'CDC',
-                        'BRASILCARD' => 'CDC',
-                        'brasilcard' => 'CDC',
-                        'Brasil Card' => 'CDC',
-                        'MERCADO_PAGO' => 'CDX/EVO',
-                        'Mercado Pago' => 'CDX/EVO',
-                        'MercadoPago' => 'CDX/EVO',
-                        'PAGSEGURO_MP' => 'CDX/EVO',
-                        'PagSeguro/MP' => 'CDX/EVO',
-                        'PagSeguro' => 'PagSeguro',
-                        'PAGBANK' => 'PagSeguro',
-                        'pagbank' => 'PagSeguro',
-                        'Conteúdo Digital' => null, // Remover
-                        'CONTEUDO_DIGITAL' => null, // Remover
-                        'Conteudo Digital' => null, // Remover
-                        'Flamex' => null, // Remover
-                        'FLAMEX' => null, // Remover
-                        'Griva' => null, // Remover
-                        'GRIVA' => null, // Remover
-                    ];
-                    
+                    <?php
                     $allowedProducts = $allowedProducts ?? [];
-                    
-                    // Debug: log dos produtos recebidos
-                    write_log('=== VIEW EDIT - PRODUTOS RECEBIDOS ===', 'representatives.log');
-                    write_log('Tipo de $allowedProducts: ' . gettype($allowedProducts), 'representatives.log');
-                    write_log('Conteúdo: ' . json_encode($allowedProducts), 'representatives.log');
-                    
-                    // Extrair os tipos de produtos do array retornado pelo banco
                     $allowedProductTypes = [];
                     if (!empty($allowedProducts) && is_array($allowedProducts)) {
-                        foreach ($allowedProducts as $index => $product) {
-                            write_log("Produto #{$index}: " . json_encode($product), 'representatives.log');
+                        foreach ($allowedProducts as $product) {
                             if (isset($product['product_type'])) {
-                                $allowedProductTypes[] = $product['product_type'];
-                                write_log("Adicionado product_type: " . $product['product_type'], 'representatives.log');
+                                $allowedProductTypes[] = (string)$product['product_type'];
                             } elseif (is_string($product)) {
-                                // Se for um array simples de strings
                                 $allowedProductTypes[] = $product;
-                                write_log("Adicionado string: " . $product, 'representatives.log');
                             }
                         }
                     }
-                    
-                    write_log('Tipos extraídos: ' . json_encode($allowedProductTypes), 'representatives.log');
-                    
-                    // Se houver POST, usar os valores do POST, senão usar os valores salvos
-                    $selectedProducts = !empty($_POST['allowed_products']) ? $_POST['allowed_products'] : $allowedProductTypes;
-                    // Garantir que $selectedProducts é um array
-                    $selectedProducts = is_array($selectedProducts) ? $selectedProducts : [];
-                    
-                    // Filtrar valores vazios
-                    $selectedProducts = array_filter($selectedProducts, function($value) {
-                        return !empty($value) && trim($value) !== '';
-                    });
-                    
-                    write_log('Produtos selecionados finais (após filtro): ' . json_encode($selectedProducts), 'representatives.log');
-                    
-                    foreach ($products as $product): 
-                        $productName = trim($product['name'] ?? '');
-                        $productId = strtoupper(trim($product['id'] ?? ''));
-                        $productNameUpper = strtoupper($productName);
-                        
-                        // Verificar se deve remover o produto (por nome ou ID)
-                        $shouldRemove = false;
-                        if (isset($productNameMap[$productName]) && $productNameMap[$productName] === null) {
-                            $shouldRemove = true;
-                        } elseif (isset($productNameMap[$productNameUpper]) && $productNameMap[$productNameUpper] === null) {
-                            $shouldRemove = true;
-                        } elseif (isset($productNameMap[$productId]) && $productNameMap[$productId] === null) {
-                            $shouldRemove = true;
-                        } elseif (stripos($productName, 'Conteúdo Digital') !== false || stripos($productName, 'Conteudo Digital') !== false) {
-                            $shouldRemove = true;
-                        } elseif (stripos($productName, 'Flamex') !== false || stripos($productName, 'Flamx') !== false) {
-                            $shouldRemove = true;
-                        } elseif (stripos($productName, 'Griva') !== false) {
-                            $shouldRemove = true;
-                        }
-                        
-                        if ($shouldRemove) {
-                            continue; // Pular produtos que devem ser removidos
-                        }
-                        
-                        // Verificar se deve substituir o nome
-                        $displayName = $productName;
-                        if (isset($productNameMap[$productName])) {
-                            $displayName = $productNameMap[$productName];
-                        } elseif (isset($productNameMap[$productNameUpper])) {
-                            $displayName = $productNameMap[$productNameUpper];
-                        } elseif (isset($productNameMap[$productId])) {
-                            $displayName = $productNameMap[$productId];
-                        } elseif (stripos($productId, 'BRASILCARD') !== false || stripos($productId, 'PROD-BRASIL-CARD') !== false || stripos($productName, 'Brasil Card') !== false || stripos($productName, 'BrasilCard') !== false) {
-                            $displayName = 'CDC';
-                        } elseif (stripos($productId, 'PAGSEGURO_MP') !== false || stripos($productName, 'PagSeguro/MP') !== false || stripos($productName, 'MercadoPago') !== false || stripos($productName, 'Mercado Pago') !== false) {
-                            $displayName = 'CDX/EVO';
-                        } elseif (stripos($productNameUpper, 'PAGBANK') !== false || stripos($productId, 'PAGBANK') !== false) {
-                            $displayName = 'PagSeguro';
-                        }
-                        
-                        // Mapear para valor do ENUM do banco
-                        $enumValue = 'OUTROS';
-                        if (stripos($productId, 'BRASILCARD') !== false || stripos($productId, 'PROD-BRASIL-CARD') !== false || $displayName === 'CDC') {
-                            $enumValue = 'CDC';
-                        } elseif (stripos($productId, 'PAGSEGURO_MP') !== false || stripos($productId, 'CDX') !== false || stripos($productId, 'EVO') !== false || $displayName === 'CDX/EVO') {
-                            $enumValue = 'CDX_EVO';
-                        } elseif ((stripos($productId, 'PAGSEGURO') !== false && stripos($productId, 'PAGBANK') === false)) {
-                            $enumValue = 'PAGSEGURO';
-                        } elseif (stripos($productNameUpper, 'GOOGLE') !== false) {
-                            $enumValue = 'GOOGLE';
-                        } elseif (stripos($productNameUpper, 'MEMBRO') !== false) {
-                            $enumValue = 'MEMBRO_KEY';
-                        } elseif (stripos($productNameUpper, 'PAGBANK') !== false || stripos($productId, 'PAGBANK') !== false || $displayName === 'PagSeguro') {
-                            $enumValue = 'PAGBANK';
-                        } elseif (stripos($productNameUpper, 'DIVERSOS') !== false) {
-                            $enumValue = 'DIVERSOS';
-                        } elseif (stripos($productNameUpper, 'UCREDIT') !== false || stripos($productNameUpper, 'UCRED') !== false) {
-                            $enumValue = 'UCREDIT';
-                        } elseif (stripos($productNameUpper, 'FGTS') !== false) {
-                            $enumValue = 'FGTS';
-                        }
+                    $selectedProducts = !empty($oldInput['allowed_products']) ? (array)$oldInput['allowed_products'] : $allowedProductTypes;
                     ?>
-                    <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-blue-600 hover:text-white transition-colors">
-                        <input type="checkbox" 
-                               name="allowed_products[]" 
-                               value="<?= $enumValue ?>" 
-                               id="product_<?= $enumValue ?>"
-                               <?= in_array($enumValue, $selectedProducts) ? 'checked' : '' ?>
-                               class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($displayName) ?></span>
-                    </label>
+                    <?php foreach ($productOptions as $option): ?>
+                        <?php
+                        $optionValue = (string)($option['value'] ?? '');
+                        $optionLabel = (string)($option['label'] ?? '');
+                        if ($optionValue === '' || $optionLabel === '') {
+                            continue;
+                        }
+                        ?>
+                        <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-blue-600 hover:text-white transition-colors">
+                            <input type="checkbox"
+                                   name="allowed_products[]"
+                                   value="<?= htmlspecialchars($optionValue) ?>"
+                                   id="product_<?= htmlspecialchars($optionValue) ?>"
+                                   <?= in_array($optionValue, $selectedProducts, true) ? 'checked' : '' ?>
+                                   class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($optionLabel) ?></span>
+                        </label>
                     <?php endforeach; ?>
                 </div>
                 <p class="mt-2 text-xs text-gray-500">Se nenhum produto for selecionado, o representante poderá cadastrar todos os produtos.</p>
@@ -435,9 +335,9 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select name="status" 
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="ACTIVE" <?= ($_POST['status'] ?? $representative['status']) === 'ACTIVE' ? 'selected' : '' ?>>Ativo</option>
-                            <option value="INACTIVE" <?= ($_POST['status'] ?? $representative['status']) === 'INACTIVE' ? 'selected' : '' ?>>Inativo</option>
-                            <option value="BLOCKED" <?= ($_POST['status'] ?? $representative['status']) === 'BLOCKED' ? 'selected' : '' ?>>Bloqueado</option>
+                            <option value="ACTIVE" <?= ($oldInput['status'] ?? $representative['status']) === 'ACTIVE' ? 'selected' : '' ?>>Ativo</option>
+                            <option value="INACTIVE" <?= ($oldInput['status'] ?? $representative['status']) === 'INACTIVE' ? 'selected' : '' ?>>Inativo</option>
+                            <option value="BLOCKED" <?= ($oldInput['status'] ?? $representative['status']) === 'BLOCKED' ? 'selected' : '' ?>>Bloqueado</option>
                         </select>
                     </div>
                 </div>
@@ -638,5 +538,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <?php
 $content = ob_get_clean();
+unset($_SESSION['old_input']);
 include __DIR__ . '/../layouts/app.php';
 ?>

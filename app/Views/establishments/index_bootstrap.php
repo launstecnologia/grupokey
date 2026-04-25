@@ -133,14 +133,19 @@ $representatives = $representatives ?? [];
             
             <div class="col-md-3">
                 <label for="produto" class="form-label">Produto</label>
+                <?php
+                $selectedProductFilter = (string)($filters['produto'] ?? '');
+                if ($selectedProductFilter === 'PAGBANK') {
+                    $selectedProductFilter = 'manual:pagseguro';
+                }
+                ?>
                 <select class="form-select" id="produto" name="produto">
                     <option value="">Todos os produtos</option>
-                    <option value="CDX_EVO" <?= ($filters['produto'] ?? '') === 'CDX_EVO' || ($filters['produto'] ?? '') === 'PAGSEGURO_MP' ? 'selected' : '' ?>>CDX /EVO</option>
-                    <option value="FGTS" <?= ($filters['produto'] ?? '') === 'FGTS' ? 'selected' : '' ?>>FGTS</option>
-                    <option value="MEMBRO_KEY" <?= ($filters['produto'] ?? '') === 'MEMBRO_KEY' ? 'selected' : '' ?>>Membro KEY</option>
-                    <option value="DIVERSOS" <?= ($filters['produto'] ?? '') === 'DIVERSOS' ? 'selected' : '' ?>>Diversos</option>
-                    <option value="UCREDIT" <?= ($filters['produto'] ?? '') === 'UCREDIT' ? 'selected' : '' ?>>UCredit</option>
-                    <option value="CDC" <?= ($filters['produto'] ?? '') === 'CDC' ? 'selected' : '' ?>>CDC</option>
+                    <?php foreach (($productFilterOptions ?? []) as $option): ?>
+                        <option value="<?= htmlspecialchars($option['value']) ?>" <?= $selectedProductFilter === (string)$option['value'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($option['label']) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             

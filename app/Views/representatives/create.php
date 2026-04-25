@@ -1,5 +1,7 @@
 <?php
 $currentPage = 'representantes';
+$oldInput = $_SESSION['old_input'] ?? [];
+$productOptions = $productOptions ?? [];
 ob_start();
 ?>
 
@@ -54,6 +56,21 @@ ob_start();
                 <?php unset($_SESSION['validation_errors']); ?>
             <?php endif; ?>
 
+            <?php if (isset($_SESSION['error']) && !empty($_SESSION['error'])): ?>
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-red-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Não foi possível salvar:</h3>
+                            <p class="mt-2 text-sm text-red-700"><?= htmlspecialchars($_SESSION['error']) ?></p>
+                        </div>
+                    </div>
+                </div>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+
             <!-- Dados Pessoais -->
             <div class="mb-8">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
@@ -65,7 +82,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
                         <input type="text" name="nome_completo" required 
-                               value="<?= htmlspecialchars($_POST['nome_completo'] ?? '') ?>"
+                               value="<?= htmlspecialchars($oldInput['nome_completo'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome completo">
                     </div>
@@ -73,7 +90,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
                         <input type="text" name="cpf" required 
-                               value="<?= htmlspecialchars($_POST['cpf'] ?? '') ?>"
+                               value="<?= htmlspecialchars($oldInput['cpf'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="000.000.000-00">
                     </div>
@@ -81,7 +98,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                         <input type="email" name="email" required 
-                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                               value="<?= htmlspecialchars($oldInput['email'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
@@ -89,7 +106,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Telefone *</label>
                         <input type="text" name="telefone" required 
-                               value="<?= htmlspecialchars($_POST['telefone'] ?? '') ?>"
+                               value="<?= htmlspecialchars($oldInput['telefone'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="(11) 99999-9999">
                     </div>
@@ -108,7 +125,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">CEP *</label>
                         <div class="flex gap-2">
                             <input type="text" name="cep" id="cep" required 
-                                   value="<?= htmlspecialchars($_POST['cep'] ?? '') ?>"
+                                   value="<?= htmlspecialchars($oldInput['cep'] ?? '') ?>"
                                    class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="00000-000">
                             <button type="button" id="btn-buscar-cep" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -121,7 +138,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Logradouro *</label>
                         <input type="text" name="logradouro" required 
-                               value="<?= htmlspecialchars($_POST['logradouro'] ?? '') ?>"
+                               value="<?= htmlspecialchars($oldInput['logradouro'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nome da rua/avenida">
                     </div>
@@ -129,7 +146,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Número *</label>
                         <input type="text" name="numero" required 
-                               value="<?= htmlspecialchars($_POST['numero'] ?? '') ?>"
+                               value="<?= htmlspecialchars($oldInput['numero'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="123">
                     </div>
@@ -137,7 +154,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
                         <input type="text" name="complemento" 
-                               value="<?= htmlspecialchars($_POST['complemento'] ?? '') ?>"
+                               value="<?= htmlspecialchars($oldInput['complemento'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Apto, sala, etc.">
                     </div>
@@ -145,7 +162,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Bairro *</label>
                         <input type="text" name="bairro" required 
-                               value="<?= htmlspecialchars($_POST['bairro'] ?? '') ?>"
+                               value="<?= htmlspecialchars($oldInput['bairro'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nome do bairro">
                     </div>
@@ -153,7 +170,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Cidade *</label>
                         <input type="text" name="cidade" required 
-                               value="<?= htmlspecialchars($_POST['cidade'] ?? '') ?>"
+                               value="<?= htmlspecialchars($oldInput['cidade'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nome da cidade">
                     </div>
@@ -163,33 +180,33 @@ ob_start();
                         <select name="uf" required 
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Selecione</option>
-                            <option value="AC" <?= ($_POST['uf'] ?? '') === 'AC' ? 'selected' : '' ?>>AC</option>
-                            <option value="AL" <?= ($_POST['uf'] ?? '') === 'AL' ? 'selected' : '' ?>>AL</option>
-                            <option value="AP" <?= ($_POST['uf'] ?? '') === 'AP' ? 'selected' : '' ?>>AP</option>
-                            <option value="AM" <?= ($_POST['uf'] ?? '') === 'AM' ? 'selected' : '' ?>>AM</option>
-                            <option value="BA" <?= ($_POST['uf'] ?? '') === 'BA' ? 'selected' : '' ?>>BA</option>
-                            <option value="CE" <?= ($_POST['uf'] ?? '') === 'CE' ? 'selected' : '' ?>>CE</option>
-                            <option value="DF" <?= ($_POST['uf'] ?? '') === 'DF' ? 'selected' : '' ?>>DF</option>
-                            <option value="ES" <?= ($_POST['uf'] ?? '') === 'ES' ? 'selected' : '' ?>>ES</option>
-                            <option value="GO" <?= ($_POST['uf'] ?? '') === 'GO' ? 'selected' : '' ?>>GO</option>
-                            <option value="MA" <?= ($_POST['uf'] ?? '') === 'MA' ? 'selected' : '' ?>>MA</option>
-                            <option value="MT" <?= ($_POST['uf'] ?? '') === 'MT' ? 'selected' : '' ?>>MT</option>
-                            <option value="MS" <?= ($_POST['uf'] ?? '') === 'MS' ? 'selected' : '' ?>>MS</option>
-                            <option value="MG" <?= ($_POST['uf'] ?? '') === 'MG' ? 'selected' : '' ?>>MG</option>
-                            <option value="PA" <?= ($_POST['uf'] ?? '') === 'PA' ? 'selected' : '' ?>>PA</option>
-                            <option value="PB" <?= ($_POST['uf'] ?? '') === 'PB' ? 'selected' : '' ?>>PB</option>
-                            <option value="PR" <?= ($_POST['uf'] ?? '') === 'PR' ? 'selected' : '' ?>>PR</option>
-                            <option value="PE" <?= ($_POST['uf'] ?? '') === 'PE' ? 'selected' : '' ?>>PE</option>
-                            <option value="PI" <?= ($_POST['uf'] ?? '') === 'PI' ? 'selected' : '' ?>>PI</option>
-                            <option value="RJ" <?= ($_POST['uf'] ?? '') === 'RJ' ? 'selected' : '' ?>>RJ</option>
-                            <option value="RN" <?= ($_POST['uf'] ?? '') === 'RN' ? 'selected' : '' ?>>RN</option>
-                            <option value="RS" <?= ($_POST['uf'] ?? '') === 'RS' ? 'selected' : '' ?>>RS</option>
-                            <option value="RO" <?= ($_POST['uf'] ?? '') === 'RO' ? 'selected' : '' ?>>RO</option>
-                            <option value="RR" <?= ($_POST['uf'] ?? '') === 'RR' ? 'selected' : '' ?>>RR</option>
-                            <option value="SC" <?= ($_POST['uf'] ?? '') === 'SC' ? 'selected' : '' ?>>SC</option>
-                            <option value="SP" <?= ($_POST['uf'] ?? '') === 'SP' ? 'selected' : '' ?>>SP</option>
-                            <option value="SE" <?= ($_POST['uf'] ?? '') === 'SE' ? 'selected' : '' ?>>SE</option>
-                            <option value="TO" <?= ($_POST['uf'] ?? '') === 'TO' ? 'selected' : '' ?>>TO</option>
+                            <option value="AC" <?= ($oldInput['uf'] ?? '') === 'AC' ? 'selected' : '' ?>>AC</option>
+                            <option value="AL" <?= ($oldInput['uf'] ?? '') === 'AL' ? 'selected' : '' ?>>AL</option>
+                            <option value="AP" <?= ($oldInput['uf'] ?? '') === 'AP' ? 'selected' : '' ?>>AP</option>
+                            <option value="AM" <?= ($oldInput['uf'] ?? '') === 'AM' ? 'selected' : '' ?>>AM</option>
+                            <option value="BA" <?= ($oldInput['uf'] ?? '') === 'BA' ? 'selected' : '' ?>>BA</option>
+                            <option value="CE" <?= ($oldInput['uf'] ?? '') === 'CE' ? 'selected' : '' ?>>CE</option>
+                            <option value="DF" <?= ($oldInput['uf'] ?? '') === 'DF' ? 'selected' : '' ?>>DF</option>
+                            <option value="ES" <?= ($oldInput['uf'] ?? '') === 'ES' ? 'selected' : '' ?>>ES</option>
+                            <option value="GO" <?= ($oldInput['uf'] ?? '') === 'GO' ? 'selected' : '' ?>>GO</option>
+                            <option value="MA" <?= ($oldInput['uf'] ?? '') === 'MA' ? 'selected' : '' ?>>MA</option>
+                            <option value="MT" <?= ($oldInput['uf'] ?? '') === 'MT' ? 'selected' : '' ?>>MT</option>
+                            <option value="MS" <?= ($oldInput['uf'] ?? '') === 'MS' ? 'selected' : '' ?>>MS</option>
+                            <option value="MG" <?= ($oldInput['uf'] ?? '') === 'MG' ? 'selected' : '' ?>>MG</option>
+                            <option value="PA" <?= ($oldInput['uf'] ?? '') === 'PA' ? 'selected' : '' ?>>PA</option>
+                            <option value="PB" <?= ($oldInput['uf'] ?? '') === 'PB' ? 'selected' : '' ?>>PB</option>
+                            <option value="PR" <?= ($oldInput['uf'] ?? '') === 'PR' ? 'selected' : '' ?>>PR</option>
+                            <option value="PE" <?= ($oldInput['uf'] ?? '') === 'PE' ? 'selected' : '' ?>>PE</option>
+                            <option value="PI" <?= ($oldInput['uf'] ?? '') === 'PI' ? 'selected' : '' ?>>PI</option>
+                            <option value="RJ" <?= ($oldInput['uf'] ?? '') === 'RJ' ? 'selected' : '' ?>>RJ</option>
+                            <option value="RN" <?= ($oldInput['uf'] ?? '') === 'RN' ? 'selected' : '' ?>>RN</option>
+                            <option value="RS" <?= ($oldInput['uf'] ?? '') === 'RS' ? 'selected' : '' ?>>RS</option>
+                            <option value="RO" <?= ($oldInput['uf'] ?? '') === 'RO' ? 'selected' : '' ?>>RO</option>
+                            <option value="RR" <?= ($oldInput['uf'] ?? '') === 'RR' ? 'selected' : '' ?>>RR</option>
+                            <option value="SC" <?= ($oldInput['uf'] ?? '') === 'SC' ? 'selected' : '' ?>>SC</option>
+                            <option value="SP" <?= ($oldInput['uf'] ?? '') === 'SP' ? 'selected' : '' ?>>SP</option>
+                            <option value="SE" <?= ($oldInput['uf'] ?? '') === 'SE' ? 'selected' : '' ?>>SE</option>
+                            <option value="TO" <?= ($oldInput['uf'] ?? '') === 'TO' ? 'selected' : '' ?>>TO</option>
                         </select>
                     </div>
                 </div>
@@ -203,104 +220,24 @@ ob_start();
                 </h4>
                 <p class="text-sm text-gray-600 mb-4">Selecione quais produtos este representante poderá cadastrar nos estabelecimentos:</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <?php 
-                    // Mapeamento de nomes de produtos (mesmo do estabelecimento)
-                    $productNameMap = [
-                        'BrasilCard' => 'CDC',
-                        'BRASILCARD' => 'CDC',
-                        'brasilcard' => 'CDC',
-                        'Brasil Card' => 'CDC',
-                        'MERCADO_PAGO' => 'CDX/EVO',
-                        'Mercado Pago' => 'CDX/EVO',
-                        'MercadoPago' => 'CDX/EVO',
-                        'PAGSEGURO_MP' => 'CDX/EVO',
-                        'PagSeguro/MP' => 'CDX/EVO',
-                        'PagSeguro' => 'PagSeguro',
-                        'PAGBANK' => 'PagSeguro',
-                        'pagbank' => 'PagSeguro',
-                        'Conteúdo Digital' => null, // Remover
-                        'CONTEUDO_DIGITAL' => null, // Remover
-                        'Conteudo Digital' => null, // Remover
-                        'Flamex' => null, // Remover
-                        'FLAMEX' => null, // Remover
-                        'Griva' => null, // Remover
-                        'GRIVA' => null, // Remover
-                    ];
-                    
-                    $selectedProducts = $_POST['allowed_products'] ?? [];
-                    
-                    foreach ($products as $product): 
-                        $productName = trim($product['name'] ?? '');
-                        $productId = strtoupper(trim($product['id'] ?? ''));
-                        $productNameUpper = strtoupper($productName);
-                        
-                        // Verificar se deve remover o produto (por nome ou ID)
-                        $shouldRemove = false;
-                        if (isset($productNameMap[$productName]) && $productNameMap[$productName] === null) {
-                            $shouldRemove = true;
-                        } elseif (isset($productNameMap[$productNameUpper]) && $productNameMap[$productNameUpper] === null) {
-                            $shouldRemove = true;
-                        } elseif (isset($productNameMap[$productId]) && $productNameMap[$productId] === null) {
-                            $shouldRemove = true;
-                        } elseif (stripos($productName, 'Conteúdo Digital') !== false || stripos($productName, 'Conteudo Digital') !== false) {
-                            $shouldRemove = true;
-                        } elseif (stripos($productName, 'Flamex') !== false || stripos($productName, 'Flamx') !== false) {
-                            $shouldRemove = true;
-                        } elseif (stripos($productName, 'Griva') !== false) {
-                            $shouldRemove = true;
+                    <?php $selectedProducts = (array)($oldInput['allowed_products'] ?? []); ?>
+                    <?php foreach ($productOptions as $option): ?>
+                        <?php
+                        $optionValue = (string)($option['value'] ?? '');
+                        $optionLabel = (string)($option['label'] ?? '');
+                        if ($optionValue === '' || $optionLabel === '') {
+                            continue;
                         }
-                        
-                        if ($shouldRemove) {
-                            continue; // Pular produtos que devem ser removidos
-                        }
-                        
-                        // Verificar se deve substituir o nome
-                        $displayName = $productName;
-                        if (isset($productNameMap[$productName])) {
-                            $displayName = $productNameMap[$productName];
-                        } elseif (isset($productNameMap[$productNameUpper])) {
-                            $displayName = $productNameMap[$productNameUpper];
-                        } elseif (isset($productNameMap[$productId])) {
-                            $displayName = $productNameMap[$productId];
-                        } elseif (stripos($productId, 'BRASILCARD') !== false || stripos($productId, 'PROD-BRASIL-CARD') !== false || stripos($productName, 'Brasil Card') !== false || stripos($productName, 'BrasilCard') !== false) {
-                            $displayName = 'CDC';
-                        } elseif (stripos($productId, 'PAGSEGURO_MP') !== false || stripos($productName, 'PagSeguro/MP') !== false || stripos($productName, 'MercadoPago') !== false || stripos($productName, 'Mercado Pago') !== false) {
-                            $displayName = 'CDX/EVO';
-                        } elseif (stripos($productNameUpper, 'PAGBANK') !== false || stripos($productId, 'PAGBANK') !== false) {
-                            $displayName = 'PagSeguro';
-                        }
-                        
-                        // Mapear para valor do ENUM do banco
-                        $enumValue = 'OUTROS';
-                        if (stripos($productId, 'BRASILCARD') !== false || stripos($productId, 'PROD-BRASIL-CARD') !== false || $displayName === 'CDC') {
-                            $enumValue = 'CDC';
-                        } elseif (stripos($productId, 'PAGSEGURO_MP') !== false || stripos($productId, 'CDX') !== false || stripos($productId, 'EVO') !== false || $displayName === 'CDX/EVO') {
-                            $enumValue = 'CDX_EVO';
-                        } elseif ((stripos($productId, 'PAGSEGURO') !== false && stripos($productId, 'PAGBANK') === false)) {
-                            $enumValue = 'PAGSEGURO';
-                        } elseif (stripos($productNameUpper, 'GOOGLE') !== false) {
-                            $enumValue = 'GOOGLE';
-                        } elseif (stripos($productNameUpper, 'MEMBRO') !== false) {
-                            $enumValue = 'MEMBRO_KEY';
-                        } elseif (stripos($productNameUpper, 'PAGBANK') !== false || stripos($productId, 'PAGBANK') !== false || $displayName === 'PagSeguro') {
-                            $enumValue = 'PAGBANK';
-                        } elseif (stripos($productNameUpper, 'DIVERSOS') !== false) {
-                            $enumValue = 'DIVERSOS';
-                        } elseif (stripos($productNameUpper, 'UCREDIT') !== false || stripos($productNameUpper, 'UCRED') !== false) {
-                            $enumValue = 'UCREDIT';
-                        } elseif (stripos($productNameUpper, 'FGTS') !== false) {
-                            $enumValue = 'FGTS';
-                        }
-                    ?>
-                    <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-blue-600 hover:text-white transition-colors">
-                        <input type="checkbox" 
-                               name="allowed_products[]" 
-                               value="<?= $enumValue ?>" 
-                               id="product_<?= $enumValue ?>"
-                               <?= in_array($enumValue, $selectedProducts) ? 'checked' : '' ?>
-                               class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($displayName) ?></span>
-                    </label>
+                        ?>
+                        <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-blue-600 hover:text-white transition-colors">
+                            <input type="checkbox"
+                                   name="allowed_products[]"
+                                   value="<?= htmlspecialchars($optionValue) ?>"
+                                   id="product_<?= htmlspecialchars($optionValue) ?>"
+                                   <?= in_array($optionValue, $selectedProducts, true) ? 'checked' : '' ?>
+                                   class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($optionLabel) ?></span>
+                        </label>
                     <?php endforeach; ?>
                 </div>
                 <p class="mt-2 text-xs text-gray-500">Se nenhum produto for selecionado, o representante poderá cadastrar todos os produtos.</p>
@@ -326,8 +263,8 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select name="status" 
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="ACTIVE" <?= ($_POST['status'] ?? 'ACTIVE') === 'ACTIVE' ? 'selected' : '' ?>>Ativo</option>
-                            <option value="INACTIVE" <?= ($_POST['status'] ?? '') === 'INACTIVE' ? 'selected' : '' ?>>Inativo</option>
+                            <option value="ACTIVE" <?= ($oldInput['status'] ?? 'ACTIVE') === 'ACTIVE' ? 'selected' : '' ?>>Ativo</option>
+                            <option value="INACTIVE" <?= ($oldInput['status'] ?? '') === 'INACTIVE' ? 'selected' : '' ?>>Inativo</option>
                         </select>
                     </div>
                 </div>
@@ -517,5 +454,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <?php
 $content = ob_get_clean();
+unset($_SESSION['old_input']);
 include __DIR__ . '/../layouts/app.php';
 ?>

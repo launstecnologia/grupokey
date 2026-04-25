@@ -4,21 +4,21 @@ namespace App\Controllers;
 
 use App\Core\Auth;
 use App\Models\Representative;
-use App\Models\Product;
+use App\Models\DynamicProduct;
 use App\Core\FileUpload;
 use App\Core\Mailer;
 
 class RepresentativeController
 {
     private $representativeModel;
-    private $productModel;
+    private $dynamicProductModel;
     private $fileUpload;
     private $mailer;
 
     public function __construct()
     {
         $this->representativeModel = new Representative();
-        $this->productModel = new Product();
+        $this->dynamicProductModel = new DynamicProduct();
         $this->fileUpload = new FileUpload();
         // Mailer será instanciado apenas quando necessário
     }
@@ -45,115 +45,158 @@ class RepresentativeController
     public function create()
     {
         Auth::requireAdmin();
-        
-        // Buscar produtos do banco de dados (mesmos do estabelecimento)
-        $products = $this->productModel->getAll();
+        $productOptions = $this->getRepresentativeProductOptions();
         
         $data = [
             'title' => 'Novo Representante',
             'currentPage' => 'representantes',
-            'products' => $products
+            'productOptions' => $productOptions
         ];
         
         view('representatives/create', $data);
     }
-    
-    /**
-     * Processa produtos do banco para exibição (mesma lógica do estabelecimento)
-     */
-    private function processProductsForDisplay($products)
+
+    private function getRepresentativeProductOptions()
     {
-        $productNameMap = [
-            'BrasilCard' => 'CDC',
-            'BRASILCARD' => 'CDC',
-            'brasilcard' => 'CDC',
-            'Brasil Card' => 'CDC',
-            'MERCADO_PAGO' => 'CDX /EVO',
-            'PAGSEGURO_MP' => 'CDX /EVO',
-            'PagSeguro/MP' => 'CDX /EVO',
-            'Conteúdo Digital' => null,
-            'CONTEUDO_DIGITAL' => null,
-            'Conteudo Digital' => null,
-            'Flamex' => null,
-            'FLAMEX' => null,
-            'Griva' => null,
-            'GRIVA' => null,
+        $options = [
+            [
+                'value' => 'PAGBANK',
+                'label' => 'PagSeguro',
+                'slug' => 'pagseguro'
+            ]
         ];
-        
-        $processedProducts = [];
-        
+
+        $products = $this->dynamicProductModel->getAll();
         foreach ($products as $product) {
-            $productName = trim($product['name'] ?? '');
-            $productId = strtoupper(trim($product['id'] ?? ''));
-            $productNameUpper = strtoupper($productName);
-            
-            // Verificar se deve remover o produto
-            $shouldRemove = false;
-            if (isset($productNameMap[$productName]) && $productNameMap[$productName] === null) {
-                $shouldRemove = true;
-            } elseif (isset($productNameMap[$productNameUpper]) && $productNameMap[$productNameUpper] === null) {
-                $shouldRemove = true;
-            } elseif (isset($productNameMap[$productId]) && $productNameMap[$productId] === null) {
-                $shouldRemove = true;
-            } elseif (stripos($productName, 'Conteúdo Digital') !== false || stripos($productName, 'Conteudo Digital') !== false) {
-                $shouldRemove = true;
-            } elseif (stripos($productName, 'Flamex') !== false || stripos($productName, 'Flamx') !== false) {
-                $shouldRemove = true;
-            } elseif (stripos($productName, 'Griva') !== false) {
-                $shouldRemove = true;
-            }
-            
-            if ($shouldRemove) {
+            $id = (int)($product['id'] ?? 0);
+            $name = trim((string)($product['name'] ?? ''));
+            $slug = trim((string)($product['slug'] ?? ''));
+            $isActive = (int)($product['is_active'] ?? 0) === 1;
+            if ($id <= 0 || $name === '' || !$isActive) {
                 continue;
             }
-            
-            // Verificar se deve substituir o nome
-            $displayName = $productName;
-            if (isset($productNameMap[$productName])) {
-                $displayName = $productNameMap[$productName];
-            } elseif (isset($productNameMap[$productNameUpper])) {
-                $displayName = $productNameMap[$productNameUpper];
-            } elseif (isset($productNameMap[$productId])) {
-                $displayName = $productNameMap[$productId];
-            } elseif (stripos($productId, 'BRASILCARD') !== false || stripos($productId, 'PROD-BRASIL-CARD') !== false || stripos($productName, 'Brasil Card') !== false || stripos($productName, 'BrasilCard') !== false) {
-                $displayName = 'CDC';
-            } elseif (stripos($productId, 'PAGSEGURO_MP') !== false || stripos($productName, 'PagSeguro/MP') !== false || stripos($productName, 'MercadoPago') !== false) {
-                $displayName = 'CDX /EVO';
+
+            $slugLower = strtolower($slug);
+            $nameLower = strtolower($name);
+            if (
+                strpos($slugLower, 'pagbank') !== false ||
+                strpos($nameLower, 'pagbank') !== false ||
+                strpos($slugLower, 'pagseguro') !== false ||
+                strpos($nameLower, 'pagseguro') !== false
+            ) {
+                continue;
             }
-            
-            // Mapear para o formato usado no banco (ENUM)
-            $enumKey = $this->mapProductToEnum($product['id'], $displayName);
-            
-            $processedProducts[$enumKey] = $displayName;
+
+            $options[] = [
+                'value' => 'DYNAMIC_' . $id,
+                'label' => $name,
+                'slug' => $slugLower
+            ];
         }
-        
-        return $processedProducts;
-    }
-    
-    /**
-     * Mapeia produto para valor do ENUM do banco (mesma lógica do EstablishmentController)
-     */
-    private function mapProductToEnum($productId, $displayName)
-    {
-        // Mapeamento exato conforme especificado
-        $mapping = [
-            'prod-google' => 'GOOGLE',
-            'prod-membro-key' => 'MEMBRO_KEY',
-            'prod-outros' => 'OUTROS',
-            'prod-pagbank' => 'PAGBANK',
-            'prod-cdc' => 'CDC',
-            'prod-subaquirente' => 'CDX_EVO',
-        ];
-        
-        // Retornar o mapeamento se existir
-        if (isset($mapping[$productId])) {
-            return $mapping[$productId];
-        }
-        
-        // Se não encontrou no mapeamento, retornar OUTROS como fallback
-        return 'OUTROS';
+
+        usort($options, function ($a, $b) {
+            if (($a['value'] ?? '') === 'PAGBANK') {
+                return -1;
+            }
+            if (($b['value'] ?? '') === 'PAGBANK') {
+                return 1;
+            }
+            return strcasecmp((string)($a['label'] ?? ''), (string)($b['label'] ?? ''));
+        });
+
+        return $options;
     }
 
+    private function normalizeAllowedProducts(array $allowedProducts, array $productOptions)
+    {
+        $normalized = [];
+        $validValues = [];
+        $dynamicAliases = [];
+
+        foreach ($productOptions as $option) {
+            $value = (string)($option['value'] ?? '');
+            if ($value === '') {
+                continue;
+            }
+            $validValues[$value] = true;
+
+            if (strpos($value, 'DYNAMIC_') === 0) {
+                $normalizedLabel = preg_replace('/[^A-Z0-9]/', '', strtoupper((string)($option['label'] ?? '')));
+                if ($normalizedLabel !== '') {
+                    $dynamicAliases[$normalizedLabel] = $value;
+                }
+                $normalizedSlug = preg_replace('/[^A-Z0-9]/', '', strtoupper((string)($option['slug'] ?? '')));
+                if ($normalizedSlug !== '') {
+                    $dynamicAliases[$normalizedSlug] = $value;
+                }
+            }
+        }
+
+        foreach ($allowedProducts as $rawValue) {
+            $value = trim((string)$rawValue);
+            if ($value === '') {
+                continue;
+            }
+
+            if (isset($validValues[$value])) {
+                $normalized[] = $value;
+                continue;
+            }
+
+            $upperValue = strtoupper($value);
+            if (isset($validValues[$upperValue])) {
+                $normalized[] = $upperValue;
+                continue;
+            }
+
+            if ($upperValue === 'PAGSEGURO' || $upperValue === 'MANUAL:PAGSEGURO' || $upperValue === 'PAGBANK') {
+                $normalized[] = 'PAGBANK';
+                continue;
+            }
+
+            if (preg_match('/^DYNAMIC_(\d+)$/', $upperValue, $matches)) {
+                $candidate = 'DYNAMIC_' . (int)$matches[1];
+                if (isset($validValues[$candidate])) {
+                    $normalized[] = $candidate;
+                }
+                continue;
+            }
+
+            if (preg_match('/^DYNAMIC:(\d+)$/', $upperValue, $matches)) {
+                $candidate = 'DYNAMIC_' . (int)$matches[1];
+                if (isset($validValues[$candidate])) {
+                    $normalized[] = $candidate;
+                }
+                continue;
+            }
+
+            if (ctype_digit($value)) {
+                $candidate = 'DYNAMIC_' . (int)$value;
+                if (isset($validValues[$candidate])) {
+                    $normalized[] = $candidate;
+                }
+                continue;
+            }
+
+            $normalizedText = preg_replace('/[^A-Z0-9]/', '', strtoupper($value));
+            if ($normalizedText !== '' && isset($dynamicAliases[$normalizedText])) {
+                $normalized[] = $dynamicAliases[$normalizedText];
+                continue;
+            }
+
+            // Compatibilidade com valores legados
+            if ($upperValue === 'CDC' && isset($dynamicAliases['CDC'])) {
+                $normalized[] = $dynamicAliases['CDC'];
+            } elseif (($upperValue === 'GOOGLE') && isset($dynamicAliases['GOOGLE'])) {
+                $normalized[] = $dynamicAliases['GOOGLE'];
+            } elseif (($upperValue === 'CDX_EVO' || $upperValue === 'EVO' || $upperValue === 'CDXEVO') && isset($dynamicAliases['EVO'])) {
+                $normalized[] = $dynamicAliases['EVO'];
+            }
+        }
+
+        return array_values(array_unique($normalized));
+    }
+    
     public function store()
     {
         Auth::requireAdmin();
@@ -176,47 +219,11 @@ class RepresentativeController
             
             // Salvar produtos permitidos
             $allowedProducts = $_POST['allowed_products'] ?? [];
-            write_log('=== PRODUTOS RECEBIDOS NO STORE ===', 'representatives.log');
-            write_log('Produtos brutos: ' . json_encode($allowedProducts), 'representatives.log');
-            
-            if (!empty($allowedProducts)) {
-                // Validar e limpar produtos antes de salvar
-                $validProducts = [];
-                $validProductTypes = ['CDC', 'CDX_EVO', 'GOOGLE', 'MEMBRO_KEY', 'PAGBANK', 'OUTROS'];
-                
-                foreach ($allowedProducts as $index => $product) {
-                    $originalProduct = $product;
-                    $product = trim($product);
-                    
-                    write_log("Produto #{$index}: Original='{$originalProduct}' | Após trim='{$product}' | Tamanho=" . strlen($product), 'representatives.log');
-                    
-                    // Se o produto for válido e tiver menos de 50 caracteres
-                    if (!empty($product) && strlen($product) <= 50) {
-                        // Se for um valor válido do enum, usar diretamente
-                        if (in_array($product, $validProductTypes)) {
-                            $validProducts[] = $product;
-                            write_log("Produto válido adicionado: {$product}", 'representatives.log');
-                        } else {
-                            // Se não for válido, tentar mapear
-                            $mapped = $this->mapProductToEnum('', $product);
-                            if (in_array($mapped, $validProductTypes)) {
-                                $validProducts[] = $mapped;
-                                write_log("Produto mapeado adicionado: {$product} -> {$mapped}", 'representatives.log');
-                            } else {
-                                write_log('Produto inválido ignorado: ' . $product . ' (mapeado para: ' . $mapped . ')', 'representatives.log');
-                            }
-                        }
-                    } else {
-                        write_log('Produto ignorado (vazio ou muito longo): ' . $product . ' (tamanho: ' . strlen($product) . ')', 'representatives.log');
-                    }
-                }
-                
-                write_log('Produtos válidos finais: ' . json_encode($validProducts), 'representatives.log');
-                
-                if (!empty($validProducts)) {
-                    $this->representativeModel->setProducts($representativeId, $validProducts);
-                }
-            }
+            $normalizedProducts = $this->normalizeAllowedProducts(
+                is_array($allowedProducts) ? $allowedProducts : [],
+                $this->getRepresentativeProductOptions()
+            );
+            $this->representativeModel->setProducts($representativeId, $normalizedProducts);
             
             // Enviar email de boas-vindas apenas se configurado
             // Usar a senha original (antes do hash) para enviar no email
@@ -229,7 +236,8 @@ class RepresentativeController
             redirect(url('representantes/' . $representativeId));
             
         } catch (\Exception $e) {
-            $_SESSION['error'] = 'Erro ao cadastrar representante: ' . $e->getMessage();
+            $_SESSION['old_input'] = $_POST;
+            $_SESSION['error'] = $this->friendlyRepresentativeError($e->getMessage(), 'cadastrar');
             redirect(url('representantes/create'));
         }
     }
@@ -271,8 +279,7 @@ class RepresentativeController
             redirect(url('representantes'));
         }
         
-        // Buscar produtos do banco de dados (mesmos do estabelecimento)
-        $products = $this->productModel->getAll();
+        $productOptions = $this->getRepresentativeProductOptions();
         
         // Se for POST sem _method=PUT, processar o formulário (compatibilidade com rota antiga)
         // Se tiver _method=PUT, deixar o Router processar e chamar o método update
@@ -284,7 +291,7 @@ class RepresentativeController
                 'currentPage' => 'representantes',
                 'representative' => $representative,
                 'form_result' => $result,
-                'products' => $products,
+                'productOptions' => $productOptions,
                 'allowedProducts' => $this->representativeModel->getProducts($id)
             ];
             
@@ -304,7 +311,7 @@ class RepresentativeController
             'title' => 'Editar Representante',
             'currentPage' => 'representantes',
             'representative' => $representative,
-            'products' => $products,
+            'productOptions' => $productOptions,
             'allowedProducts' => $allowedProducts
         ];
         
@@ -321,9 +328,11 @@ class RepresentativeController
         
         try {
             // Verificar CSRF token
-            $csrfToken = $_POST['csrf_token'] ?? '';
-            if (!csrf_verify($csrfToken)) {
+            try {
+                csrf_verify();
+            } catch (\Exception $e) {
                 $result['errors'][] = 'Token de segurança inválido. Recarregue a página e tente novamente.';
+                $_SESSION['old_input'] = $_POST;
                 return $result;
             }
             
@@ -339,7 +348,11 @@ class RepresentativeController
             
             // Salvar produtos permitidos
             $allowedProducts = $_POST['allowed_products'] ?? [];
-            $this->representativeModel->setProducts($id, $allowedProducts);
+            $normalizedProducts = $this->normalizeAllowedProducts(
+                is_array($allowedProducts) ? $allowedProducts : [],
+                $this->getRepresentativeProductOptions()
+            );
+            $this->representativeModel->setProducts($id, $normalizedProducts);
             
             if ($updateResult) {
                 // Verificar mudanças
@@ -376,6 +389,7 @@ class RepresentativeController
             
         } catch (\Exception $e) {
             $result['errors'][] = 'Erro ao atualizar representante: ' . $e->getMessage();
+            $_SESSION['old_input'] = $_POST;
         }
         
         return $result;
@@ -436,6 +450,7 @@ class RepresentativeController
         
         if (isset($_SESSION['validation_errors'])) {
             write_log('❌ ERROS DE VALIDAÇÃO ENCONTRADOS: ' . json_encode($_SESSION['validation_errors'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), 'representatives.log');
+            $_SESSION['old_input'] = $_POST;
             redirect(url('representantes/' . $id . '/edit'));
         }
         write_log('✅ Validação passou sem erros', 'representatives.log');
@@ -468,7 +483,11 @@ class RepresentativeController
             }
             
             $allowedProducts = $_POST['allowed_products'] ?? [];
-            $productsCount = count($allowedProducts);
+            $normalizedProducts = $this->normalizeAllowedProducts(
+                is_array($allowedProducts) ? $allowedProducts : [],
+                $this->getRepresentativeProductOptions()
+            );
+            $productsCount = count($normalizedProducts);
             
             write_log('Produtos recebidos no POST: ' . json_encode($allowedProducts, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), 'representatives.log');
             write_log('Quantidade de produtos: ' . $productsCount, 'representatives.log');
@@ -479,7 +498,7 @@ class RepresentativeController
             
             try {
                 write_log('Chamando setProducts para salvar produtos...', 'representatives.log');
-                $this->representativeModel->setProducts($id, $allowedProducts);
+                $this->representativeModel->setProducts($id, $normalizedProducts);
                 write_log('✅ setProducts executado com sucesso', 'representatives.log');
                 
                 // Verificar se foram salvos corretamente
@@ -509,6 +528,7 @@ class RepresentativeController
                 $_SESSION['error'] = 'Representante atualizado, mas houve erro ao salvar produtos permitidos: ' . $e->getMessage();
                 write_log('❌ ERRO ao salvar produtos do representante ' . $id . ': ' . $e->getMessage(), 'representatives.log');
                 write_log('Stack trace: ' . $e->getTraceAsString(), 'representatives.log');
+                $_SESSION['old_input'] = $_POST;
             }
             
             write_log('--- Finalizando processo de atualização ---', 'representatives.log');
@@ -526,7 +546,8 @@ class RepresentativeController
             write_log('========================================', 'representatives.log');
             write_log('', 'representatives.log');
             
-            $_SESSION['error'] = 'Erro ao atualizar representante: ' . $e->getMessage();
+            $_SESSION['error'] = $this->friendlyRepresentativeError($e->getMessage(), 'atualizar');
+            $_SESSION['old_input'] = $_POST;
             redirect(url('representantes/' . $id . '/edit'));
         }
     }
@@ -665,39 +686,39 @@ class RepresentativeController
         // Nome completo
         $nomeCompleto = sanitize_input($_POST['nome_completo'] ?? '');
         if (empty($nomeCompleto)) {
-            $errors[] = 'Nome completo é obrigatório';
+            $errors[] = 'Informe o nome completo do representante.';
         }
         
         // Email
         $email = sanitize_input($_POST['email'] ?? '');
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email válido é obrigatório';
+            $errors[] = 'Informe um e-mail válido.';
         } else {
             // Verificar se email já existe (exceto para o próprio representante sendo editado)
             $existingRepresentative = $this->representativeModel->findByEmail($email);
             if ($existingRepresentative && (!$id || $existingRepresentative['id'] != $id)) {
-                $errors[] = 'Este email já está sendo usado por outro representante';
+                $errors[] = 'Já existe um representante cadastrado com este e-mail.';
             }
         }
         
         // Telefone
         $telefone = sanitize_input($_POST['telefone'] ?? '');
         if (empty($telefone)) {
-            $errors[] = 'Telefone é obrigatório';
+            $errors[] = 'Informe o telefone do representante.';
         }
         
         // CPF
         $cpf = sanitize_input($_POST['cpf'] ?? '');
         if (empty($cpf)) {
-            $errors[] = 'CPF é obrigatório';
+            $errors[] = 'Informe o CPF do representante.';
         } elseif (!$this->validateCPF($cpf)) {
-            $errors[] = 'CPF inválido';
+            $errors[] = 'CPF inválido. Confira os números digitados.';
         }
         
         // CEP
         $cep = sanitize_input($_POST['cep'] ?? '');
         if (empty($cep)) {
-            $errors[] = 'CEP é obrigatório';
+            $errors[] = 'Informe o CEP.';
         }
         
         // Endereço
@@ -707,20 +728,23 @@ class RepresentativeController
         $cidade = sanitize_input($_POST['cidade'] ?? '');
         $uf = sanitize_input($_POST['uf'] ?? '');
         
-        if (empty($logradouro) || empty($numero) || empty($bairro) || empty($cidade) || empty($uf)) {
-            $errors[] = 'Endereço completo é obrigatório';
-        }
+        if (empty($logradouro)) { $errors[] = 'Informe o logradouro.'; }
+        if (empty($numero)) { $errors[] = 'Informe o número do endereço.'; }
+        if (empty($bairro)) { $errors[] = 'Informe o bairro.'; }
+        if (empty($cidade)) { $errors[] = 'Informe a cidade.'; }
+        if (empty($uf)) { $errors[] = 'Selecione a UF.'; }
         
         // Senha (obrigatória apenas para novos representantes)
         $senha = $_POST['senha'] ?? '';
         if (!$id && empty($senha)) {
-            $errors[] = 'Senha é obrigatória';
+            $errors[] = 'Defina uma senha para o representante.';
         } elseif ($senha && strlen($senha) < 6) {
-            $errors[] = 'Senha deve ter pelo menos 6 caracteres';
+            $errors[] = 'A senha deve ter no mínimo 6 caracteres.';
         }
         
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
+            $_SESSION['old_input'] = $_POST;
             return [];
         }
         
@@ -787,5 +811,23 @@ class RepresentativeController
         }
         
         return true;
+    }
+
+    private function friendlyRepresentativeError($message, $action = 'salvar')
+    {
+        $msg = (string)$message;
+        $lower = strtolower($msg);
+
+        if (strpos($lower, 'duplicate entry') !== false && strpos($lower, 'email') !== false) {
+            return 'Já existe um representante cadastrado com este e-mail. Verifique e tente novamente.';
+        }
+        if (strpos($lower, 'duplicate entry') !== false && strpos($lower, 'cpf') !== false) {
+            return 'Já existe um representante cadastrado com este CPF. Verifique e tente novamente.';
+        }
+        if (strpos($lower, 'duplicate entry') !== false) {
+            return 'Já existe um cadastro com estes dados. Revise os campos e tente novamente.';
+        }
+
+        return "Não foi possível {$action} o representante. Revise os dados e tente novamente.";
     }
 }

@@ -192,17 +192,7 @@ class Establishment
         }
         
         if (isset($filters['produto'])) {
-            // Buscar em todas as novas tabelas de produtos
-            $sql .= " AND (
-                e.produto = ? 
-                OR EXISTS (SELECT 1 FROM establishment_cdx_evo WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_cdc WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_google WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_membro_key WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_pagbank WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_outros WHERE establishment_id = e.id)
-            )";
-            $params[] = $filters['produto'];
+            $sql .= $this->buildProductFilterClause($filters['produto'], $params, 'e');
         }
         
         if (isset($filters['cidade'])) {
@@ -287,16 +277,7 @@ class Establishment
         }
         
         if (isset($filters['produto'])) {
-            $sql .= " AND (
-                e.produto = ? 
-                OR EXISTS (SELECT 1 FROM establishment_cdx_evo WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_cdc WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_google WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_membro_key WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_pagbank WHERE establishment_id = e.id)
-                OR EXISTS (SELECT 1 FROM establishment_outros WHERE establishment_id = e.id)
-            )";
-            $params[] = $filters['produto'];
+            $sql .= $this->buildProductFilterClause($filters['produto'], $params, 'e');
         }
         
         if (isset($filters['cidade'])) {
@@ -540,27 +521,26 @@ class Establishment
                     COUNT(CASE WHEN status = 'REPROVED' THEN 1 END) as reprovados,
                     COUNT(CASE WHEN status = 'DISABLED' THEN 1 END) as desabilitados,
                     COUNT(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 END) as cadastros_ultimo_mes
-                FROM establishments WHERE 1=1";
+                FROM establishments e WHERE 1=1";
         
         $params = [];
         
         if (isset($filters['produto'])) {
-            $sql .= " AND produto = ?";
-            $params[] = $filters['produto'];
+            $sql .= $this->buildProductFilterClause($filters['produto'], $params, 'e');
         }
         
         if (isset($filters['representative_id'])) {
-            $sql .= " AND created_by_representative_id = ?";
+            $sql .= " AND e.created_by_representative_id = ?";
             $params[] = $filters['representative_id'];
         }
         
         if (isset($filters['date_from'])) {
-            $sql .= " AND created_at >= ?";
+            $sql .= " AND e.created_at >= ?";
             $params[] = $filters['date_from'];
         }
         
         if (isset($filters['date_to'])) {
-            $sql .= " AND created_at <= ?";
+            $sql .= " AND e.created_at <= ?";
             $params[] = $filters['date_to'];
         }
         
@@ -811,6 +791,56 @@ class Establishment
             // Re-lançar se não for erro de ENUM
             throw $e;
         }
+    }
+
+    private function buildProductFilterClause($productFilter, array &$params, $alias = 'e')
+    {
+        $filter = trim((string) $productFilter);
+        if ($filter === '') {
+            return '';
+        }
+
+        if ($filter === 'manual:pagseguro' || $filter === 'PAGBANK' || strtolower($filter) === 'pagseguro') {
+            return " AND (
+                EXISTS (SELECT 1 FROM establishment_pagbank ep WHERE ep.establishment_id = {$alias}.id)
+                OR {$alias}.produto = 'PAGBANK'
+            )";
+        }
+
+        if (preg_match('/^dynamic:(\d+)$/', $filter, $matches)) {
+            $params[] = (int) $matches[1];
+            return " AND EXISTS (
+                SELECT 1
+                FROM establishment_dynamic_products edp
+                WHERE edp.establishment_id = {$alias}.id
+                  AND edp.dynamic_product_id = ?
+            )";
+        }
+
+        if (ctype_digit($filter)) {
+            $params[] = (int) $filter;
+            return " AND EXISTS (
+                SELECT 1
+                FROM establishment_dynamic_products edp
+                WHERE edp.establishment_id = {$alias}.id
+                  AND edp.dynamic_product_id = ?
+            )";
+        }
+
+        $legacyMap = [
+            'CDX_EVO' => 'establishment_cdx_evo',
+            'CDC' => 'establishment_cdc',
+            'GOOGLE' => 'establishment_google',
+            'MEMBRO_KEY' => 'establishment_membro_key',
+            'OUTROS' => 'establishment_outros',
+        ];
+
+        if (isset($legacyMap[$filter])) {
+            $table = $legacyMap[$filter];
+            return " AND EXISTS (SELECT 1 FROM {$table} x WHERE x.establishment_id = {$alias}.id)";
+        }
+
+        return '';
     }
     
     

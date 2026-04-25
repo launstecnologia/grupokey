@@ -145,14 +145,19 @@ $representatives = $representatives ?? [];
             <!-- Produto -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Produto</label>
+                <?php
+                $selectedProductFilter = (string)($filters['produto'] ?? '');
+                if ($selectedProductFilter === 'PAGBANK') {
+                    $selectedProductFilter = 'manual:pagseguro';
+                }
+                ?>
                 <select name="produto" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">Todos os produtos</option>
-                    <option value="CDX_EVO" <?= ($filters['produto'] ?? '') === 'CDX_EVO' ? 'selected' : '' ?>>CDX/EVO</option>
-                    <option value="CDC" <?= ($filters['produto'] ?? '') === 'CDC' ? 'selected' : '' ?>>CDC</option>
-                    <option value="GOOGLE" <?= ($filters['produto'] ?? '') === 'GOOGLE' ? 'selected' : '' ?>>Google</option>
-                    <option value="MEMBRO_KEY" <?= ($filters['produto'] ?? '') === 'MEMBRO_KEY' ? 'selected' : '' ?>>Membro Key</option>
-                    <option value="PAGBANK" <?= ($filters['produto'] ?? '') === 'PAGBANK' ? 'selected' : '' ?>>PagSeguro</option>
-                    <option value="OUTROS" <?= ($filters['produto'] ?? '') === 'OUTROS' ? 'selected' : '' ?>>Outros</option>
+                    <?php foreach (($productFilterOptions ?? []) as $option): ?>
+                        <option value="<?= htmlspecialchars($option['value']) ?>" <?= $selectedProductFilter === (string)$option['value'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($option['label']) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
@@ -272,8 +277,8 @@ $representatives = $representatives ?? [];
                                     $produtosAdicionais = explode(',', $establishment['produtos_adicionais']);
                                     foreach ($produtosAdicionais as $prod) {
                                         $prod = trim($prod);
-                                        // Só adicionar produtos válidos que realmente existem nas tabelas
-                                        $produtosValidos = ['CDX/EVO', 'CDC', 'Google', 'Membro Key', 'PagSeguro', 'Outros'];
+                                        // Manter apenas produto manual atual
+                                        $produtosValidos = ['PagSeguro'];
                                         if (!empty($prod) && in_array($prod, $produtosValidos) && !in_array($prod, $produtos)) {
                                             $produtos[] = $prod;
                                         }
@@ -293,20 +298,12 @@ $representatives = $representatives ?? [];
                                 // Se não tiver produtos_adicionais, verificar o campo produto (apenas se for válido)
                                 if (empty($produtos) && !empty($establishment['produto'])) {
                                     $produtoEnum = $establishment['produto'];
-                                    // Mapear ENUM para nome legível (apenas valores válidos)
+                                    // Fallback para legado
                                     $produtoMap = [
-                                        'CDX_EVO' => 'CDX/EVO',
-                                        'PAGSEGURO_MP' => 'CDX/EVO', // Valor antigo
-                                        'CDC' => 'CDC',
-                                        'BRASILCARD' => 'CDC', // Valor antigo
-                                        'GOOGLE' => 'Google',
-                                        'MEMBRO_KEY' => 'Membro Key',
                                         'PAGBANK' => 'PagSeguro',
-                                        'OUTROS' => 'Outros',
                                     ];
                                     $produtoNome = $produtoMap[$produtoEnum] ?? null;
-                                    // Só adicionar se for um produto válido e não for DIVERSOS (valor antigo inválido)
-                                    if ($produtoNome && $produtoEnum !== 'DIVERSOS' && !in_array($produtoNome, $produtos)) {
+                                    if ($produtoNome && !in_array($produtoNome, $produtos)) {
                                         $produtos[] = $produtoNome;
                                     }
                                 }

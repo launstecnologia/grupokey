@@ -57,6 +57,7 @@ class EstablishmentController
             'currentPage' => 'estabelecimentos',
             'establishments' => $establishments,
             'representatives' => $representatives,
+            'productFilterOptions' => $this->getProductFilterOptions(),
             'filters' => $filters,
             'stats' => $stats ?? [
                 'total' => 0,
@@ -158,6 +159,7 @@ class EstablishmentController
             
         } catch (\PDOException $e) {
             // Erro específico do banco de dados
+            $_SESSION['old_input'] = $_POST;
             $errorMessage = 'Erro no banco de dados: ';
             
             switch ($e->getCode()) {
@@ -197,6 +199,7 @@ class EstablishmentController
             error_log('ERRO ao cadastrar estabelecimento: ' . $e->getMessage());
             error_log('Stack trace: ' . $e->getTraceAsString());
             
+            $_SESSION['old_input'] = $_POST;
             $_SESSION['error'] = 'Erro ao cadastrar estabelecimento: ' . $e->getMessage();
             $_SESSION['debug_error'] = [
                 'code' => $e->getCode(),
@@ -368,6 +371,7 @@ class EstablishmentController
         } catch (\PDOException $e) {
             // Erro específico do banco de dados
             error_log('ERRO PDO: ' . $e->getMessage());
+            $_SESSION['old_input'] = $_POST;
             $errorMessage = 'Erro no banco de dados: ';
             
             switch ($e->getCode()) {
@@ -405,6 +409,7 @@ class EstablishmentController
         } catch (\Exception $e) {
             // Outros erros
             error_log('ERRO GERAL: ' . $e->getMessage());
+            $_SESSION['old_input'] = $_POST;
             $_SESSION['error'] = 'Erro ao atualizar estabelecimento: ' . $e->getMessage();
             $_SESSION['debug_error'] = [
                 'code' => $e->getCode(),
@@ -1209,12 +1214,7 @@ class EstablishmentController
     private function getAvailableProducts()
     {
         $products = [
-            'CDX_EVO' => 'CDX/EVO',
-            'CDC' => 'CDC',
-            'GOOGLE' => 'Google',
-            'MEMBRO_KEY' => 'Membro Key',
             'PAGBANK' => 'PagSeguro',
-            'OUTROS' => 'Outros'
         ];
         
         // Se for representante, filtrar apenas produtos permitidos
@@ -1239,10 +1239,30 @@ class EstablishmentController
     {
         $products = $this->dynamicProductModel->getAll();
         $detailed = [];
+        $allowedDynamicIds = null;
+
+        if (Auth::isRepresentative()) {
+            $representative = Auth::representative();
+            $allowedProducts = $this->representativeModel->getProducts($representative['id']);
+            $allowedProductTypes = array_column($allowedProducts, 'product_type');
+            if (!empty($allowedProductTypes)) {
+                $allowedDynamicIds = [];
+                foreach ($allowedProductTypes as $type) {
+                    if (preg_match('/^DYNAMIC_(\d+)$/', (string) $type, $matches)) {
+                        $allowedDynamicIds[] = (int) $matches[1];
+                    }
+                }
+            }
+        }
 
         foreach ($products as $product) {
             $slug = strtolower((string) ($product['slug'] ?? ''));
             $name = strtolower((string) ($product['name'] ?? ''));
+            $id = (int) ($product['id'] ?? 0);
+
+            if ($id <= 0) {
+                continue;
+            }
 
             // PagSeguro permanece manual
             if (
@@ -1254,13 +1274,47 @@ class EstablishmentController
                 continue;
             }
 
-            $full = $this->dynamicProductModel->findById((int) $product['id']);
+            if ($allowedDynamicIds !== null && !in_array($id, $allowedDynamicIds, true)) {
+                continue;
+            }
+
+            $full = $this->dynamicProductModel->findById($id);
             if ($full && (int) ($full['is_active'] ?? 0) === 1) {
                 $detailed[] = $full;
             }
         }
 
         return $detailed;
+    }
+
+    private function getProductFilterOptions()
+    {
+        $options = [
+            [
+                'value' => 'manual:pagseguro',
+                'label' => 'PagSeguro',
+            ],
+        ];
+
+        $dynamicProducts = $this->getAvailableDynamicProducts();
+        usort($dynamicProducts, function ($a, $b) {
+            return strcasecmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
+        });
+
+        foreach ($dynamicProducts as $product) {
+            $id = (int) ($product['id'] ?? 0);
+            $name = trim((string) ($product['name'] ?? ''));
+            if ($id <= 0 || $name === '') {
+                continue;
+            }
+
+            $options[] = [
+                'value' => 'dynamic:' . $id,
+                'label' => $name,
+            ];
+        }
+
+        return $options;
     }
     
     /**

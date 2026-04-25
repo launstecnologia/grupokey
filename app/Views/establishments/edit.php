@@ -8,6 +8,29 @@ $products = $products ?? [];
 $dynamicProductsCatalog = $dynamic_products_catalog ?? [];
 $representatives = $representatives ?? [];
 $segments = $segments ?? [];
+$oldInput = $_SESSION['old_input'] ?? [];
+
+if (!empty($oldInput) && is_array($oldInput)) {
+    $editableFields = [
+        'registration_type', 'cpf', 'cnpj', 'razao_social', 'birth_date',
+        'nome_completo', 'nome_fantasia', 'segmento', 'telefone', 'email',
+        'cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf',
+        'banco', 'agencia', 'conta', 'tipo_conta', 'chave_pix',
+        'observacoes', 'status', 'representative_id'
+    ];
+    foreach ($editableFields as $field) {
+        if (array_key_exists($field, $oldInput)) {
+            $establishment[$field] = $oldInput[$field];
+        }
+    }
+}
+
+$oldManualProducts = isset($oldInput['products']) && is_array($oldInput['products']) ? array_map('strval', $oldInput['products']) : [];
+$oldDynamicProducts = isset($oldInput['dynamic_products']) && is_array($oldInput['dynamic_products']) ? array_map('strval', $oldInput['dynamic_products']) : [];
+$oldDynamicValues = isset($oldInput['dynamic_values']) && is_array($oldInput['dynamic_values']) ? $oldInput['dynamic_values'] : [];
+$oldField = function ($key, $default = '') use ($oldInput) {
+    return array_key_exists($key, $oldInput) ? $oldInput[$key] : $default;
+};
 
 // Decodificar dados dos produtos se existirem
 $productData = [];
@@ -498,7 +521,9 @@ function isProductSelected($productId, $productData) {
                         }
                         
                         // Verificar se o produto está selecionado usando a função auxiliar
-                        $isSelected = isProductSelected($product['id'], $productData);
+                        $isSelected = !empty($oldManualProducts)
+                            ? in_array((string) $product['id'], $oldManualProducts, true)
+                            : isProductSelected($product['id'], $productData);
                         
                         // Debug para este produto específico
                         write_log("=== VERIFICAÇÃO PRODUTO ===", 'app.log');
@@ -530,7 +555,9 @@ function isProductSelected($productId, $productData) {
                     <?php foreach ($dynamicProductsCatalog as $dynamicProduct): ?>
                         <?php
                             $dynamicProductId = (int) ($dynamicProduct['id'] ?? 0);
-                            $selectedDynamic = isset($dynamicProductData[$dynamicProductId]);
+                            $selectedDynamic = !empty($oldDynamicProducts)
+                                ? in_array((string) $dynamicProductId, $oldDynamicProducts, true)
+                                : isset($dynamicProductData[$dynamicProductId]);
                         ?>
                         <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-blue-600 hover:text-white transition-colors">
                             <input type="checkbox"
@@ -548,8 +575,12 @@ function isProductSelected($productId, $productData) {
                     <?php foreach ($dynamicProductsCatalog as $dynamicProduct): ?>
                         <?php
                             $dynamicProductId = (int) ($dynamicProduct['id'] ?? 0);
-                            $selectedDynamic = isset($dynamicProductData[$dynamicProductId]);
-                            $dynamicValues = $selectedDynamic ? ($dynamicProductData[$dynamicProductId]['values'] ?? []) : [];
+                            $selectedDynamic = !empty($oldDynamicProducts)
+                                ? in_array((string) $dynamicProductId, $oldDynamicProducts, true)
+                                : isset($dynamicProductData[$dynamicProductId]);
+                            $dynamicValues = !empty($oldDynamicValues)
+                                ? ($oldDynamicValues[$dynamicProductId] ?? [])
+                                : ($selectedDynamic ? ($dynamicProductData[$dynamicProductId]['values'] ?? []) : []);
                         ?>
                         <div id="dyn-prod-<?= $dynamicProductId ?>-config" class="<?= $selectedDynamic ? '' : 'hidden' ?> p-4 bg-gray-800 rounded-lg border border-gray-700">
                             <h5 class="font-medium text-white mb-3"><?= htmlspecialchars($dynamicProduct['name'] ?? '') ?></h5>
@@ -730,7 +761,7 @@ function isProductSelected($productId, $productData) {
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Previsão de Faturamento</label>
                                 <input type="text" name="previsao_faturamento_<?= $product['id'] ?>" id="previsao_faturamento_<?= $product['id'] ?>"
-                                       value="<?= !empty($otherProduct['previsao_faturamento']) ? 'R$ ' . number_format((float)$otherProduct['previsao_faturamento'], 2, ',', '.') : 'R$ 0,00' ?>"
+                                       value="<?= htmlspecialchars((string) $oldField('previsao_faturamento_' . $product['id'], !empty($otherProduct['previsao_faturamento']) ? 'R$ ' . number_format((float)$otherProduct['previsao_faturamento'], 2, ',', '.') : 'R$ 0,00')) ?>"
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                        placeholder="R$ 0,00" data-mask="currency">
                             </div>
@@ -741,8 +772,9 @@ function isProductSelected($productId, $productData) {
                                     <option value="">Selecione a tabela</option>
                                     <?php
                                     $tabelas = ['77299', 'D30', 'D0 PLUS', 'D0 FIT', 'Elite', 'Master', 'Padrão', 'Pro', 'Super', 'Outros'];
+                                    $selectedTabela = (string) $oldField('tabela_' . $product['id'], $otherProduct['tabela'] ?? '');
                                     foreach ($tabelas as $tabela): ?>
-                                        <option value="<?= $tabela ?>" <?= ($otherProduct['tabela'] ?? '') === $tabela ? 'selected' : '' ?>><?= $tabela ?></option>
+                                        <option value="<?= $tabela ?>" <?= $selectedTabela === $tabela ? 'selected' : '' ?>><?= $tabela ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -753,8 +785,9 @@ function isProductSelected($productId, $productData) {
                                     <option value="">Selecione o modelo</option>
                                     <?php
                                     $modelos = ['Chip3', 'plus2', 'pro2', 'smart', 'CDX', 'EVO', 'outros'];
+                                    $selectedModelo = (string) $oldField('modelo_maquininha_' . $product['id'], $otherProduct['modelo_maquininha'] ?? '');
                                     foreach ($modelos as $modelo): ?>
-                                        <option value="<?= $modelo ?>" <?= ($otherProduct['modelo_maquininha'] ?? '') === $modelo ? 'selected' : '' ?>><?= $modelo ?></option>
+                                        <option value="<?= $modelo ?>" <?= $selectedModelo === $modelo ? 'selected' : '' ?>><?= $modelo ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -762,17 +795,18 @@ function isProductSelected($productId, $productData) {
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Meio de Pagamento da Adesão</label>
                                 <select name="meio_pagamento_<?= $product['id'] ?>" 
                                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <?php $selectedMeioPagamento = (string) $oldField('meio_pagamento_' . $product['id'], $otherProduct['meio_pagamento'] ?? ''); ?>
                                     <option value="">Selecione o meio</option>
-                                    <option value="a_vista" <?= ($otherProduct['meio_pagamento'] ?? '') === 'a_vista' ? 'selected' : '' ?>>À Vista</option>
-                                    <option value="cartao" <?= ($otherProduct['meio_pagamento'] ?? '') === 'cartao' ? 'selected' : '' ?>>Cartão</option>
-                                    <option value="criacao" <?= ($otherProduct['meio_pagamento'] ?? '') === 'criacao' ? 'selected' : '' ?>>Criação</option>
-                                    <option value="isento" <?= ($otherProduct['meio_pagamento'] ?? '') === 'isento' ? 'selected' : '' ?>>Isento</option>
+                                    <option value="a_vista" <?= $selectedMeioPagamento === 'a_vista' ? 'selected' : '' ?>>À Vista</option>
+                                    <option value="cartao" <?= $selectedMeioPagamento === 'cartao' ? 'selected' : '' ?>>Cartão</option>
+                                    <option value="criacao" <?= $selectedMeioPagamento === 'criacao' ? 'selected' : '' ?>>Criação</option>
+                                    <option value="isento" <?= $selectedMeioPagamento === 'isento' ? 'selected' : '' ?>>Isento</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Valor</label>
                                 <input type="text" name="valor_<?= $product['id'] ?>" id="valor_<?= $product['id'] ?>"
-                                       value="<?= !empty($otherProduct['valor']) ? 'R$ ' . number_format((float)$otherProduct['valor'], 2, ',', '.') : 'R$ 0,00' ?>"
+                                       value="<?= htmlspecialchars((string) $oldField('valor_' . $product['id'], !empty($otherProduct['valor']) ? 'R$ ' . number_format((float)$otherProduct['valor'], 2, ',', '.') : 'R$ 0,00')) ?>"
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                        placeholder="R$ 0,00" data-mask="currency">
                             </div>
@@ -782,9 +816,10 @@ function isProductSelected($productId, $productData) {
                                 <select name="plan_<?= $product['id'] ?>" 
                                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Selecione o plano</option>
+                                    <?php $selectedPlan = (string) $oldField('plan_' . $product['id'], $otherProduct['plan'] ?? ''); ?>
                                     <?php if (!empty($sistpay_plans)): ?>
                                         <?php foreach ($sistpay_plans as $plan): ?>
-                                            <option value="<?= $plan['id'] ?>" <?= (!empty($otherProduct['plan']) && (int)$otherProduct['plan'] == $plan['id']) ? 'selected' : '' ?>>
+                                            <option value="<?= $plan['id'] ?>" <?= ((string)$plan['id'] === $selectedPlan) ? 'selected' : '' ?>>
                                                 <?= htmlspecialchars($plan['name']) ?> (ID: <?= $plan['id'] ?>)
                                             </option>
                                         <?php endforeach; ?>
@@ -1194,9 +1229,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (campo) campo.value = data.logradouro;
                 }
                 
-                if (data.complemento) {
+                {
                     const campo = document.querySelector('input[name="complemento"]');
-                    if (campo) campo.value = data.complemento;
+                    if (campo) campo.value = (data.complemento || '').trim();
                 }
                 
                 if (data.bairro) {
@@ -1335,10 +1370,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             camposPreenchidos++;
                         }
                     }
-                    if (data.complemento) {
+                    {
                         const campo = document.querySelector('input[name="complemento"]');
                         if (campo) {
-                            campo.value = data.complemento;
+                            campo.value = (data.complemento || '').trim();
                             camposPreenchidos++;
                         }
                     }
@@ -1516,5 +1551,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <?php
 $content = ob_get_clean();
+unset($_SESSION['old_input']);
 include __DIR__ . '/../layouts/app.php';
 ?>
