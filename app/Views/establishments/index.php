@@ -279,6 +279,16 @@ $representatives = $representatives ?? [];
                                         }
                                     }
                                 }
+
+                                if (!empty($establishment['produtos_dinamicos'])) {
+                                    $produtosDinamicos = explode(',', $establishment['produtos_dinamicos']);
+                                    foreach ($produtosDinamicos as $prod) {
+                                        $prod = trim($prod);
+                                        if (!empty($prod) && !in_array($prod, $produtos)) {
+                                            $produtos[] = $prod;
+                                        }
+                                    }
+                                }
                                 
                                 // Se não tiver produtos_adicionais, verificar o campo produto (apenas se for válido)
                                 if (empty($produtos) && !empty($establishment['produto'])) {

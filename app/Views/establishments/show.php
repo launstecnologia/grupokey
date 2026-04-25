@@ -13,6 +13,7 @@ $productData = [];
 if (!empty($establishment['products'])) {
     $productData = $establishment['products'];
 }
+$dynamicProductData = $establishment['dynamic_products'] ?? [];
 
 // Status badges
 $statusColors = [
@@ -379,7 +380,7 @@ $statusLabels = [
                     </h3>
                 </div>
                 <div class="p-6">
-                    <?php if (!empty($productData)): ?>
+                    <?php if (!empty($productData) || !empty($dynamicProductData)): ?>
                         <!-- CDX/EVO -->
                         <?php if (isset($productData['pagseguro'])): ?>
                         <div class="mb-6 p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -549,6 +550,35 @@ $statusLabels = [
                                         <span class="font-medium text-gray-900 dark:text-white">R$ <?= number_format($otherProduct['valor'], 2, ',', '.') ?></span>
                                     </div>
                                     <?php endif; ?>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Produtos Dinâmicos -->
+                        <?php if (!empty($dynamicProductData)): ?>
+                        <div class="space-y-4 mt-4">
+                            <?php foreach ($dynamicProductData as $dynamicProduct): ?>
+                            <div class="p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                    <i class="fas fa-layer-group mr-2"></i>
+                                    <?= htmlspecialchars($dynamicProduct['product_name'] ?? 'Produto Dinâmico') ?>
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                                    <?php foreach (($dynamicProduct['fields'] ?? []) as $field): ?>
+                                        <?php
+                                            $fieldKey = $field['field_key'] ?? '';
+                                            $fieldValue = $dynamicProduct['values'][$fieldKey] ?? '';
+                                            if ($fieldValue === '' || $fieldValue === null) {
+                                                continue;
+                                            }
+                                        ?>
+                                        <div>
+                                            <span class="text-gray-600 dark:text-gray-400"><?= htmlspecialchars($field['label'] ?? $fieldKey) ?>:</span>
+                                            <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars((string) $fieldValue) ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
                             <?php endforeach; ?>

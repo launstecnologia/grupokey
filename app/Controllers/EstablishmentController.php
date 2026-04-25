@@ -7,6 +7,8 @@ use App\Models\Establishment;
 use App\Models\Representative;
 use App\Models\Product;
 use App\Models\EstablishmentProduct;
+use App\Models\EstablishmentDynamicProduct;
+use App\Models\DynamicProduct;
 use App\Models\Segment;
 use App\Models\SistPaySettings;
 use App\Core\FileUpload;
@@ -18,6 +20,8 @@ class EstablishmentController
     private $representativeModel;
     private $productModel;
     private $establishmentProductModel;
+    private $establishmentDynamicProductModel;
+    private $dynamicProductModel;
     private $segmentModel;
     private $fileUpload;
     
@@ -27,6 +31,8 @@ class EstablishmentController
         $this->representativeModel = new Representative();
         $this->productModel = new Product();
         $this->establishmentProductModel = new EstablishmentProduct();
+        $this->establishmentDynamicProductModel = new EstablishmentDynamicProduct();
+        $this->dynamicProductModel = new DynamicProduct();
         $this->segmentModel = new Segment();
         $this->fileUpload = new FileUpload();
     }
@@ -98,6 +104,7 @@ class EstablishmentController
             'currentPage' => 'estabelecimentos',
             'representatives' => $representatives,
             'products' => $this->productModel->getAll(),
+            'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];
@@ -292,6 +299,7 @@ class EstablishmentController
             'establishment' => $establishment,
             'representatives' => $representatives,
             'products' => $this->productModel->getAll(),
+            'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];
@@ -634,28 +642,34 @@ class EstablishmentController
             $errors[] = 'Email válido é obrigatório';
         }
         
-        // Validar produtos (múltiplos ou único)
-        $products = $_POST['products'] ?? [];
-        error_log('Produtos recebidos: ' . json_encode($products));
-        
-        if (empty($products) || !is_array($products)) {
-            $errors[] = 'Pelo menos um produto deve ser selecionado';
+        // Produtos manuais: manter somente PagBank
+        $productsRaw = $_POST['products'] ?? [];
+        $productsRaw = is_array($productsRaw) ? $productsRaw : [];
+        $products = [];
+        foreach ($productsRaw as $productId) {
+            if ($productId === 'prod-pagbank') {
+                $products[] = $productId;
+            }
+        }
+        $products = array_values(array_unique($products));
+
+        // Produtos dinâmicos
+        $dynamicProductsRaw = $_POST['dynamic_products'] ?? [];
+        $dynamicProductsRaw = is_array($dynamicProductsRaw) ? $dynamicProductsRaw : [];
+        $dynamicProducts = [];
+        foreach ($dynamicProductsRaw as $dynamicProductId) {
+            $idInt = (int) $dynamicProductId;
+            if ($idInt > 0) {
+                $dynamicProducts[] = $idInt;
+            }
+        }
+        $dynamicProducts = array_values(array_unique($dynamicProducts));
+
+        if (empty($products) && empty($dynamicProducts)) {
+            $errors[] = 'Selecione pelo menos um produto (PagBank ou produto dinâmico).';
             error_log('ERRO: Nenhum produto selecionado');
         } else {
-            // Verificar se pelo menos um produto foi selecionado
-            $hasSelectedProduct = false;
-            foreach ($products as $product) {
-                if (!empty($product)) {
-                    $hasSelectedProduct = true;
-                    break;
-                }
-            }
-            if (!$hasSelectedProduct) {
-                $errors[] = 'Pelo menos um produto deve ser selecionado';
-                error_log('ERRO: Produtos vazios');
-            } else {
-                error_log('SUCESSO: Produtos validados');
-            }
+            error_log('SUCESSO: Produtos validados');
         }
         
         if (empty($cep)) {
@@ -691,6 +705,7 @@ class EstablishmentController
                 $errors[] = 'CPF inválido';
             }
         } else {
+            $hasManualPagBank = in_array('prod-pagbank', $products, true);
             $cnpj = sanitize_input($_POST['cnpj'] ?? '');
             $razaoSocial = sanitize_input($_POST['razao_social'] ?? '');
             $cpfPj = sanitize_input($_POST['cpf_pj'] ?? '');
@@ -703,14 +718,14 @@ class EstablishmentController
             if (empty($razaoSocial)) {
                 $errors[] = 'Razão social é obrigatória para pessoa jurídica';
             }
-            if (empty($cpfPj)) {
+            if ($hasManualPagBank && empty($cpfPj)) {
                 $errors[] = 'CPF do responsável é obrigatório para pessoa jurídica (exigido para PagBank)';
-            } elseif (!$this->validateCPF($cpfPj)) {
+            } elseif (!empty($cpfPj) && !$this->validateCPF($cpfPj)) {
                 $errors[] = 'CPF do responsável inválido';
             }
-            if (empty($dataNascimento)) {
+            if ($hasManualPagBank && empty($dataNascimento)) {
                 $errors[] = 'Data de nascimento do responsável é obrigatória para pessoa jurídica (exigido para PagBank)';
-            } elseif (strtotime($dataNascimento) === false || date('Y-m-d', strtotime($dataNascimento)) !== $dataNascimento) {
+            } elseif (!empty($dataNascimento) && (strtotime($dataNascimento) === false || date('Y-m-d', strtotime($dataNascimento)) !== $dataNascimento)) {
                 $errors[] = 'Data de nascimento do responsável inválida';
             }
         }
@@ -813,7 +828,10 @@ class EstablishmentController
         
         // Dados específicos dos produtos
         $data['product_data'] = $this->getProductSpecificData($products);
+        $data['dynamic_products'] = $dynamicProducts;
+        $data['dynamic_product_values'] = $this->getDynamicProductSpecificData($dynamicProducts);
         error_log('Dados específicos dos produtos: ' . json_encode($data['product_data']));
+        error_log('Dados dos produtos dinâmicos: ' . json_encode($data['dynamic_product_values']));
         
         // Definir quem criou/atualizou
         if (Auth::isAdmin()) {
@@ -879,6 +897,45 @@ class EstablishmentController
         
         error_log('Dados coletados: ' . json_encode($data));
         return $data;
+    }
+
+    private function getDynamicProductSpecificData($dynamicProductIds)
+    {
+        $rawValues = $_POST['dynamic_values'] ?? [];
+        $rawValues = is_array($rawValues) ? $rawValues : [];
+
+        $productsById = [];
+        foreach ($this->getAvailableDynamicProducts() as $product) {
+            $productsById[(int) $product['id']] = $product;
+        }
+
+        $result = [];
+        foreach ($dynamicProductIds as $productId) {
+            if (!isset($productsById[$productId])) {
+                continue;
+            }
+
+            $product = $productsById[$productId];
+            $fieldValues = $rawValues[$productId] ?? [];
+            $fieldValues = is_array($fieldValues) ? $fieldValues : [];
+
+            $result[$productId] = [];
+            foreach (($product['fields'] ?? []) as $field) {
+                $fieldKey = $field['field_key'] ?? '';
+                if ($fieldKey === '') {
+                    continue;
+                }
+
+                $value = $fieldValues[$fieldKey] ?? '';
+                if (is_array($value)) {
+                    $value = '';
+                }
+
+                $result[$productId][$fieldKey] = sanitize_input((string) $value);
+            }
+        }
+
+        return $result;
     }
     
     /**
@@ -1176,6 +1233,29 @@ class EstablishmentController
         }
         
         return $products;
+    }
+
+    private function getAvailableDynamicProducts()
+    {
+        $products = $this->dynamicProductModel->getAll();
+        $detailed = [];
+
+        foreach ($products as $product) {
+            $slug = strtolower((string) ($product['slug'] ?? ''));
+            $name = strtolower((string) ($product['name'] ?? ''));
+
+            // PagBank permanece manual
+            if (strpos($slug, 'pagbank') !== false || strpos($name, 'pagbank') !== false) {
+                continue;
+            }
+
+            $full = $this->dynamicProductModel->findById((int) $product['id']);
+            if ($full && (int) ($full['is_active'] ?? 0) === 1) {
+                $detailed[] = $full;
+            }
+        }
+
+        return $detailed;
     }
     
     /**

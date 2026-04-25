@@ -4,6 +4,7 @@ ob_start();
 
 // Definir variáveis com valores padrão
 $products = $products ?? [];
+$dynamicProductsCatalog = $dynamic_products_catalog ?? [];
 $representatives = $representatives ?? [];
 $segments = $segments ?? [];
 ?>
@@ -354,7 +355,10 @@ $segments = $segments ?? [];
                         'GRIVA' => null, // Remover
                     ];
                     
-                    foreach ($products as $product): 
+                    foreach ($products as $product):
+                        if (($product['id'] ?? '') !== 'prod-pagbank') {
+                            continue;
+                        }
                         $productName = trim($product['name'] ?? '');
                         $productId = strtoupper(trim($product['id'] ?? ''));
                         $productNameUpper = strtoupper($productName);
@@ -402,6 +406,88 @@ $segments = $segments ?? [];
                     <?php endforeach; ?>
                 </div>
             </div>
+
+            <!-- Produtos Dinâmicos -->
+            <?php if (!empty($dynamicProductsCatalog)): ?>
+            <div class="mb-8">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-layer-group mr-2 text-blue-600"></i>
+                    Produtos Dinâmicos
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <?php foreach ($dynamicProductsCatalog as $dynamicProduct): ?>
+                        <?php
+                            $dynamicProductId = (int) ($dynamicProduct['id'] ?? 0);
+                            $selectedDynamic = isset($_SESSION['old_input']['dynamic_products']) && in_array((string) $dynamicProductId, (array) $_SESSION['old_input']['dynamic_products'], true);
+                        ?>
+                        <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-blue-600 hover:text-white transition-colors">
+                            <input type="checkbox"
+                                   name="dynamic_products[]"
+                                   value="<?= $dynamicProductId ?>"
+                                   class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dynamic-product-checkbox"
+                                   data-target="dyn-prod-<?= $dynamicProductId ?>-config"
+                                   <?= $selectedDynamic ? 'checked' : '' ?>>
+                            <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($dynamicProduct['name'] ?? '') ?></span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="space-y-4">
+                    <?php foreach ($dynamicProductsCatalog as $dynamicProduct): ?>
+                        <?php $dynamicProductId = (int) ($dynamicProduct['id'] ?? 0); ?>
+                        <div id="dyn-prod-<?= $dynamicProductId ?>-config" class="<?= (isset($_SESSION['old_input']['dynamic_products']) && in_array((string) $dynamicProductId, (array) $_SESSION['old_input']['dynamic_products'], true)) ? '' : 'hidden' ?> p-4 bg-gray-800 rounded-lg border border-gray-700">
+                            <h5 class="font-medium text-white mb-3"><?= htmlspecialchars($dynamicProduct['name'] ?? '') ?></h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <?php foreach (($dynamicProduct['fields'] ?? []) as $field): ?>
+                                    <?php
+                                        $fieldKey = $field['field_key'] ?? '';
+                                        if ($fieldKey === '') {
+                                            continue;
+                                        }
+                                        $fieldType = $field['field_type'] ?? 'text';
+                                        $fieldName = "dynamic_values[{$dynamicProductId}][{$fieldKey}]";
+                                        $fieldOld = $_SESSION['old_input']['dynamic_values'][$dynamicProductId][$fieldKey] ?? '';
+                                    ?>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-300 mb-1">
+                                            <?= htmlspecialchars($field['label'] ?? $fieldKey) ?><?= !empty($field['is_required']) ? ' *' : '' ?>
+                                        </label>
+                                        <?php if ($fieldType === 'textarea'): ?>
+                                            <textarea name="<?= htmlspecialchars($fieldName) ?>" rows="3"
+                                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                      placeholder="<?= htmlspecialchars($field['placeholder'] ?? '') ?>"><?= htmlspecialchars($fieldOld) ?></textarea>
+                                        <?php elseif ($fieldType === 'select'): ?>
+                                            <select name="<?= htmlspecialchars($fieldName) ?>"
+                                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="">Selecione</option>
+                                                <?php foreach (($field['options'] ?? []) as $option): ?>
+                                                    <?php
+                                                        $optionValue = $option['option_value'] ?? '';
+                                                        $optionLabel = $option['option_label'] ?? $optionValue;
+                                                    ?>
+                                                    <option value="<?= htmlspecialchars($optionValue) ?>" <?= $fieldOld === $optionValue ? 'selected' : '' ?>>
+                                                        <?= htmlspecialchars($optionLabel) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        <?php else: ?>
+                                            <input type="<?= in_array($fieldType, ['number', 'email', 'date', 'datetime-local']) ? $fieldType : 'text' ?>"
+                                                   name="<?= htmlspecialchars($fieldName) ?>"
+                                                   value="<?= htmlspecialchars($fieldOld) ?>"
+                                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                   placeholder="<?= htmlspecialchars($field['placeholder'] ?? '') ?>">
+                                        <?php endif; ?>
+                                        <?php if (!empty($field['help_text'])): ?>
+                                            <small class="text-gray-400"><?= htmlspecialchars($field['help_text']) ?></small>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <!-- Configurações dos Produtos -->
             <!-- Forçar atualização do cache - v2 -->
@@ -509,7 +595,7 @@ $segments = $segments ?? [];
 
                 <!-- Outros Produtos -->
                 <?php foreach ($products as $product): ?>
-                    <?php if ($product['id'] !== 'prod-pagseguro' && $product['id'] !== 'prod-subaquirente' && $product['id'] !== 'prod-brasil-card'): 
+                    <?php if ($product['id'] !== 'prod-pagbank'): 
                         // Aplicar o mesmo mapeamento de nomes usado nos checkboxes
                         $productName = trim($product['name'] ?? '');
                         $productId = strtoupper(trim($product['id'] ?? ''));
@@ -904,6 +990,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const configDiv = document.getElementById(configId);
             if (configDiv) {
                 configDiv.classList.remove('hidden');
+            }
+        }
+    });
+
+    // Mostrar/ocultar configurações dos produtos dinâmicos
+    const dynamicProductCheckboxes = document.querySelectorAll('.dynamic-product-checkbox');
+    dynamicProductCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const targetId = this.dataset.target;
+            const target = document.getElementById(targetId);
+            if (target) {
+                target.classList.toggle('hidden', !this.checked);
+            }
+        });
+
+        if (checkbox.checked) {
+            const target = document.getElementById(checkbox.dataset.target);
+            if (target) {
+                target.classList.remove('hidden');
             }
         }
     });

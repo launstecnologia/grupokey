@@ -104,6 +104,14 @@ class Establishment
                     }
                 }
             }
+
+            // Inserir produtos dinâmicos (modo aditivo)
+            $dynamicProduct = new EstablishmentDynamicProduct();
+            $dynamicProduct->replaceAllForEstablishment(
+                $establishmentId,
+                $data['dynamic_products'] ?? [],
+                $data['dynamic_product_values'] ?? []
+            );
             
             $this->db->commit();
             return $establishmentId;
@@ -141,6 +149,10 @@ class Establishment
             // Buscar produtos associados
             $establishmentProduct = new EstablishmentProduct();
             $establishment['products'] = $establishmentProduct->getAllProducts($id);
+
+            // Buscar produtos dinâmicos associados
+            $dynamicProduct = new EstablishmentDynamicProduct();
+            $establishment['dynamic_products'] = $dynamicProduct->getByEstablishment($id);
         }
         
         return $establishment;
@@ -161,7 +173,11 @@ class Establishment
                            IF((SELECT COUNT(*) FROM establishment_membro_key WHERE establishment_id = e.id) > 0, 'Membro Key', NULL),
                            IF((SELECT COUNT(*) FROM establishment_pagbank WHERE establishment_id = e.id) > 0, 'PagBank', NULL),
                            IF((SELECT COUNT(*) FROM establishment_outros WHERE establishment_id = e.id) > 0, 'Outros', NULL)
-                       )) as produtos_adicionais
+                       )) as produtos_adicionais,
+                       (SELECT GROUP_CONCAT(DISTINCT dp.name ORDER BY dp.name SEPARATOR ', ')
+                        FROM establishment_dynamic_products edp
+                        INNER JOIN dynamic_products dp ON dp.id = edp.dynamic_product_id
+                        WHERE edp.establishment_id = e.id AND dp.is_active = 1) as produtos_dinamicos
                 FROM establishments e
                 LEFT JOIN users u ON e.created_by_user_id = u.id
                 LEFT JOIN representatives r ON e.created_by_representative_id = r.id
@@ -403,36 +419,26 @@ class Establishment
                 throw new \Exception('Falha ao atualizar estabelecimento no banco de dados');
             }
             
-            // Atualizar produtos específicos
+            // Atualizar produtos manuais (PagBank)
+            $establishmentProduct = new EstablishmentProduct();
+            $establishmentProduct->deleteAllProducts($id);
             if (isset($data['products']) && is_array($data['products']) && !empty($data['products'])) {
                 error_log('Produtos para atualizar: ' . json_encode($data['products']));
-                
-                $establishmentProduct = new EstablishmentProduct();
-                
-                // Deletar produtos existentes
-                $establishmentProduct->deleteAllProducts($id);
-                
-                // Inserir novos produtos
                 foreach ($data['products'] as $productType) {
                     if (!empty($productType)) {
                         $productData = $data['product_data'][$productType] ?? [];
-                        
-                        switch ($productType) {
-                            case 'prod-pagseguro':
-                            case 'prod-subaquirente':
-                                $establishmentProduct->createCdxEvo($id, $productData);
-                                break;
-                            case 'prod-brasil-card':
-                            case 'prod-cdc':
-                                $establishmentProduct->createBrasilCard($id, $productData);
-                                break;
-                            default:
-                                $establishmentProduct->createOtherProduct($id, $productType, $productData);
-                                break;
-                        }
+                        $establishmentProduct->createOtherProduct($id, $productType, $productData);
                     }
                 }
             }
+
+            // Atualizar produtos dinâmicos (modo aditivo)
+            $dynamicProduct = new EstablishmentDynamicProduct();
+            $dynamicProduct->replaceAllForEstablishment(
+                $id,
+                $data['dynamic_products'] ?? [],
+                $data['dynamic_product_values'] ?? []
+            );
             
             $this->db->commit();
             error_log('SUCESSO: Estabelecimento atualizado no banco de dados');
