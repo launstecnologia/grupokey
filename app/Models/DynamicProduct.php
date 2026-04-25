@@ -82,9 +82,9 @@ class DynamicProduct
                     $data['slug'],
                     $data['name'],
                     $data['description'] ?: null,
-                    $data['has_api'] ? 1 : 0,
-                    $data['api_provider'] ?: null,
-                    $data['api_config_json'] ?: null,
+                    0,
+                    null,
+                    null,
                 ]
             );
 
@@ -118,9 +118,9 @@ class DynamicProduct
                     $data['slug'],
                     $data['name'],
                     $data['description'] ?: null,
-                    $data['has_api'] ? 1 : 0,
-                    $data['api_provider'] ?: null,
-                    $data['api_config_json'] ?: null,
+                    0,
+                    null,
+                    null,
                     $id,
                 ]
             );

@@ -142,9 +142,6 @@ class DynamicProductController
         $name = sanitize_input($_POST['name'] ?? '');
         $slugInput = sanitize_input($_POST['slug'] ?? '');
         $description = sanitize_input($_POST['description'] ?? '');
-        $hasApi = isset($_POST['has_api']) && $_POST['has_api'] === '1';
-        $apiProvider = sanitize_input($_POST['api_provider'] ?? '');
-        $apiConfig = trim($_POST['api_config_json'] ?? '');
 
         if ($name === '') {
             $errors[] = 'Nome do produto é obrigatório.';
@@ -153,13 +150,6 @@ class DynamicProductController
         $slug = $this->slugify($slugInput !== '' ? $slugInput : $name);
         if ($slug === '') {
             $errors[] = 'Slug inválido.';
-        }
-
-        if ($apiConfig !== '') {
-            json_decode($apiConfig, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $errors[] = 'JSON de configuração de API inválido.';
-            }
         }
 
         $fields = $this->extractFields($errors);
@@ -178,9 +168,9 @@ class DynamicProductController
                 'name' => $name,
                 'slug' => $slug,
                 'description' => $description,
-                'has_api' => $hasApi,
-                'api_provider' => $apiProvider,
-                'api_config_json' => $apiConfig,
+                'has_api' => false,
+                'api_provider' => '',
+                'api_config_json' => '',
             ],
             'fields' => $fields
         ];
