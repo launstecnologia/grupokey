@@ -72,6 +72,12 @@ $filters = $filters ?? [];
                             <td class="px-6 py-4 text-sm text-gray-700"><?= htmlspecialchars($product['slug']) ?></td>
                             <td class="px-6 py-4 text-sm text-gray-700"><?= (int) ($product['total_fields'] ?? 0) ?></td>
                             <td class="px-6 py-4 text-right">
+                                <form method="POST" action="<?= url('produtos-dinamicos/' . $product['id'] . '/duplicate') ?>" class="inline mr-3" onsubmit="return confirm('Deseja duplicar este produto dinâmico?');">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" class="text-indigo-600 hover:text-indigo-900" title="Duplicar">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </form>
                                 <a href="<?= url('produtos-dinamicos/' . $product['id'] . '/edit') ?>" class="text-blue-600 hover:text-blue-900 mr-3">
                                     <i class="fas fa-edit"></i>
                                 </a>

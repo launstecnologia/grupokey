@@ -135,6 +135,24 @@ class DynamicProductController
         redirect(url('produtos-dinamicos'));
     }
 
+    public function duplicate($id)
+    {
+        Auth::requireAdmin();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect(url('produtos-dinamicos'));
+        }
+
+        try {
+            $newId = $this->model->duplicate((int) $id);
+            $_SESSION['success'] = 'Produto dinâmico duplicado com sucesso.';
+            redirect(url('produtos-dinamicos/' . $newId . '/edit'));
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'Erro ao duplicar produto dinâmico: ' . $e->getMessage();
+            redirect(url('produtos-dinamicos'));
+        }
+    }
+
     private function buildPayload($id = null)
     {
         $errors = [];

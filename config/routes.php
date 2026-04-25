@@ -128,6 +128,7 @@ $router->get('/produtos-dinamicos/create', 'DynamicProductController@create');
 $router->post('/produtos-dinamicos', 'DynamicProductController@store');
 $router->get('/produtos-dinamicos/{id}/edit', 'DynamicProductController@edit');
 $router->post('/produtos-dinamicos/{id}', 'DynamicProductController@update');
+$router->post('/produtos-dinamicos/{id}/duplicate', 'DynamicProductController@duplicate');
 $router->post('/produtos-dinamicos/{id}/delete', 'DynamicProductController@destroy');
 
 // Rotas da Agenda de Contatos

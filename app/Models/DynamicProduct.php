@@ -143,6 +143,129 @@ class DynamicProduct
         );
     }
 
+    public function duplicate($id)
+    {
+        $original = $this->findById($id);
+        if (!$original || (int) ($original['is_active'] ?? 0) !== 1) {
+            throw new \RuntimeException('Produto dinâmico não encontrado.');
+        }
+
+        $this->db->beginTransaction();
+
+        try {
+            $newName = $this->buildDuplicateName($original['name']);
+            $newSlug = $this->buildUniqueSlug($original['slug']);
+
+            $this->db->query(
+                "INSERT INTO dynamic_products
+                 (slug, name, description, has_api, api_provider, api_config_json, is_active, created_at, updated_at)
+                 VALUES (?, ?, ?, 0, NULL, NULL, 1, NOW(), NOW())",
+                [
+                    $newSlug,
+                    $newName,
+                    $original['description'] ?: null,
+                ]
+            );
+
+            $newProductId = (int) $this->db->lastInsertId();
+
+            $sort = 1;
+            foreach (($original['fields'] ?? []) as $field) {
+                $this->db->query(
+                    "INSERT INTO dynamic_product_fields
+                     (product_id, field_key, label, field_type, is_required, placeholder, help_text, sort_order, is_active, created_at, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())",
+                    [
+                        $newProductId,
+                        $field['field_key'],
+                        $field['label'],
+                        $field['field_type'],
+                        (int) ($field['is_required'] ?? 0) === 1 ? 1 : 0,
+                        $field['placeholder'] ?: null,
+                        $field['help_text'] ?: null,
+                        $sort++,
+                    ]
+                );
+
+                $newFieldId = (int) $this->db->lastInsertId();
+                $optionSort = 1;
+
+                foreach (($field['options'] ?? []) as $option) {
+                    $this->db->query(
+                        "INSERT INTO dynamic_product_field_options
+                         (field_id, option_value, option_label, sort_order, created_at, updated_at)
+                         VALUES (?, ?, ?, ?, NOW(), NOW())",
+                        [
+                            $newFieldId,
+                            $option['option_value'],
+                            $option['option_label'],
+                            $optionSort++,
+                        ]
+                    );
+                }
+            }
+
+            $this->db->commit();
+            return $newProductId;
+        } catch (\Exception $e) {
+            $this->db->rollback();
+            throw $e;
+        }
+    }
+
+    private function buildDuplicateName($baseName)
+    {
+        $baseName = trim((string) $baseName);
+        $candidate = $baseName . ' (Cópia)';
+        $index = 2;
+
+        while ($this->nameExists($candidate)) {
+            $candidate = $baseName . ' (Cópia ' . $index . ')';
+            $index++;
+        }
+
+        return $candidate;
+    }
+
+    private function buildUniqueSlug($baseSlug)
+    {
+        $baseSlug = trim((string) $baseSlug, '_');
+        if ($baseSlug === '') {
+            $baseSlug = 'produto';
+        }
+
+        $base = $baseSlug . '_copia';
+        $candidate = $base;
+        $index = 2;
+
+        while ($this->slugExists($candidate)) {
+            $candidate = $base . '_' . $index;
+            $index++;
+        }
+
+        return $candidate;
+    }
+
+    private function slugExists($slug)
+    {
+        $row = $this->db->fetch(
+            "SELECT id FROM dynamic_products WHERE slug = ? LIMIT 1",
+            [$slug]
+        );
+
+        return !empty($row);
+    }
+
+    private function nameExists($name)
+    {
+        $row = $this->db->fetch(
+            "SELECT id FROM dynamic_products WHERE name = ? AND is_active = 1 LIMIT 1",
+            [$name]
+        );
+
+        return !empty($row);
+    }
+
     private function replaceFields($productId, $fields)
     {
         $existingFields = $this->db->fetchAll(
