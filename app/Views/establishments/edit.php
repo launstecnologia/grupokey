@@ -542,17 +542,6 @@ function isProductSelected($productId, $productData) {
                         <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($displayName) ?></span>
                     </label>
                     <?php endforeach; ?>
-                </div>
-            </div>
-
-            <!-- Produtos Dinâmicos -->
-            <?php if (!empty($dynamicProductsCatalog)): ?>
-            <div class="mb-8" id="dynamic-products-section">
-                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-layer-group mr-2 text-blue-600"></i>
-                    Produtos Dinâmicos
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
                     <?php foreach ($dynamicProductsCatalog as $dynamicProduct): ?>
                         <?php
                             $dynamicProductId = (int) ($dynamicProduct['id'] ?? 0);
@@ -571,7 +560,10 @@ function isProductSelected($productId, $productData) {
                         </label>
                     <?php endforeach; ?>
                 </div>
-
+            </div>
+            
+            <?php if (!empty($dynamicProductsCatalog)): ?>
+            <div class="mb-8" id="dynamic-products-section">
                 <div class="space-y-4">
                     <?php foreach ($dynamicProductsCatalog as $dynamicProduct): ?>
                         <?php

@@ -114,10 +114,6 @@
             color: #d1d5db !important;
         }
         
-        .dark .text-white {
-            color: #9ca3af !important;
-        }
-        
         .dark .text-gray-400 {
             color: #9ca3af !important;
         }
@@ -145,12 +141,60 @@
         }
         
         /* Links and buttons text */
-        .dark a:not(.btn):not(.badge) {
+        .dark a:not(.btn):not(.badge):not([class*="bg-"]):not(.text-white):not([class*="text-"]) {
             color: #93c5fd !important;
         }
         
-        .dark a:hover:not(.btn):not(.badge) {
+        .dark a:hover:not(.btn):not(.badge):not([class*="bg-"]):not(.text-white):not([class*="text-"]) {
             color: #bfdbfe !important;
+        }
+
+        /* Garantir legibilidade em CTAs (links/botões com fundo colorido) */
+        .dark a[class*="bg-"],
+        .dark button[class*="bg-"],
+        .dark .btn,
+        .dark [type="button"][class*="bg-"],
+        .dark [type="submit"][class*="bg-"] {
+            color: #f9fafb !important;
+        }
+
+        .dark a[class*="bg-"] i,
+        .dark button[class*="bg-"] i,
+        .dark .btn i {
+            color: inherit !important;
+        }
+
+        /* Melhor contraste para badges/status */
+        .dark .bg-green-100,
+        .dark .bg-red-100,
+        .dark .bg-yellow-100,
+        .dark .bg-blue-100 {
+            color: #111827 !important;
+        }
+
+        /* Hover em linhas/listagens no dark */
+        .dark .hover\:bg-blue-50:hover {
+            background-color: rgba(37, 99, 235, 0.2) !important;
+        }
+
+        .dark .hover\:bg-blue-100:hover,
+        .dark .hover\:bg-blue-200:hover {
+            background-color: rgba(37, 99, 235, 0.28) !important;
+        }
+
+        .dark .hover\:bg-gray-50:hover {
+            background-color: #111827 !important;
+        }
+
+        .dark tr.hover\:bg-blue-200:hover,
+        .dark tr.hover\:bg-blue-100:hover {
+            color: #e5e7eb !important;
+        }
+
+        .dark button:disabled,
+        .dark .btn:disabled {
+            color: #cbd5e1 !important;
+            opacity: 0.65 !important;
         }
         
         /* Border colors */
