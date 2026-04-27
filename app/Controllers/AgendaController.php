@@ -16,7 +16,7 @@ class AgendaController
 
     public function index()
     {
-        Auth::requireLogin();
+        Auth::requireAuth();
 
         $filters = [];
         if (!empty($_GET['search'])) {
@@ -37,7 +37,7 @@ class AgendaController
 
     public function create()
     {
-        Auth::requireLogin();
+        Auth::requireAuth();
 
         $data = [
             'title' => 'Novo Contato',
@@ -49,7 +49,7 @@ class AgendaController
 
     public function store()
     {
-        Auth::requireLogin();
+        Auth::requireAuth();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect(url('agenda/create'));
@@ -91,7 +91,7 @@ class AgendaController
 
     public function edit($id)
     {
-        Auth::requireLogin();
+        Auth::requireAuth();
 
         $id = is_array($id) ? (int) ($id['id'] ?? $id[0] ?? 0) : (int) $id;
         $contact = $this->contactModel->findById($id);
@@ -112,7 +112,7 @@ class AgendaController
 
     public function update($id)
     {
-        Auth::requireLogin();
+        Auth::requireAuth();
 
         $id = is_array($id) ? (int) ($id['id'] ?? $id[0] ?? 0) : (int) $id;
 
@@ -162,7 +162,7 @@ class AgendaController
 
     public function destroy($id)
     {
-        Auth::requireLogin();
+        Auth::requireAuth();
 
         $id = is_array($id) ? (int) ($id['id'] ?? $id[0] ?? 0) : (int) $id;
         $contact = $this->contactModel->findById($id);
