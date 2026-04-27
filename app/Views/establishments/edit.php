@@ -6,6 +6,8 @@ ob_start();
 $establishment = $establishment ?? [];
 $products = $products ?? [];
 $dynamicProductsCatalog = $dynamic_products_catalog ?? [];
+$customFieldDefinitions = $custom_field_definitions ?? [];
+$customFieldValues = $custom_field_values ?? [];
 $representatives = $representatives ?? [];
 $segments = $segments ?? [];
 $oldInput = $_SESSION['old_input'] ?? [];
@@ -28,6 +30,7 @@ if (!empty($oldInput) && is_array($oldInput)) {
 $oldManualProducts = isset($oldInput['products']) && is_array($oldInput['products']) ? array_map('strval', $oldInput['products']) : [];
 $oldDynamicProducts = isset($oldInput['dynamic_products']) && is_array($oldInput['dynamic_products']) ? array_map('strval', $oldInput['dynamic_products']) : [];
 $oldDynamicValues = isset($oldInput['dynamic_values']) && is_array($oldInput['dynamic_values']) ? $oldInput['dynamic_values'] : [];
+$oldCustomFieldValues = isset($oldInput['custom_fields']) && is_array($oldInput['custom_fields']) ? $oldInput['custom_fields'] : [];
 $oldField = function ($key, $default = '') use ($oldInput) {
     return array_key_exists($key, $oldInput) ? $oldInput[$key] : $default;
 };
@@ -391,6 +394,67 @@ function isProductSelected($productId, $productData) {
                     </div>
                 </div>
             </div>
+
+            <?php if (!empty($customFieldDefinitions)): ?>
+            <div class="mb-8">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-sliders-h mr-2 text-blue-600"></i>
+                    Campos Adicionais
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <?php foreach ($customFieldDefinitions as $customField): ?>
+                        <?php
+                            $fieldKey = $customField['field_key'] ?? '';
+                            if ($fieldKey === '') {
+                                continue;
+                            }
+                            $fieldType = $customField['field_type'] ?? 'text';
+                            $fieldLabel = $customField['label'] ?? $fieldKey;
+                            $fieldRequired = (int) ($customField['is_required'] ?? 0) === 1;
+                            $fieldPlaceholder = $customField['placeholder'] ?? '';
+                            $fieldHelp = $customField['help_text'] ?? '';
+                            $fieldName = 'custom_fields[' . $fieldKey . ']';
+                            $fieldValue = array_key_exists($fieldKey, $oldCustomFieldValues)
+                                ? $oldCustomFieldValues[$fieldKey]
+                                : ($customFieldValues[$fieldKey] ?? '');
+                            $inputType = in_array($fieldType, ['number', 'email', 'date', 'datetime-local'], true) ? $fieldType : 'text';
+                        ?>
+                        <div class="<?= $fieldType === 'textarea' ? 'md:col-span-2' : '' ?>">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                <?= htmlspecialchars($fieldLabel) ?><?= $fieldRequired ? ' *' : '' ?>
+                            </label>
+                            <?php if ($fieldType === 'textarea'): ?>
+                                <textarea name="<?= htmlspecialchars($fieldName) ?>" rows="3" <?= $fieldRequired ? 'required' : '' ?>
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                          placeholder="<?= htmlspecialchars($fieldPlaceholder) ?>"><?= htmlspecialchars((string) $fieldValue) ?></textarea>
+                            <?php elseif ($fieldType === 'select'): ?>
+                                <select name="<?= htmlspecialchars($fieldName) ?>" <?= $fieldRequired ? 'required' : '' ?>
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Selecione</option>
+                                    <?php foreach ((array) ($customField['options'] ?? []) as $option): ?>
+                                        <?php $optionValue = trim((string) $option); ?>
+                                        <?php if ($optionValue === '') { continue; } ?>
+                                        <option value="<?= htmlspecialchars($optionValue) ?>" <?= (string) $fieldValue === $optionValue ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($optionValue) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            <?php else: ?>
+                                <input type="<?= htmlspecialchars($inputType) ?>"
+                                       name="<?= htmlspecialchars($fieldName) ?>"
+                                       value="<?= htmlspecialchars((string) $fieldValue) ?>"
+                                       <?= $fieldRequired ? 'required' : '' ?>
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="<?= htmlspecialchars($fieldPlaceholder) ?>">
+                            <?php endif; ?>
+                            <?php if (!empty($fieldHelp)): ?>
+                                <small class="text-gray-500"><?= htmlspecialchars($fieldHelp) ?></small>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <!-- Upload de Documentos -->
             <div class="mb-8">

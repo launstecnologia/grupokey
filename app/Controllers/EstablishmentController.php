@@ -9,6 +9,8 @@ use App\Models\Product;
 use App\Models\EstablishmentProduct;
 use App\Models\EstablishmentDynamicProduct;
 use App\Models\DynamicProduct;
+use App\Models\CustomFieldDefinition;
+use App\Models\CustomFieldValue;
 use App\Models\Segment;
 use App\Models\SistPaySettings;
 use App\Core\FileUpload;
@@ -22,6 +24,8 @@ class EstablishmentController
     private $establishmentProductModel;
     private $establishmentDynamicProductModel;
     private $dynamicProductModel;
+    private $customFieldDefinitionModel;
+    private $customFieldValueModel;
     private $segmentModel;
     private $fileUpload;
     
@@ -33,6 +37,8 @@ class EstablishmentController
         $this->establishmentProductModel = new EstablishmentProduct();
         $this->establishmentDynamicProductModel = new EstablishmentDynamicProduct();
         $this->dynamicProductModel = new DynamicProduct();
+        $this->customFieldDefinitionModel = new CustomFieldDefinition();
+        $this->customFieldValueModel = new CustomFieldValue();
         $this->segmentModel = new Segment();
         $this->fileUpload = new FileUpload();
     }
@@ -106,6 +112,7 @@ class EstablishmentController
             'representatives' => $representatives,
             'products' => $this->productModel->getAll(),
             'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
+            'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];
@@ -140,6 +147,12 @@ class EstablishmentController
             if (!$establishmentId) {
                 throw new \Exception('Falha ao criar estabelecimento. Verifique os dados e tente novamente.');
             }
+
+            $this->saveCustomFieldsForEntity(
+                'establishment',
+                (int) $establishmentId,
+                $data['custom_field_values'] ?? []
+            );
             
             // Upload de documentos se houver
             $this->handleDocumentUpload($establishmentId);
@@ -303,6 +316,8 @@ class EstablishmentController
             'representatives' => $representatives,
             'products' => $this->productModel->getAll(),
             'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
+            'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
+            'custom_field_values' => $this->getSafeCustomFieldValues('establishment', (int) $id),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];
@@ -360,6 +375,12 @@ class EstablishmentController
             }
             
             error_log('SUCESSO: Model retornou true');
+
+            $this->saveCustomFieldsForEntity(
+                'establishment',
+                (int) $id,
+                $data['custom_field_values'] ?? []
+            );
             
             // Upload de novos documentos se houver
             $this->handleDocumentUpload($id);
@@ -764,6 +785,9 @@ class EstablishmentController
                 $errors[] = 'Email já está sendo usado por outro estabelecimento';
             }
         }
+
+        $customFieldDefinitions = $this->getSafeCustomFieldDefinitions('establishment');
+        $customFieldValues = $this->collectCustomFieldValues('establishment', $customFieldDefinitions, $errors);
         
         if (!empty($errors)) {
             error_log('ERROS DE VALIDAÇÃO: ' . json_encode($errors));
@@ -835,6 +859,7 @@ class EstablishmentController
         $data['product_data'] = $this->getProductSpecificData($products);
         $data['dynamic_products'] = $dynamicProducts;
         $data['dynamic_product_values'] = $this->getDynamicProductSpecificData($dynamicProducts);
+        $data['custom_field_values'] = $customFieldValues;
         error_log('Dados específicos dos produtos: ' . json_encode($data['product_data']));
         error_log('Dados dos produtos dinâmicos: ' . json_encode($data['dynamic_product_values']));
         
@@ -941,6 +966,124 @@ class EstablishmentController
         }
 
         return $result;
+    }
+
+    private function getSafeCustomFieldDefinitions($entityType)
+    {
+        try {
+            return $this->customFieldDefinitionModel->getByEntity((string) $entityType);
+        } catch (\Exception $e) {
+            write_log('Campos dinâmicos indisponíveis (' . $entityType . '): ' . $e->getMessage(), 'app.log');
+            return [];
+        }
+    }
+
+    private function getSafeCustomFieldValues($entityType, $entityId)
+    {
+        try {
+            return $this->customFieldValueModel->getByEntity((string) $entityType, (int) $entityId);
+        } catch (\Exception $e) {
+            write_log('Valores de campos dinâmicos indisponíveis (' . $entityType . '): ' . $e->getMessage(), 'app.log');
+            return [];
+        }
+    }
+
+    private function collectCustomFieldValues($entityType, array $definitions, array &$errors)
+    {
+        $rawValues = $_POST['custom_fields'] ?? [];
+        $rawValues = is_array($rawValues) ? $rawValues : [];
+        $result = [];
+
+        foreach ($definitions as $definition) {
+            $key = (string) ($definition['field_key'] ?? '');
+            if ($key === '') {
+                continue;
+            }
+
+            $label = (string) ($definition['label'] ?? $key);
+            $type = (string) ($definition['field_type'] ?? 'text');
+            $isRequired = (int) ($definition['is_required'] ?? 0) === 1;
+            $rawValue = $rawValues[$key] ?? '';
+            $value = $this->normalizeCustomFieldValue($type, $rawValue);
+
+            if ($isRequired && $value === '') {
+                $errors[] = 'Campo adicional "' . $label . '" é obrigatório.';
+            }
+
+            if ($type === 'select' && $value !== '') {
+                $options = $definition['options'] ?? [];
+                $allowed = [];
+                foreach ((array) $options as $option) {
+                    $allowed[] = trim((string) $option);
+                }
+                if (!in_array($value, $allowed, true)) {
+                    $errors[] = 'Selecione uma opção válida para o campo adicional "' . $label . '".';
+                }
+            }
+
+            if ($type === 'email' && $value !== '' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Campo adicional "' . $label . '" deve conter um e-mail válido.';
+            }
+
+            if ($type === 'cpf' && $value !== '' && strlen(preg_replace('/\D/', '', $value)) !== 11) {
+                $errors[] = 'Campo adicional "' . $label . '" deve conter um CPF válido.';
+            }
+
+            if ($type === 'cnpj' && $value !== '' && strlen(preg_replace('/\D/', '', $value)) !== 14) {
+                $errors[] = 'Campo adicional "' . $label . '" deve conter um CNPJ válido.';
+            }
+
+            $result[$key] = $value;
+        }
+
+        return $result;
+    }
+
+    private function normalizeCustomFieldValue($type, $value)
+    {
+        if (is_array($value)) {
+            return '';
+        }
+
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '';
+        }
+
+        switch ($type) {
+            case 'number':
+                $normalized = str_replace(',', '.', preg_replace('/[^0-9,\.\-]/', '', $value));
+                return is_numeric($normalized) ? (string) $normalized : '';
+            case 'currency':
+                return number_format((float) parse_currency($value), 2, '.', '');
+            case 'cpf':
+            case 'cnpj':
+                return preg_replace('/\D/', '', $value);
+            case 'select':
+            case 'phone':
+            case 'email':
+            case 'date':
+            case 'datetime-local':
+            case 'textarea':
+            case 'text':
+            default:
+                return sanitize_input($value);
+        }
+    }
+
+    private function saveCustomFieldsForEntity($entityType, $entityId, array $valuesByKey)
+    {
+        $definitions = $this->getSafeCustomFieldDefinitions((string) $entityType);
+        if (empty($definitions)) {
+            return;
+        }
+
+        $this->customFieldValueModel->replaceByEntity(
+            (string) $entityType,
+            (int) $entityId,
+            $definitions,
+            $valuesByKey
+        );
     }
     
     /**

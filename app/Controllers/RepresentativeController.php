@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Core\Auth;
 use App\Models\Representative;
 use App\Models\DynamicProduct;
+use App\Models\CustomFieldDefinition;
+use App\Models\CustomFieldValue;
 use App\Core\FileUpload;
 use App\Core\Mailer;
 
@@ -12,6 +14,8 @@ class RepresentativeController
 {
     private $representativeModel;
     private $dynamicProductModel;
+    private $customFieldDefinitionModel;
+    private $customFieldValueModel;
     private $fileUpload;
     private $mailer;
 
@@ -19,6 +23,8 @@ class RepresentativeController
     {
         $this->representativeModel = new Representative();
         $this->dynamicProductModel = new DynamicProduct();
+        $this->customFieldDefinitionModel = new CustomFieldDefinition();
+        $this->customFieldValueModel = new CustomFieldValue();
         $this->fileUpload = new FileUpload();
         // Mailer será instanciado apenas quando necessário
     }
@@ -50,7 +56,8 @@ class RepresentativeController
         $data = [
             'title' => 'Novo Representante',
             'currentPage' => 'representantes',
-            'productOptions' => $productOptions
+            'productOptions' => $productOptions,
+            'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('representative')
         ];
         
         view('representatives/create', $data);
@@ -216,6 +223,12 @@ class RepresentativeController
         
         try {
             $representativeId = $this->representativeModel->create($data);
+
+            $this->saveCustomFieldsForEntity(
+                'representative',
+                (int) $representativeId,
+                $data['custom_field_values'] ?? []
+            );
             
             // Salvar produtos permitidos
             $allowedProducts = $_POST['allowed_products'] ?? [];
@@ -292,7 +305,9 @@ class RepresentativeController
                 'representative' => $representative,
                 'form_result' => $result,
                 'productOptions' => $productOptions,
-                'allowedProducts' => $this->representativeModel->getProducts($id)
+                'allowedProducts' => $this->representativeModel->getProducts($id),
+                'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('representative'),
+                'custom_field_values' => $this->getSafeCustomFieldValues('representative', (int) $id)
             ];
             
             view('representatives/edit', $data);
@@ -312,7 +327,9 @@ class RepresentativeController
             'currentPage' => 'representantes',
             'representative' => $representative,
             'productOptions' => $productOptions,
-            'allowedProducts' => $allowedProducts
+            'allowedProducts' => $allowedProducts,
+            'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('representative'),
+            'custom_field_values' => $this->getSafeCustomFieldValues('representative', (int) $id)
         ];
         
         view('representatives/edit', $data);
@@ -353,38 +370,43 @@ class RepresentativeController
                 $this->getRepresentativeProductOptions()
             );
             $this->representativeModel->setProducts($id, $normalizedProducts);
+
+            $this->saveCustomFieldsForEntity(
+                'representative',
+                (int) $id,
+                $data['custom_field_values'] ?? []
+            );
             
-            if ($updateResult) {
-                // Verificar mudanças
-                $changes = [];
-                if (($data['nome_completo'] ?? '') !== ($_POST['original_nome_completo'] ?? '')) {
-                    $changes[] = "Nome alterado";
-                }
-                if (($data['email'] ?? '') !== ($_POST['original_email'] ?? '')) {
-                    $changes[] = "Email alterado";
-                }
-                if (($data['telefone'] ?? '') !== ($_POST['original_telefone'] ?? '')) {
-                    $changes[] = "Telefone alterado";
-                }
-                if (($data['status'] ?? '') !== ($_POST['original_status'] ?? '')) {
-                    $changes[] = "Status alterado";
-                }
-                if (isset($data['senha'])) {
-                    $changes[] = "Senha alterada";
-                }
-                if (!empty($allowedProducts)) {
-                    $changes[] = "Produtos permitidos atualizados";
-                }
-                
-                if (empty($changes)) {
-                    $result['success'] = true;
-                    $result['message'] = 'Representante atualizado com sucesso! (Nenhuma alteração foi necessária)';
-                } else {
-                    $result['success'] = true;
-                    $result['message'] = 'Representante atualizado com sucesso! Alterações: ' . implode(', ', $changes);
-                }
+            // Verificar mudanças
+            $changes = [];
+            if (($data['nome_completo'] ?? '') !== ($_POST['original_nome_completo'] ?? '')) {
+                $changes[] = "Nome alterado";
+            }
+            if (($data['email'] ?? '') !== ($_POST['original_email'] ?? '')) {
+                $changes[] = "Email alterado";
+            }
+            if (($data['telefone'] ?? '') !== ($_POST['original_telefone'] ?? '')) {
+                $changes[] = "Telefone alterado";
+            }
+            if (($data['status'] ?? '') !== ($_POST['original_status'] ?? '')) {
+                $changes[] = "Status alterado";
+            }
+            if (isset($data['senha'])) {
+                $changes[] = "Senha alterada";
+            }
+            if (!empty($allowedProducts)) {
+                $changes[] = "Produtos permitidos atualizados";
+            }
+            if (!empty($data['custom_field_values'])) {
+                $changes[] = "Campos dinâmicos atualizados";
+            }
+            
+            if (empty($changes) && !$updateResult) {
+                $result['success'] = true;
+                $result['message'] = 'Representante atualizado com sucesso! (Nenhuma alteração foi necessária)';
             } else {
-                $result['errors'][] = 'Falha ao atualizar representante. Tente novamente.';
+                $result['success'] = true;
+                $result['message'] = 'Representante atualizado com sucesso' . (!empty($changes) ? '! Alterações: ' . implode(', ', $changes) : '!');
             }
             
         } catch (\Exception $e) {
@@ -463,15 +485,7 @@ class RepresentativeController
             $updateResult = $this->representativeModel->update($id, $data);
             
             write_log('Resultado do update: ' . ($updateResult ? '✅ SUCESSO' : '❌ FALHOU'), 'representatives.log');
-            
-            if (!$updateResult) {
-                $_SESSION['error'] = 'Nenhum campo foi atualizado. Verifique se há alterações nos dados.';
-                write_log('⚠️ AVISO: Nenhum campo foi atualizado', 'representatives.log');
-                redirect(url('representantes/' . $id . '/edit'));
-                return;
-            }
-            
-            write_log('✅ Dados do representante atualizados com sucesso', 'representatives.log');
+            write_log($updateResult ? '✅ Dados do representante atualizados com sucesso' : 'ℹ️ Nenhuma alteração nos dados principais', 'representatives.log');
             
             // Salvar produtos permitidos
             write_log('--- Processando produtos permitidos ---', 'representatives.log');
@@ -530,6 +544,12 @@ class RepresentativeController
                 write_log('Stack trace: ' . $e->getTraceAsString(), 'representatives.log');
                 $_SESSION['old_input'] = $_POST;
             }
+
+            $this->saveCustomFieldsForEntity(
+                'representative',
+                (int) $id,
+                $data['custom_field_values'] ?? []
+            );
             
             write_log('--- Finalizando processo de atualização ---', 'representatives.log');
             write_log('Redirecionando para: ' . url('representantes/' . $id . '/edit'), 'representatives.log');
@@ -741,6 +761,9 @@ class RepresentativeController
         } elseif ($senha && strlen($senha) < 6) {
             $errors[] = 'A senha deve ter no mínimo 6 caracteres.';
         }
+
+        $customFieldDefinitions = $this->getSafeCustomFieldDefinitions('representative');
+        $customFieldValues = $this->collectCustomFieldValues('representative', $customFieldDefinitions, $errors);
         
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
@@ -761,7 +784,8 @@ class RepresentativeController
             'bairro' => $bairro,
             'cidade' => $cidade,
             'uf' => strtoupper($uf),
-            'status' => sanitize_input($_POST['status'] ?? 'ACTIVE')
+            'status' => sanitize_input($_POST['status'] ?? 'ACTIVE'),
+            'custom_field_values' => $customFieldValues
         ];
         
         // Adicionar senha apenas se fornecida
@@ -770,6 +794,124 @@ class RepresentativeController
         }
         
         return $data;
+    }
+
+    private function getSafeCustomFieldDefinitions($entityType)
+    {
+        try {
+            return $this->customFieldDefinitionModel->getByEntity((string) $entityType);
+        } catch (\Exception $e) {
+            write_log('Campos dinâmicos indisponíveis (' . $entityType . '): ' . $e->getMessage(), 'representatives.log');
+            return [];
+        }
+    }
+
+    private function getSafeCustomFieldValues($entityType, $entityId)
+    {
+        try {
+            return $this->customFieldValueModel->getByEntity((string) $entityType, (int) $entityId);
+        } catch (\Exception $e) {
+            write_log('Valores de campos dinâmicos indisponíveis (' . $entityType . '): ' . $e->getMessage(), 'representatives.log');
+            return [];
+        }
+    }
+
+    private function collectCustomFieldValues($entityType, array $definitions, array &$errors)
+    {
+        $rawValues = $_POST['custom_fields'] ?? [];
+        $rawValues = is_array($rawValues) ? $rawValues : [];
+        $result = [];
+
+        foreach ($definitions as $definition) {
+            $key = (string) ($definition['field_key'] ?? '');
+            if ($key === '') {
+                continue;
+            }
+
+            $label = (string) ($definition['label'] ?? $key);
+            $type = (string) ($definition['field_type'] ?? 'text');
+            $isRequired = (int) ($definition['is_required'] ?? 0) === 1;
+            $rawValue = $rawValues[$key] ?? '';
+            $value = $this->normalizeCustomFieldValue($type, $rawValue);
+
+            if ($isRequired && $value === '') {
+                $errors[] = 'Campo adicional "' . $label . '" é obrigatório.';
+            }
+
+            if ($type === 'select' && $value !== '') {
+                $options = $definition['options'] ?? [];
+                $allowed = [];
+                foreach ((array) $options as $option) {
+                    $allowed[] = trim((string) $option);
+                }
+                if (!in_array($value, $allowed, true)) {
+                    $errors[] = 'Selecione uma opção válida para o campo adicional "' . $label . '".';
+                }
+            }
+
+            if ($type === 'email' && $value !== '' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Campo adicional "' . $label . '" deve conter um e-mail válido.';
+            }
+
+            if ($type === 'cpf' && $value !== '' && strlen(preg_replace('/\D/', '', $value)) !== 11) {
+                $errors[] = 'Campo adicional "' . $label . '" deve conter um CPF válido.';
+            }
+
+            if ($type === 'cnpj' && $value !== '' && strlen(preg_replace('/\D/', '', $value)) !== 14) {
+                $errors[] = 'Campo adicional "' . $label . '" deve conter um CNPJ válido.';
+            }
+
+            $result[$key] = $value;
+        }
+
+        return $result;
+    }
+
+    private function normalizeCustomFieldValue($type, $value)
+    {
+        if (is_array($value)) {
+            return '';
+        }
+
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '';
+        }
+
+        switch ($type) {
+            case 'number':
+                $normalized = str_replace(',', '.', preg_replace('/[^0-9,\.\-]/', '', $value));
+                return is_numeric($normalized) ? (string) $normalized : '';
+            case 'currency':
+                return number_format((float) parse_currency($value), 2, '.', '');
+            case 'cpf':
+            case 'cnpj':
+                return preg_replace('/\D/', '', $value);
+            case 'select':
+            case 'phone':
+            case 'email':
+            case 'date':
+            case 'datetime-local':
+            case 'textarea':
+            case 'text':
+            default:
+                return sanitize_input($value);
+        }
+    }
+
+    private function saveCustomFieldsForEntity($entityType, $entityId, array $valuesByKey)
+    {
+        $definitions = $this->getSafeCustomFieldDefinitions((string) $entityType);
+        if (empty($definitions)) {
+            return;
+        }
+
+        $this->customFieldValueModel->replaceByEntity(
+            (string) $entityType,
+            (int) $entityId,
+            $definitions,
+            $valuesByKey
+        );
     }
     
     private function validateCPF($cpf)

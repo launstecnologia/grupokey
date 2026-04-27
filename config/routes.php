@@ -131,6 +131,14 @@ $router->post('/produtos-dinamicos/{id}', 'DynamicProductController@update');
 $router->post('/produtos-dinamicos/{id}/duplicate', 'DynamicProductController@duplicate');
 $router->post('/produtos-dinamicos/{id}/delete', 'DynamicProductController@destroy');
 
+// Rotas de campos dinâmicos (apenas admin)
+$router->get('/campos-dinamicos', 'CustomFieldController@index');
+$router->get('/campos-dinamicos/create', 'CustomFieldController@create');
+$router->post('/campos-dinamicos', 'CustomFieldController@store');
+$router->get('/campos-dinamicos/{id}/edit', 'CustomFieldController@edit');
+$router->post('/campos-dinamicos/{id}', 'CustomFieldController@update');
+$router->post('/campos-dinamicos/{id}/delete', 'CustomFieldController@destroy');
+
 // Rotas da Agenda de Contatos
 $router->get('/agenda', 'AgendaController@index');
 $router->get('/agenda/create', 'AgendaController@create');
