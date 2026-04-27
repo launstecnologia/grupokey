@@ -446,6 +446,9 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
                         
                         // Verificar se deve substituir o nome
                         $displayName = $productName;
+                        if (($product['id'] ?? '') === 'prod-pagbank') {
+                            $displayName = 'PagSeguro';
+                        }
                         if (isset($productNameMap[$productName])) {
                             $displayName = $productNameMap[$productName];
                         } elseif (isset($productNameMap[$productNameUpper])) {
@@ -1092,7 +1095,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'prod-brasilcard': 'prod-brasil-card-config',
         'prod-pagseguro': 'prod-pagseguro-config',
         'prod-subaquirente': 'prod-pagseguro-config',
-        'prod-pagbank': 'prod-pagbank-config'
+        'prod-pagbank': 'prod-pagseguro-config'
     };
     
     // Função para obter o ID de configuração baseado no ID do produto
@@ -1117,7 +1120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Verificar se contém 'pagbank'
         if (productId.toLowerCase().includes('pagbank')) {
-            return 'prod-pagbank-config';
+            return 'prod-pagseguro-config';
         }
         
         // Fallback: tentar com o ID original + '-config'
