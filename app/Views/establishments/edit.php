@@ -167,14 +167,15 @@ function isProductSelected($productId, $productData) {
             <input type="hidden" name="_method" value="PUT">
             
             <!-- Tipo de Registro -->
-            <div class="mb-8">
+            <div class="mb-8" id="registration-type-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-id-card mr-2 text-blue-600"></i>
                     Tipo de Registro
                 </h4>
+                <small id="registration-type-product-help" class="text-gray-500 hidden mb-3 block">Pessoa Física disponível apenas quando o produto PagSeguro estiver selecionado.</small>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label class="relative flex cursor-pointer">
-                        <input type="radio" name="registration_type" value="PF" class="sr-only peer" required
+                    <label class="relative flex cursor-pointer" id="registration-type-option-pf">
+                        <input type="radio" name="registration_type" id="registration-type-pf" value="PF" class="sr-only peer" required
                                <?= ($establishment['registration_type'] ?? '') === 'PF' ? 'checked' : '' ?>>
                         <div class="w-full p-4 border-2 border-gray-300 rounded-lg transition-all duration-200 peer-checked:border-blue-600 peer-checked:bg-blue-600 hover:border-blue-400">
                             <div class="flex items-center justify-center">
@@ -182,8 +183,8 @@ function isProductSelected($productId, $productData) {
                             </div>
                         </div>
                     </label>
-                    <label class="relative flex cursor-pointer">
-                        <input type="radio" name="registration_type" value="PJ" class="sr-only peer" required
+                    <label class="relative flex cursor-pointer" id="registration-type-option-pj">
+                        <input type="radio" name="registration_type" id="registration-type-pj" value="PJ" class="sr-only peer" required
                                <?= ($establishment['registration_type'] ?? '') === 'PJ' ? 'checked' : '' ?>>
                         <div class="w-full p-4 border-2 border-gray-300 rounded-lg transition-all duration-200 peer-checked:border-blue-600 peer-checked:bg-blue-600 hover:border-blue-400">
                             <div class="flex items-center justify-center">
@@ -289,7 +290,7 @@ function isProductSelected($productId, $productData) {
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Digite a razão social">
                         </div>
-                        <div>
+                        <div id="pj-pagseguro-cpf-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
                             <input type="text" name="cpf_pj" id="cpf-pj" 
                                    value="<?= htmlspecialchars($establishment['cpf'] ?? '') ?>"
@@ -297,7 +298,7 @@ function isProductSelected($productId, $productData) {
                                    placeholder="000.000.000-00">
                             <small class="text-gray-500">CPF do sócio/responsável (exigido para PagSeguro)</small>
                         </div>
-                        <div>
+                        <div id="pj-pagseguro-birth-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
                             <input type="date" name="data_nascimento" 
                                    value="<?= htmlspecialchars(isset($establishment['birth_date']) && $establishment['birth_date'] ? date('Y-m-d', strtotime($establishment['birth_date'])) : '') ?>"
@@ -449,7 +450,7 @@ function isProductSelected($productId, $productData) {
             </div>
 
             <!-- Produtos -->
-            <div class="mb-8">
+            <div class="mb-8" id="manual-products-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-star mr-2 text-blue-600"></i>
                     Produtos
@@ -546,7 +547,7 @@ function isProductSelected($productId, $productData) {
 
             <!-- Produtos Dinâmicos -->
             <?php if (!empty($dynamicProductsCatalog)): ?>
-            <div class="mb-8">
+            <div class="mb-8" id="dynamic-products-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-layer-group mr-2 text-blue-600"></i>
                     Produtos Dinâmicos
@@ -869,10 +870,40 @@ function isProductSelected($productId, $productData) {
                     <!-- Banco -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Banco</label>
-                        <input type="text" name="banco" 
+                        <input type="text" name="banco" list="bancos-estabelecimento-edit"
                                value="<?= htmlspecialchars($establishment['banco'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Digite o nome do banco">
+                               placeholder="Selecione ou pesquise o banco">
+                        <datalist id="bancos-estabelecimento-edit">
+                            <option value="BRADESCO">
+                            <option value="BRASIL">
+                            <option value="INTER">
+                            <option value="NUBANK">
+                            <option value="SICOOB">
+                            <option value="SICREDI">
+                            <option value="ITAÚ">
+                            <option value="PAGSEGURO">
+                            <option value="MERCADO PAGO">
+                            <option value="MERCANTIL">
+                            <option value="CORA">
+                            <option value="PICPAY">
+                            <option value="CAIXA ECONÔMICA">
+                            <option value="SANTANDER">
+                            <option value="BTG PACTUAL">
+                            <option value="C6 BANK">
+                            <option value="BANCO VOTORANTIM">
+                            <option value="BANCO DO NORDESTE">
+                            <option value="SAFRA">
+                            <option value="BANESE">
+                            <option value="BANCO DE BRASÍLIA">
+                            <option value="NEON">
+                            <option value="DÍGIO">
+                            <option value="PORTO">
+                            <option value="INFINITEPAY">
+                            <option value="PAN">
+                            <option value="BMG">
+                            <option value="OUTROS">
+                        </datalist>
                     </div>
 
                     <!-- Agência -->
@@ -886,7 +917,7 @@ function isProductSelected($productId, $productData) {
 
                     <!-- Conta -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Conta</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Conta - dígito</label>
                         <input type="text" name="conta" 
                                value="<?= htmlspecialchars($establishment['conta'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -933,17 +964,67 @@ function isProductSelected($productId, $productData) {
 document.addEventListener('DOMContentLoaded', function() {
     // Mostrar/ocultar campos específicos por tipo de registro
     const registrationTypeInputs = document.querySelectorAll('input[name="registration_type"]');
+    const registrationTypeSection = document.getElementById('registration-type-section');
+    const pfOption = document.getElementById('registration-type-option-pf');
+    const pfInput = document.getElementById('registration-type-pf');
+    const pjInput = document.getElementById('registration-type-pj');
+    const registrationProductHelp = document.getElementById('registration-type-product-help');
+    const pagSeguroCpfField = document.getElementById('pj-pagseguro-cpf-field');
+    const pagSeguroBirthField = document.getElementById('pj-pagseguro-birth-field');
     const pfFields = document.getElementById('pf-fields');
     const pjFields = document.getElementById('pj-fields');
+    const manualProductsSection = document.getElementById('manual-products-section');
+    const dynamicProductsSection = document.getElementById('dynamic-products-section');
     const btnBuscarCep = document.getElementById('btn-buscar-cep');
     const cepHelp = document.getElementById('cep-help');
+
+    if (manualProductsSection && registrationTypeSection) {
+        const parent = registrationTypeSection.parentNode;
+        if (parent) {
+            parent.insertBefore(manualProductsSection, registrationTypeSection);
+            if (dynamicProductsSection) {
+                parent.insertBefore(dynamicProductsSection, registrationTypeSection);
+            }
+        }
+    }
+
+    function isPagSeguroSelected() {
+        return !!document.querySelector('input[name="products[]"][value="prod-pagbank"]:checked');
+    }
 
     function syncPagSeguroPjRequired() {
         const tipoSelecionado = document.querySelector('input[name="registration_type"]:checked');
         const isPj = tipoSelecionado && tipoSelecionado.value === 'PJ';
-        const pagBankSelected = !!document.querySelector('input[name="products[]"][value="prod-pagbank"]:checked');
+        const pagBankSelected = isPagSeguroSelected();
         const cpfPj = document.querySelector('input[name="cpf_pj"]');
         const dataNasc = document.querySelector('input[name="data_nascimento"]');
+
+        if (pfOption) {
+            pfOption.classList.toggle('hidden', !pagBankSelected);
+        }
+        if (registrationProductHelp) {
+            registrationProductHelp.classList.toggle('hidden', pagBankSelected);
+        }
+        if (pfInput) {
+            if (pagBankSelected) {
+                pfInput.removeAttribute('disabled');
+            } else {
+                pfInput.setAttribute('disabled', 'disabled');
+            }
+        }
+
+        if (!pagBankSelected && tipoSelecionado && tipoSelecionado.value === 'PF' && pjInput) {
+            pjInput.checked = true;
+            updateRegistrationVisibility();
+            return;
+        }
+
+        if (pagSeguroCpfField) {
+            pagSeguroCpfField.classList.toggle('hidden', !(isPj && pagBankSelected));
+        }
+        if (pagSeguroBirthField) {
+            pagSeguroBirthField.classList.toggle('hidden', !(isPj && pagBankSelected));
+        }
 
         if (cpfPj) {
             if (isPj && pagBankSelected) {
@@ -961,37 +1042,42 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+
+    function updateRegistrationVisibility() {
+        const selectedType = document.querySelector('input[name="registration_type"]:checked');
+        if (!selectedType) {
+            syncPagSeguroPjRequired();
+            return;
+        }
+        if (selectedType.value === 'PF') {
+            pfFields.classList.remove('hidden');
+            pjFields.classList.add('hidden');
+            if (btnBuscarCep) {
+                btnBuscarCep.classList.remove('hidden');
+            }
+            if (cepHelp) {
+                cepHelp.classList.remove('hidden');
+            }
+        } else {
+            pfFields.classList.add('hidden');
+            pjFields.classList.remove('hidden');
+            if (btnBuscarCep) {
+                btnBuscarCep.classList.add('hidden');
+            }
+            if (cepHelp) {
+                cepHelp.classList.add('hidden');
+            }
+        }
+        syncPagSeguroPjRequired();
+    }
     
     registrationTypeInputs.forEach(input => {
         input.addEventListener('change', function() {
-            if (this.value === 'PF') {
-                pfFields.classList.remove('hidden');
-                pjFields.classList.add('hidden');
-                syncPagSeguroPjRequired();
-                // Mostrar botão de busca de CEP para Pessoa Física
-                if (btnBuscarCep) {
-                    btnBuscarCep.classList.remove('hidden');
-                }
-                if (cepHelp) {
-                    cepHelp.classList.remove('hidden');
-                }
-            } else if (this.value === 'PJ') {
-                pfFields.classList.add('hidden');
-                pjFields.classList.remove('hidden');
-                syncPagSeguroPjRequired();
-                // Ocultar botão de busca de CEP para Pessoa Jurídica
-                if (btnBuscarCep) {
-                    btnBuscarCep.classList.add('hidden');
-                }
-                if (cepHelp) {
-                    cepHelp.classList.add('hidden');
-                }
-            }
+            updateRegistrationVisibility();
         });
     });
     
-    // Required dos campos PJ depende de selecionar PagSeguro manual
-    syncPagSeguroPjRequired();
+    updateRegistrationVisibility();
     
     // Lista de produtos que NÃO devem mostrar campos bancários
     // Função para verificar se deve mostrar campos bancários (apenas CDC ou EVO)
@@ -1425,27 +1511,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             camposPreenchidos++;
                         }
                     }
-                    if (data.telefone) {
-                        const campo = document.querySelector('input[name="telefone"]');
-                        if (campo) {
-                            const telefone = data.telefone.replace(/\D/g, '');
-                            let telefoneFormatado = telefone;
-                            if (telefone.length >= 11) {
-                                telefoneFormatado = '(' + telefone.substring(0, 2) + ') ' + telefone.substring(2, 7) + '-' + telefone.substring(7, 11);
-                            } else if (telefone.length >= 10) {
-                                telefoneFormatado = '(' + telefone.substring(0, 2) + ') ' + telefone.substring(2, 6) + '-' + telefone.substring(6, 10);
-                            }
-                            campo.value = telefoneFormatado;
-                            camposPreenchidos++;
-                        }
-                    }
-                    if (data.email) {
-                        const campo = document.querySelector('input[name="email"]');
-                        if (campo) {
-                            campo.value = data.email;
-                            camposPreenchidos++;
-                        }
-                    }
+                    // Telefone e e-mail NÃO são preenchidos automaticamente via CNPJ
+                    // para evitar uso de dados desatualizados da Receita.
                     
                     if (camposPreenchidos > 0) {
                         alert(`Dados da empresa preenchidos com sucesso! ${camposPreenchidos} campo(s) preenchido(s).`);

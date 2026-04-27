@@ -199,28 +199,48 @@ $statusLabels = [
                     </h3>
                 </div>
                 <div class="p-6">
+                    <div class="mb-4 rounded-lg border border-blue-100 bg-blue-50 p-3">
+                        <p class="text-xs font-medium text-blue-800">Fontes de alteração do cadastro</p>
+                        <p class="mt-1 text-xs text-blue-700">
+                            Use <strong>Editar</strong> para dados cadastrais. Use as ações abaixo para acesso ao sistema e status do representante.
+                        </p>
+                    </div>
+
                     <div class="space-y-3">
-                        <button type="button" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors btn-reset-password" 
-                                data-id="<?= $representative['id'] ?>" 
-                                data-name="<?= htmlspecialchars($representative['nome_completo']) ?>">
-                            <i class="fas fa-key mr-2"></i>
-                            Resetar Senha
-                        </button>
+                        <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+                            <button type="button" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors btn-reset-password" 
+                                    data-id="<?= $representative['id'] ?>" 
+                                    data-name="<?= htmlspecialchars($representative['nome_completo']) ?>">
+                                <i class="fas fa-key mr-2"></i>
+                                Resetar Senha
+                            </button>
+                            <p class="mt-2 text-xs text-yellow-800">Altera somente a senha de acesso deste representante.</p>
+                        </div>
                         
-                        <button type="button" class="w-full bg-<?= $representative['status'] === 'ACTIVE' ? 'yellow' : 'green' ?>-600 hover:bg-<?= $representative['status'] === 'ACTIVE' ? 'yellow' : 'green' ?>-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors btn-toggle-status" 
-                                data-id="<?= $representative['id'] ?>" 
-                                data-name="<?= htmlspecialchars($representative['nome_completo']) ?>"
-                                data-status="<?= $representative['status'] ?>">
-                            <i class="fas fa-<?= $representative['status'] === 'ACTIVE' ? 'pause' : 'play' ?> mr-2"></i>
-                            <?= $representative['status'] === 'ACTIVE' ? 'Desativar' : 'Ativar' ?>
-                        </button>
+                        <div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                            <button type="button" class="w-full bg-<?= $representative['status'] === 'ACTIVE' ? 'yellow' : 'green' ?>-600 hover:bg-<?= $representative['status'] === 'ACTIVE' ? 'yellow' : 'green' ?>-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors btn-toggle-status" 
+                                    data-id="<?= $representative['id'] ?>" 
+                                    data-name="<?= htmlspecialchars($representative['nome_completo']) ?>"
+                                    data-status="<?= $representative['status'] ?>">
+                                <i class="fas fa-<?= $representative['status'] === 'ACTIVE' ? 'pause' : 'play' ?> mr-2"></i>
+                                <?= $representative['status'] === 'ACTIVE' ? 'Desativar' : 'Ativar' ?>
+                            </button>
+                            <p class="mt-2 text-xs text-amber-800">
+                                <?= $representative['status'] === 'ACTIVE'
+                                    ? 'Desativa o login, mas mantém o cadastro e histórico.'
+                                    : 'Reativa o login e libera novamente o acesso ao sistema.' ?>
+                            </p>
+                        </div>
                         
-                        <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors btn-delete" 
-                                data-id="<?= $representative['id'] ?>" 
-                                data-name="<?= htmlspecialchars($representative['nome_completo']) ?>">
-                            <i class="fas fa-trash mr-2"></i>
-                            Excluir
-                        </button>
+                        <div class="rounded-lg border border-red-200 bg-red-50 p-3">
+                            <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors btn-delete" 
+                                    data-id="<?= $representative['id'] ?>" 
+                                    data-name="<?= htmlspecialchars($representative['nome_completo']) ?>">
+                                <i class="fas fa-trash mr-2"></i>
+                                Excluir
+                            </button>
+                            <p class="mt-2 text-xs text-red-800">Ação definitiva. Use apenas quando tiver certeza.</p>
+                        </div>
                     </div>
                 </div>
             </div>
