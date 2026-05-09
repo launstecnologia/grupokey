@@ -239,7 +239,7 @@ class Mailer
         <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
             <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
                 <div style='text-align:center; margin-bottom: 20px;'>
-                    <img src='cid:welcome-logo' alt='Grupo Key' style='max-width: 220px; width: 100%; height: auto;'>
+                    <img src='cid:welcome-logo' alt='Grupo Key' style='max-width: 320px; width: 100%; height: auto;'>
                 </div>
                 <p style='color: #2c3e50; font-size: 18px; margin: 0 0 10px 0;'>
                     SEJA BEM-VINDO <strong>{$name}</strong>,
