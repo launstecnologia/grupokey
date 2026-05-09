@@ -82,8 +82,17 @@ class Mailer
         try {
             $this->phpmailer->clearAddresses();
             $this->phpmailer->clearAttachments();
+            $this->phpmailer->clearCustomHeaders();
             $this->phpmailer->addAddress($to);
             
+            // Embed de imagem inline para clientes de email (evita "imagem quebrada" por URL relativa/bloqueio externo)
+            if (strpos($body, 'cid:welcome-logo') !== false) {
+                $inlineLogoPath = dirname(__DIR__, 2) . '/public/images/logo-white.png';
+                if (file_exists($inlineLogoPath)) {
+                    $this->phpmailer->addEmbeddedImage($inlineLogoPath, 'welcome-logo', 'logo-white.png');
+                }
+            }
+
             $this->phpmailer->Subject = $subject;
             $this->phpmailer->Body = $body;
             $this->phpmailer->AltBody = $altBody ?: strip_tags($body);
@@ -220,9 +229,6 @@ class Mailer
     
     private function getWelcomeTemplate($name, $email, $password, $loginUrl)
     {
-        $nameUpper = strtoupper($name);
-        $logoUrl = url('public/images/logo-white.png');
-
         return "
         <!DOCTYPE html>
         <html>
@@ -233,9 +239,14 @@ class Mailer
         <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
             <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
                 <div style='text-align:center; margin-bottom: 20px;'>
-                    <img src='{$logoUrl}' alt='Grupo Key' style='max-width: 220px; width: 100%; height: auto;'>
+                    <img src='cid:welcome-logo' alt='Grupo Key' style='max-width: 220px; width: 100%; height: auto;'>
                 </div>
-                <h2 style='color: #2c3e50; margin-bottom: 16px;'>SEJA BEM-VINDO {$nameUpper} AO GRUPO KEY, É COM IMENSA SATISFAÇÃO QUE RECEBEMOS VOCÊ NO NOSSO TIME DE SUCESSO.</h2>
+                <p style='color: #2c3e50; font-size: 18px; margin: 0 0 10px 0;'>
+                    SEJA BEM-VINDO <strong>{$name}</strong>,
+                </p>
+                <p style='color: #2c3e50; font-size: 17px; margin: 0 0 18px 0;'>
+                    É COM IMENSA SATISFAÇÃO QUE RECEBEMOS VOCÊ NO NOSSO TIME DE SUCESSO.
+                </p>
                 <p>Suas credenciais de acesso foram criadas com sucesso.</p>
                 <div style='background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;'>
                     <h3 style='margin-top: 0; color: #495057;'>Suas Credenciais:</h3>
@@ -244,7 +255,7 @@ class Mailer
                 </div>
                 <p><strong>Importante:</strong> No primeiro acesso, você será solicitado a alterar sua senha por questões de segurança.</p>
                 <div style='text-align: center; margin: 30px 0;'>
-                    <a href='{$loginUrl}' style='background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;'>Acessar Sistema</a>
+                    <a href='{$loginUrl}' style='background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;'>Acessar Sistema</a>
                 </div>
                 <hr style='margin: 30px 0; border: none; border-top: 1px solid #eee;'>
                 <p style='font-size: 12px; color: #666;'>Este é um email automático do Sistema CRM.</p>
