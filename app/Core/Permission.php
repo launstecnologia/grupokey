@@ -5,6 +5,7 @@ namespace App\Core;
 class Permission
 {
     public const ACTIONS = ['view', 'create', 'edit', 'move', 'change_status', 'delete'];
+    private static bool $tableReady = false;
 
     public static function modules(): array
     {
@@ -78,6 +79,7 @@ class Permission
     public static function loadByUserId(int $userId): array
     {
         try {
+            self::ensureTable();
             $db = Database::getInstance();
             $rows = $db->fetchAll(
                 "SELECT module_key, can_view, can_create, can_edit, can_move, can_change_status, can_delete
@@ -110,6 +112,7 @@ class Permission
 
     public static function saveByUserId(int $userId, array $matrix): void
     {
+        self::ensureTable();
         $db = Database::getInstance();
 
         $db->query("DELETE FROM user_module_permissions WHERE user_id = ?", [$userId]);
@@ -130,6 +133,37 @@ class Permission
                 !empty($actions['delete']) ? 1 : 0,
             ]);
         }
+    }
+
+    private static function ensureTable(): void
+    {
+        if (self::$tableReady) {
+            return;
+        }
+
+        $db = Database::getInstance();
+        $db->query(
+            "CREATE TABLE IF NOT EXISTS user_module_permissions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                module_key VARCHAR(100) NOT NULL,
+                can_view TINYINT(1) NOT NULL DEFAULT 0,
+                can_create TINYINT(1) NOT NULL DEFAULT 0,
+                can_edit TINYINT(1) NOT NULL DEFAULT 0,
+                can_move TINYINT(1) NOT NULL DEFAULT 0,
+                can_change_status TINYINT(1) NOT NULL DEFAULT 0,
+                can_delete TINYINT(1) NOT NULL DEFAULT 0,
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uniq_user_module (user_id, module_key),
+                KEY idx_user_module_permissions_user (user_id),
+                CONSTRAINT fk_user_module_permissions_user
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                    ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+        );
+
+        self::$tableReady = true;
     }
 
     public static function inferFromRequest(string $path, string $method): ?array
