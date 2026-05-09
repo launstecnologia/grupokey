@@ -208,6 +208,9 @@ class UserController
                 if (!empty($password)) {
                     $changes[] = "Senha alterada";
                 }
+                if ($this->permissionsChanged($user['module_permissions'] ?? [], $data['module_permissions'] ?? [])) {
+                    $changes[] = "Permissões alteradas";
+                }
                 
                 if (empty($changes)) {
                     $_SESSION['success'] = 'Usuário atualizado com sucesso! (Nenhuma alteração foi necessária)';
@@ -280,6 +283,9 @@ class UserController
             }
             if (isset($data['password'])) {
                 $changes[] = "Senha alterada";
+            }
+            if ($this->permissionsChanged($user['module_permissions'] ?? [], $updatedUser['module_permissions'] ?? [])) {
+                $changes[] = "Permissões alteradas";
             }
             
             if (empty($changes)) {
@@ -515,5 +521,20 @@ class UserController
         }
 
         return Permission::normalizePostedPermissions($rawPermissions);
+    }
+
+    private function permissionsChanged(array $before, array $after): bool
+    {
+        $normalize = function (array $matrix): array {
+            $normalized = Permission::defaultMatrix();
+            foreach ($normalized as $module => $actions) {
+                foreach (array_keys($actions) as $action) {
+                    $normalized[$module][$action] = !empty($matrix[$module][$action]);
+                }
+            }
+            return $normalized;
+        };
+
+        return json_encode($normalize($before)) !== json_encode($normalize($after));
     }
 }
