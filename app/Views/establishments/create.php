@@ -560,6 +560,7 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1">Previsão de Faturamento</label>
                             <input type="text" name="previsao_faturamento_prod-pagseguro" id="previsao_faturamento_prod-pagseguro"
+                                   value="<?= htmlspecialchars(old('previsao_faturamento_prod-pagseguro')) ?>"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="R$ 0,00" data-mask="currency">
                         </div>
@@ -568,16 +569,17 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
                             <select name="tabela_prod-pagseguro" 
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Selecione a tabela</option>
-                                <option value="77299">77299</option>
-                                <option value="D30">D30</option>
-                                <option value="D0 PLUS">D0 PLUS</option>
-                                <option value="D0 FIT">D0 FIT</option>
-                                <option value="Elite">Elite</option>
-                                <option value="Master">Master</option>
-                                <option value="Padrão">Padrão</option>
-                                <option value="Pro">Pro</option>
-                                <option value="Super">Super</option>
-                                <option value="Outros">Outros</option>
+                                <?php $selectedTabelaPagSeguro = (string) old('tabela_prod-pagseguro'); ?>
+                                <option value="77299" <?= $selectedTabelaPagSeguro === '77299' ? 'selected' : '' ?>>77299</option>
+                                <option value="D30" <?= $selectedTabelaPagSeguro === 'D30' ? 'selected' : '' ?>>D30</option>
+                                <option value="D0 PLUS" <?= $selectedTabelaPagSeguro === 'D0 PLUS' ? 'selected' : '' ?>>D0 PLUS</option>
+                                <option value="D0 FIT" <?= $selectedTabelaPagSeguro === 'D0 FIT' ? 'selected' : '' ?>>D0 FIT</option>
+                                <option value="Elite" <?= $selectedTabelaPagSeguro === 'Elite' ? 'selected' : '' ?>>Elite</option>
+                                <option value="Master" <?= $selectedTabelaPagSeguro === 'Master' ? 'selected' : '' ?>>Master</option>
+                                <option value="Padrão" <?= $selectedTabelaPagSeguro === 'Padrão' ? 'selected' : '' ?>>Padrão</option>
+                                <option value="Pro" <?= $selectedTabelaPagSeguro === 'Pro' ? 'selected' : '' ?>>Pro</option>
+                                <option value="Super" <?= $selectedTabelaPagSeguro === 'Super' ? 'selected' : '' ?>>Super</option>
+                                <option value="Outros" <?= $selectedTabelaPagSeguro === 'Outros' ? 'selected' : '' ?>>Outros</option>
                             </select>
                         </div>
                         <div>
@@ -585,28 +587,31 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
                             <select name="modelo_maquininha_prod-pagseguro" 
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Selecione o modelo</option>
-                                <option value="CHIP3">CHIP3</option>
-                                <option value="PLUS 2">PLUS 2</option>
-                                <option value="PRO 2">PRO 2</option>
-                                <option value="SMART">SMART</option>
-                                <option value="EVO">EVO</option>
-                                <option value="OUTRAS">OUTRAS</option>
+                                <?php $selectedModeloPagSeguro = strtoupper(trim((string) old('modelo_maquininha_prod-pagseguro'))); ?>
+                                <option value="CHIP3" <?= $selectedModeloPagSeguro === 'CHIP3' ? 'selected' : '' ?>>CHIP3</option>
+                                <option value="PLUS 2" <?= in_array($selectedModeloPagSeguro, ['PLUS 2', 'PLUS2'], true) ? 'selected' : '' ?>>PLUS 2</option>
+                                <option value="PRO 2" <?= in_array($selectedModeloPagSeguro, ['PRO 2', 'PRO2'], true) ? 'selected' : '' ?>>PRO 2</option>
+                                <option value="SMART" <?= $selectedModeloPagSeguro === 'SMART' ? 'selected' : '' ?>>SMART</option>
+                                <option value="EVO" <?= $selectedModeloPagSeguro === 'EVO' ? 'selected' : '' ?>>EVO</option>
+                                <option value="OUTRAS" <?= in_array($selectedModeloPagSeguro, ['OUTRAS', 'OUTROS'], true) ? 'selected' : '' ?>>OUTRAS</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Meio de Pagamento da Adesão</label>
                             <select name="meio_pagamento_prod-pagseguro" 
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <?php $selectedMeioPagamentoPagSeguro = (string) old('meio_pagamento_prod-pagseguro'); ?>
                                 <option value="">Selecione o meio</option>
-                                <option value="a_vista">À Vista</option>
-                                <option value="cartao">Cartão</option>
-                                <option value="criacao">Criação</option>
-                                <option value="isento">Isento</option>
+                                <option value="a_vista" <?= $selectedMeioPagamentoPagSeguro === 'a_vista' ? 'selected' : '' ?>>À Vista</option>
+                                <option value="cartao" <?= $selectedMeioPagamentoPagSeguro === 'cartao' ? 'selected' : '' ?>>Cartão</option>
+                                <option value="criacao" <?= $selectedMeioPagamentoPagSeguro === 'criacao' ? 'selected' : '' ?>>Criação</option>
+                                <option value="isento" <?= $selectedMeioPagamentoPagSeguro === 'isento' ? 'selected' : '' ?>>Isento</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Valor</label>
                             <input type="text" name="valor_prod-pagseguro" id="valor_prod-pagseguro"
+                                   value="<?= htmlspecialchars(old('valor_prod-pagseguro')) ?>"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="R$ 0,00" data-mask="currency">
                         </div>
