@@ -20,6 +20,14 @@ $filters = $filters ?? [];
             </h1>
             <p class="text-gray-600 mt-1">Acesse manuais, formulários e materiais de treinamento</p>
         </div>
+        <?php if (Auth::isAdmin()): ?>
+        <div>
+            <a href="<?= url('material/files/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md inline-flex items-center">
+                <i class="fas fa-plus mr-2"></i>
+                Novo Arquivo
+            </a>
+        </div>
+        <?php endif; ?>
     </div>
 
     <!-- Filtros -->
@@ -123,6 +131,21 @@ $filters = $filters ?? [];
                                 <i class="fas fa-download mr-1"></i>
                                 Download
                             </a>
+                            <?php if (Auth::isAdmin()): ?>
+                            <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" 
+                               class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md inline-flex items-center" 
+                               title="Editar">
+                                <i class="fas fa-edit mr-1"></i>
+                                Editar
+                            </a>
+                            <form method="POST" action="<?= url('material/files/' . $file['id']) ?>" onsubmit="return confirm('Deseja excluir este arquivo?');" class="inline">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md inline-flex items-center" title="Excluir">
+                                    <i class="fas fa-trash mr-1"></i>
+                                    Excluir
+                                </button>
+                            </form>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -130,28 +153,6 @@ $filters = $filters ?? [];
             </div>
         <?php endif; ?>
     </div>
-
-    <!-- Links de Administração (apenas para admins) -->
-    <?php if (Auth::isAdmin()): ?>
-    <div class="mt-6">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">
-                <i class="fas fa-cog mr-2"></i>
-                Administração
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <a href="<?= url('material/files') ?>" class="bg-white border border-green-600 text-green-600 hover:bg-green-50 px-4 py-3 rounded-md text-center transition-colors">
-                    <i class="fas fa-file-alt mb-2 block text-xl"></i>
-                    <span class="text-sm font-medium">Arquivos</span>
-                </a>
-                <a href="<?= url('material/files/create') ?>" class="bg-white border border-yellow-600 text-yellow-600 hover:bg-yellow-50 px-4 py-3 rounded-md text-center transition-colors">
-                    <i class="fas fa-plus mb-2 block text-xl"></i>
-                    <span class="text-sm font-medium">Novo Arquivo</span>
-                </a>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
 </div>
 
 <?php
