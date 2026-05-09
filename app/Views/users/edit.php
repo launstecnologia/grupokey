@@ -121,6 +121,14 @@ ob_start();
                     Perfil de Permissões
                 </h4>
                 <?php $currentPermissions = $_POST['module_permissions'] ?? ($user['module_permissions'] ?? []); ?>
+                <div class="flex gap-2 mb-3">
+                    <button type="button" id="selectAllPermissions" class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Selecionar tudo
+                    </button>
+                    <button type="button" id="clearAllPermissions" class="px-3 py-1 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                        Limpar tudo
+                    </button>
+                </div>
                 <div class="overflow-x-auto border border-gray-200 rounded-md">
                     <table class="min-w-full text-sm">
                         <thead class="bg-gray-600">
@@ -252,6 +260,26 @@ ob_start();
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const permissionCheckboxes = document.querySelectorAll('input[name^="module_permissions["]');
+    const selectAllPermissionsBtn = document.getElementById('selectAllPermissions');
+    const clearAllPermissionsBtn = document.getElementById('clearAllPermissions');
+    
+    if (selectAllPermissionsBtn) {
+        selectAllPermissionsBtn.addEventListener('click', function() {
+            permissionCheckboxes.forEach(function(checkbox) {
+                checkbox.checked = true;
+            });
+        });
+    }
+    
+    if (clearAllPermissionsBtn) {
+        clearAllPermissionsBtn.addEventListener('click', function() {
+            permissionCheckboxes.forEach(function(checkbox) {
+                checkbox.checked = false;
+            });
+        });
+    }
+
     // Validação de senha em tempo real
     const passwordInput = document.querySelector('input[name="password"]');
     
