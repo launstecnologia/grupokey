@@ -441,13 +441,30 @@ class Establishment
             $sql = "UPDATE establishments SET status = 'APPROVED', updated_at = NOW() WHERE id = ?";
             $this->db->query($sql, [$id]);
             
-            // Criar registro de aprovação
-            $approvalId = uniqid();
-            $sql = "INSERT INTO establishment_approvals (id, establishment_id, status, reason, observation, 
-                    approved_at, approved_by_id) VALUES (?, ?, 'APPROVED', ?, ?, NOW(), ?)";
-            
             $userId = $_SESSION['user_id'] ?? null;
-            $this->db->query($sql, [$approvalId, $id, $reason, $observation, $userId]);
+            $existingApproval = $this->db->fetch(
+                "SELECT id FROM establishment_approvals WHERE establishment_id = ? LIMIT 1",
+                [$id]
+            );
+            // Tabela possui restrição única por establishment_id em produção:
+            // atualiza se já existir, senão insere.
+            if ($existingApproval) {
+                $sql = "UPDATE establishment_approvals
+                        SET status = 'APPROVED',
+                            reason = ?,
+                            observation = ?,
+                            approved_at = NOW(),
+                            approved_by_id = ?,
+                            reproved_at = NULL,
+                            reproved_by_id = NULL
+                        WHERE establishment_id = ?";
+                $this->db->query($sql, [$reason, $observation, $userId, $id]);
+            } else {
+                $approvalId = uniqid();
+                $sql = "INSERT INTO establishment_approvals (id, establishment_id, status, reason, observation,
+                        approved_at, approved_by_id) VALUES (?, ?, 'APPROVED', ?, ?, NOW(), ?)";
+                $this->db->query($sql, [$approvalId, $id, $reason, $observation, $userId]);
+            }
             
             $this->db->commit();
             return true;
@@ -467,13 +484,30 @@ class Establishment
             $sql = "UPDATE establishments SET status = 'REPROVED', updated_at = NOW() WHERE id = ?";
             $this->db->query($sql, [$id]);
             
-            // Criar registro de reprovação
-            $approvalId = uniqid();
-            $sql = "INSERT INTO establishment_approvals (id, establishment_id, status, reason, observation, 
-                    reproved_at, reproved_by_id) VALUES (?, ?, 'REPROVED', ?, ?, NOW(), ?)";
-            
             $userId = $_SESSION['user_id'] ?? null;
-            $this->db->query($sql, [$approvalId, $id, $reason, $observation, $userId]);
+            $existingApproval = $this->db->fetch(
+                "SELECT id FROM establishment_approvals WHERE establishment_id = ? LIMIT 1",
+                [$id]
+            );
+            // Tabela possui restrição única por establishment_id em produção:
+            // atualiza se já existir, senão insere.
+            if ($existingApproval) {
+                $sql = "UPDATE establishment_approvals
+                        SET status = 'REPROVED',
+                            reason = ?,
+                            observation = ?,
+                            reproved_at = NOW(),
+                            reproved_by_id = ?,
+                            approved_at = NULL,
+                            approved_by_id = NULL
+                        WHERE establishment_id = ?";
+                $this->db->query($sql, [$reason, $observation, $userId, $id]);
+            } else {
+                $approvalId = uniqid();
+                $sql = "INSERT INTO establishment_approvals (id, establishment_id, status, reason, observation,
+                        reproved_at, reproved_by_id) VALUES (?, ?, 'REPROVED', ?, ?, NOW(), ?)";
+                $this->db->query($sql, [$approvalId, $id, $reason, $observation, $userId]);
+            }
             
             $this->db->commit();
             return true;
