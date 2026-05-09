@@ -220,6 +220,9 @@ class Mailer
     
     private function getWelcomeTemplate($name, $email, $password, $loginUrl)
     {
+        $nameUpper = strtoupper($name);
+        $logoUrl = url('public/images/logo-white.png');
+
         return "
         <!DOCTYPE html>
         <html>
@@ -229,8 +232,10 @@ class Mailer
         </head>
         <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
             <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-                <h2 style='color: #2c3e50;'>Bem-vindo ao Sistema CRM!</h2>
-                <p>Olá, <strong>{$name}</strong>!</p>
+                <div style='text-align:center; margin-bottom: 20px;'>
+                    <img src='{$logoUrl}' alt='Grupo Key' style='max-width: 220px; width: 100%; height: auto;'>
+                </div>
+                <h2 style='color: #2c3e50; margin-bottom: 16px;'>SEJA BEM-VINDO {$nameUpper} AO GRUPO KEY, É COM IMENSA SATISFAÇÃO QUE RECEBEMOS VOCÊ NO NOSSO TIME DE SUCESSO.</h2>
                 <p>Suas credenciais de acesso foram criadas com sucesso.</p>
                 <div style='background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;'>
                     <h3 style='margin-top: 0; color: #495057;'>Suas Credenciais:</h3>
