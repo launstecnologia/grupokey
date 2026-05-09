@@ -94,7 +94,7 @@
     <div class="mx-auto min-h-screen flex flex-col justify-center items-center px-6 py-8 md:py-12">
         <!-- Logo -->
         <div class="logo-container text-2xl font-semibold flex justify-center items-center mb-8 lg:mb-12 mt-8 md:mt-12">
-            <?php $logoUrl = url('public/images/logo-white.png'); ?>
+            <?php $logoUrl = url('public/images/logo-key-login-navbar.png'); ?>
             <img src="<?= $logoUrl ?>" class="h-40 md:h-48 lg:h-56 w-auto" alt="GRUPO Key Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden items-center">
                 <span class="text-white text-5xl md:text-6xl lg:text-7xl font-bold">GRUPO</span>

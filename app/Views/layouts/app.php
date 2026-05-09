@@ -716,7 +716,7 @@
                     <!-- Logo no topo do sidebar -->
                     <div class="mb-2 px-2 pt-2">
                         <a href="<?= url('dashboard') ?>" class="flex items-center justify-center">
-                            <?php $logoUrl = url('public/images/logo-white.png'); ?>
+                            <?php $logoUrl = url('public/images/logo-key-login-navbar.png'); ?>
                             <!-- Logo para modo claro -->
                             <img id="logoLight" src="<?= $logoUrl ?>" class="h-32 w-auto" alt="GRUPO Key Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                             <!-- Logo para modo escuro -->
