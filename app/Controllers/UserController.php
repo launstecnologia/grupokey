@@ -137,8 +137,9 @@ class UserController
     private function processEditForm($id, $user)
     {
         // Verificar CSRF token
-        $csrfToken = $_POST['csrf_token'] ?? '';
-        if (!csrf_verify($csrfToken)) {
+        try {
+            csrf_verify();
+        } catch (\Exception $e) {
             $_SESSION['error'] = 'Token de segurança inválido. Recarregue a página e tente novamente.';
             redirect(url('usuarios/' . $id . '/edit'));
         }
@@ -236,8 +237,9 @@ class UserController
         }
         
         // Verificar CSRF token
-        $csrfToken = $_POST['csrf_token'] ?? '';
-        if (!csrf_verify($csrfToken)) {
+        try {
+            csrf_verify();
+        } catch (\Exception $e) {
             $_SESSION['error'] = 'Token de segurança inválido. Recarregue a página e tente novamente.';
             redirect(url('usuarios/' . $id . '/edit'));
         }
