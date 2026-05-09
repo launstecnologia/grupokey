@@ -688,6 +688,44 @@ class RepresentativeController
         redirect(url('representantes/' . $id));
     }
 
+    public function resendWelcomeEmail($id)
+    {
+        Auth::requireAdmin();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error'] = 'Método de requisição inválido';
+            redirect(url('representantes'));
+        }
+
+        $representative = $this->representativeModel->findById($id);
+
+        if (!$representative) {
+            $_SESSION['error'] = 'Representante não encontrado';
+            redirect(url('representantes'));
+        }
+
+        try {
+            $temporaryPassword = $this->generateTemporaryPassword();
+
+            // Atualiza para senha temporária e força troca no próximo login
+            $this->representativeModel->updatePassword($id, $temporaryPassword);
+            $this->representativeModel->setForcePasswordChange($id, true);
+
+            $this->mailer = new Mailer();
+            $this->mailer->sendWelcomeRepresentative(
+                $representative['email'],
+                $representative['nome_completo'],
+                $temporaryPassword
+            );
+
+            $_SESSION['success'] = 'E-mail de boas-vindas reenviado com sucesso! Uma nova senha temporária foi definida.';
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'Erro ao reenviar e-mail de boas-vindas: ' . $e->getMessage();
+        }
+
+        redirect(url('representantes/' . $id));
+    }
+
     private function getFilters()
     {
         return [
@@ -794,6 +832,19 @@ class RepresentativeController
         }
         
         return $data;
+    }
+
+    private function generateTemporaryPassword($length = 10)
+    {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
+        $max = strlen($alphabet) - 1;
+        $password = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $alphabet[random_int(0, $max)];
+        }
+
+        return $password;
     }
 
     private function getSafeCustomFieldDefinitions($entityType)

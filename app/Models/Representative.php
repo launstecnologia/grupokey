@@ -155,6 +155,12 @@ class Representative
         $sql = "UPDATE representatives SET status = ?, updated_at = NOW() WHERE id = ?";
         return $this->db->query($sql, [$status, $id]);
     }
+
+    public function setForcePasswordChange($id, $force = true)
+    {
+        $sql = "UPDATE representatives SET force_password_change = ?, updated_at = NOW() WHERE id = ?";
+        return $this->db->query($sql, [$force ? 1 : 0, $id]);
+    }
     
     public function getEstablishments($representativeId)
     {

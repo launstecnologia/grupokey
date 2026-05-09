@@ -216,6 +216,16 @@ $statusLabels = [
                             </button>
                             <p class="mt-2 text-xs text-yellow-800">Altera somente a senha de acesso deste representante.</p>
                         </div>
+
+                        <div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
+                            <button type="button" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors btn-resend-welcome" 
+                                    data-id="<?= $representative['id'] ?>" 
+                                    data-name="<?= htmlspecialchars($representative['nome_completo']) ?>">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Reenviar Boas-vindas
+                            </button>
+                            <p class="mt-2 text-xs text-blue-800">Reenvia o e-mail de boas-vindas com uma nova senha temporária.</p>
+                        </div>
                         
                         <div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
                             <button type="button" class="w-full bg-<?= $representative['status'] === 'ACTIVE' ? 'yellow' : 'green' ?>-600 hover:bg-<?= $representative['status'] === 'ACTIVE' ? 'yellow' : 'green' ?>-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors btn-toggle-status" 
@@ -424,6 +434,22 @@ document.addEventListener('click', function(e) {
             form.method = 'POST';
             form.action = '<?= url('representantes') ?>/' + id + '/toggle-status';
             
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Reenviar e-mail de boas-vindas
+    if (e.target.closest('.btn-resend-welcome')) {
+        const button = e.target.closest('.btn-resend-welcome');
+        const id = button.dataset.id;
+        const name = button.dataset.name;
+
+        if (confirm(`Reenviar e-mail de boas-vindas para "${name}"? Isso vai gerar uma nova senha temporária.`)) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '<?= url('representantes') ?>/' + id + '/resend-welcome-email';
+
             document.body.appendChild(form);
             form.submit();
         }

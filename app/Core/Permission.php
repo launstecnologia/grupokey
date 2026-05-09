@@ -191,7 +191,7 @@ class Permission
             ['#^representantes$#', 'representantes', self::actionByMethod($method, 'view')],
             ['#^representantes/create$#', 'representantes', 'create'],
             ['#^representantes/\d+/edit$#', 'representantes', 'edit'],
-            ['#^representantes/\d+/(toggle-status|reset-password)$#', 'representantes', 'change_status'],
+            ['#^representantes/\d+/(toggle-status|reset-password|resend-welcome-email)$#', 'representantes', 'change_status'],
             ['#^representantes/\d+$#', 'representantes', self::actionByMethod($method, 'view')],
 
             ['#^usuarios$#', 'usuarios', self::actionByMethod($method, 'view')],

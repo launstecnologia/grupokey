@@ -60,6 +60,7 @@ $router->get('/representantes/{id}', 'RepresentativeController@show');
 $router->put('/representantes/{id}', 'RepresentativeController@update');
 $router->delete('/representantes/{id}', 'RepresentativeController@destroy');
 $router->post('/representantes/{id}/reset-password', 'RepresentativeController@resetPassword');
+$router->post('/representantes/{id}/resend-welcome-email', 'RepresentativeController@resendWelcomeEmail');
 $router->post('/representantes/{id}/toggle-status', 'RepresentativeController@toggleStatus');
 
 // Rotas de usuários (apenas admin)
