@@ -3,18 +3,15 @@
 namespace App\Controllers;
 
 use App\Core\Auth;
-use App\Models\DynamicProduct;
 use App\Models\Ticket;
 
 class TicketController
 {
     private $ticketModel;
-    private $dynamicProductModel;
 
     public function __construct()
     {
         $this->ticketModel = new Ticket();
-        $this->dynamicProductModel = new DynamicProduct();
     }
 
     public function index()
@@ -315,7 +312,7 @@ class TicketController
         
         $titulo = trim($_POST['titulo'] ?? '');
         $descricao = trim($_POST['descricao'] ?? '');
-        $produto = $_POST['produto'] ?? 'OUTROS';
+        $produto = $this->normalizeTicketProduct($_POST['produto'] ?? 'OUTROS');
         
         if (empty($titulo)) {
             $errors[] = 'Título é obrigatório';
@@ -350,29 +347,27 @@ class TicketController
 
     private function getProductOptions(): array
     {
-        $options = [
-            'PAGSEGURO' => 'PagSeguro'
+        return [
+            'PAGSEGURO' => 'PagSeguro',
+            'CDC' => 'CDC',
+            'EVO' => 'EVO',
+            'GOOGLE' => 'Google',
+            'OUTROS' => 'Outros',
+        ];
+    }
+
+    private function normalizeTicketProduct(string $product): string
+    {
+        $product = strtoupper(trim($product));
+        $legacyMap = [
+            'PAGBANK' => 'PAGSEGURO',
+            'CDX_EVO' => 'EVO',
+            'PAGSEGURO_MP' => 'EVO',
+            'MEMBRO_KEY' => 'OUTROS',
+            'DIVERSOS' => 'OUTROS',
+            'BRASILCARD' => 'CDC',
         ];
 
-        $dynamicProducts = $this->dynamicProductModel->getAll();
-        foreach ($dynamicProducts as $product) {
-            $value = strtoupper((string) ($product['slug'] ?? ''));
-            $label = (string) ($product['name'] ?? '');
-
-            if ($value === '' || $label === '') {
-                continue;
-            }
-
-            $options[$value] = $label;
-        }
-
-        // Garantir filtros de chamados antigos
-        foreach ($this->ticketModel->getDistinctProducts() as $legacyValue) {
-            if (!isset($options[$legacyValue])) {
-                $options[$legacyValue] = $this->ticketModel->formatProductLabel($legacyValue);
-            }
-        }
-
-        return $options;
+        return $legacyMap[$product] ?? $product;
     }
 }

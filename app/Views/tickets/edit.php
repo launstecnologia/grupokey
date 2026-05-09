@@ -69,7 +69,18 @@ ob_start();
                             <label for="produto" class="form-label fw-semibold">Produto <span class="text-danger">*</span></label>
                             <select class="form-select shadow-sm" id="produto" name="produto" required>
                                 <option value="">Selecione o produto</option>
-                                <?php $selectedProduct = $_POST['produto'] ?? $chamado['produto']; ?>
+                                <?php
+                                $selectedProduct = strtoupper((string) ($_POST['produto'] ?? $chamado['produto']));
+                                $legacyProductMap = [
+                                    'PAGBANK' => 'PAGSEGURO',
+                                    'CDX_EVO' => 'EVO',
+                                    'PAGSEGURO_MP' => 'EVO',
+                                    'MEMBRO_KEY' => 'OUTROS',
+                                    'DIVERSOS' => 'OUTROS',
+                                    'BRASILCARD' => 'CDC',
+                                ];
+                                $selectedProduct = $legacyProductMap[$selectedProduct] ?? $selectedProduct;
+                                ?>
                                 <?php foreach (($productOptions ?? []) as $productValue => $productLabel): ?>
                                     <option value="<?= htmlspecialchars($productValue) ?>" <?= $selectedProduct === $productValue ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($productLabel) ?>

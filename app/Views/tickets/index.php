@@ -232,9 +232,11 @@ $filters = $filters ?? [];
                                 $productMap = $productOptions ?? [];
                                 $productMap['PAGBANK'] = 'PagSeguro';
                                 $productMap['PAGSEGURO'] = 'PagSeguro';
-                                $productMap['PAGSEGURO_MP'] = 'CDX/EVO';
+                                $productMap['PAGSEGURO_MP'] = 'EVO';
+                                $productMap['CDX_EVO'] = 'EVO';
                                 $productMap['BRASILCARD'] = 'CDC';
                                 $productMap['DIVERSOS'] = 'Outros';
+                                $productMap['MEMBRO_KEY'] = 'Outros';
                                 $produtoDisplay = $productMap[$chamado['produto']] ?? ucwords(str_replace('_', ' ', strtolower((string) $chamado['produto'])));
                                 ?>
                                 <span class="ticket-badge ticket-badge-product">

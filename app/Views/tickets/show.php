@@ -55,14 +55,15 @@ ob_start();
                         // Mapeamento de produtos para exibição amigável
                         $productMap = [
                             'CDC' => 'CDC',
-                            'CDX_EVO' => 'CDX/EVO',
+                            'CDX_EVO' => 'EVO',
+                            'EVO' => 'EVO',
                             'GOOGLE' => 'Google',
-                            'MEMBRO_KEY' => 'Membro Key',
+                            'MEMBRO_KEY' => 'Outros',
                             'OUTROS' => 'Outros',
                             'PAGBANK' => 'PagSeguro',
                             // Valores antigos para compatibilidade
                             'PAGSEGURO' => 'PagSeguro',
-                            'PAGSEGURO_MP' => 'CDX/EVO',
+                            'PAGSEGURO_MP' => 'EVO',
                             'BRASILCARD' => 'CDC',
                             'DIVERSOS' => 'Outros'
                         ];
