@@ -1235,10 +1235,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (campo) campo.value = data.logradouro;
                 }
                 
-                {
-                    const campo = document.querySelector('input[name="complemento"]');
-                    if (campo) campo.value = (data.complemento || '').trim();
-                }
                 
                 if (data.bairro) {
                     const campo = document.querySelector('input[name="bairro"]');
@@ -1374,13 +1370,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         const campo = document.querySelector('input[name="numero"]');
                         if (campo) {
                             campo.value = data.numero;
-                            camposPreenchidos++;
-                        }
-                    }
-                    {
-                        const campo = document.querySelector('input[name="complemento"]');
-                        if (campo) {
-                            campo.value = (data.complemento || '').trim();
                             camposPreenchidos++;
                         }
                     }
