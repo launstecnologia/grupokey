@@ -585,13 +585,12 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
                             <select name="modelo_maquininha_prod-pagseguro" 
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Selecione o modelo</option>
-                                <option value="Chip3">Chip3</option>
-                                <option value="plus2">Plus 2</option>
-                                <option value="pro2">Pro 2</option>
-                                <option value="smart">Smart</option>
-                                <option value="CDX">CDX</option>
+                                <option value="CHIP3">CHIP3</option>
+                                <option value="PLUS 2">PLUS 2</option>
+                                <option value="PRO 2">PRO 2</option>
+                                <option value="SMART">SMART</option>
                                 <option value="EVO">EVO</option>
-                                <option value="outros">Outros</option>
+                                <option value="OUTRAS">OUTRAS</option>
                             </select>
                         </div>
                         <div>
@@ -701,7 +700,7 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
                                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Selecione o modelo</option>
                                     <?php
-                                    $modelos = ['Chip3', 'plus2', 'pro2', 'smart', 'CDX', 'EVO', 'outros'];
+                                    $modelos = ['CHIP3', 'PLUS 2', 'PRO 2', 'SMART', 'EVO', 'OUTRAS'];
                                     foreach ($modelos as $modelo): ?>
                                         <option value="<?= $modelo ?>"><?= $modelo ?></option>
                                     <?php endforeach; ?>

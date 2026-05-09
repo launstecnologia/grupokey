@@ -732,9 +732,10 @@ function isProductSelected($productId, $productData) {
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Selecione o modelo</option>
                                 <?php
-                                $modelos = ['Chip3', 'plus2', 'pro2', 'smart', 'CDX', 'EVO', 'outros'];
+                                $modelos = ['CHIP3', 'PLUS 2', 'PRO 2', 'SMART', 'EVO', 'OUTRAS'];
+                                $selectedModelo = strtoupper(trim((string) ($productData['pagseguro']['modelo_maquininha'] ?? '')));
                                 foreach ($modelos as $modelo): ?>
-                                    <option value="<?= $modelo ?>" <?= ($productData['pagseguro']['modelo_maquininha'] ?? '') === $modelo ? 'selected' : '' ?>><?= $modelo ?></option>
+                                    <option value="<?= $modelo ?>" <?= $selectedModelo === $modelo ? 'selected' : '' ?>><?= $modelo ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -844,8 +845,8 @@ function isProductSelected($productId, $productData) {
                                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Selecione o modelo</option>
                                     <?php
-                                    $modelos = ['Chip3', 'plus2', 'pro2', 'smart', 'CDX', 'EVO', 'outros'];
-                                    $selectedModelo = (string) $oldField('modelo_maquininha_' . $product['id'], $otherProduct['modelo_maquininha'] ?? '');
+                                    $modelos = ['CHIP3', 'PLUS 2', 'PRO 2', 'SMART', 'EVO', 'OUTRAS'];
+                                    $selectedModelo = strtoupper(trim((string) $oldField('modelo_maquininha_' . $product['id'], $otherProduct['modelo_maquininha'] ?? '')));
                                     foreach ($modelos as $modelo): ?>
                                         <option value="<?= $modelo ?>" <?= $selectedModelo === $modelo ? 'selected' : '' ?>><?= $modelo ?></option>
                                     <?php endforeach; ?>
