@@ -159,7 +159,11 @@ if (!class_exists('App\Core\AutoConfig')) {
                     'BACKUP_ENABLED' => $envConfig['BACKUP_ENABLED'] ?? 'true',
                     'BACKUP_PATH' => $envConfig['BACKUP_PATH'] ?? 'storage/backups/',
                     'BACKUP_RETENTION_DAYS' => $envConfig['BACKUP_RETENTION_DAYS'] ?? '30',
-                    'APP_URL' => $envConfig['APP_URL'] ?? ''
+                    'APP_URL' => $envConfig['APP_URL'] ?? '',
+                    'PUSHER_APP_ID' => $envConfig['PUSHER_APP_ID'] ?? '',
+                    'PUSHER_KEY' => $envConfig['PUSHER_KEY'] ?? '',
+                    'PUSHER_SECRET' => $envConfig['PUSHER_SECRET'] ?? '',
+                    'PUSHER_CLUSTER' => $envConfig['PUSHER_CLUSTER'] ?? 'us2'
                 ];
             } else {
                 // localhost - usar config.env ou valores padrão para localhost
@@ -187,7 +191,11 @@ if (!class_exists('App\Core\AutoConfig')) {
                     'BACKUP_ENABLED' => $envConfig['BACKUP_ENABLED'] ?? 'false',
                     'BACKUP_PATH' => $envConfig['BACKUP_PATH'] ?? 'storage/backups/',
                     'BACKUP_RETENTION_DAYS' => $envConfig['BACKUP_RETENTION_DAYS'] ?? '30',
-                    'APP_URL' => $envConfig['APP_URL'] ?? ''
+                    'APP_URL' => $envConfig['APP_URL'] ?? '',
+                    'PUSHER_APP_ID' => $envConfig['PUSHER_APP_ID'] ?? '',
+                    'PUSHER_KEY' => $envConfig['PUSHER_KEY'] ?? '',
+                    'PUSHER_SECRET' => $envConfig['PUSHER_SECRET'] ?? '',
+                    'PUSHER_CLUSTER' => $envConfig['PUSHER_CLUSTER'] ?? 'us2'
                 ];
             }
         }

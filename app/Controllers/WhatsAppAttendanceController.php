@@ -11,6 +11,7 @@ use App\Models\WhatsAppQueue;
 use App\Models\WhatsAppInstance;
 use App\Models\WhatsAppContact;
 use App\Services\EvolutionApiService;
+use App\Services\RealtimeService;
 
 /**
  * Controller para gerenciar atendimentos WhatsApp
@@ -23,6 +24,7 @@ class WhatsAppAttendanceController
     private $queueModel;
     private $instanceModel;
     private $contactModel;
+    private $realtimeService;
     
     public function __construct()
     {
@@ -32,6 +34,7 @@ class WhatsAppAttendanceController
         $this->queueModel = new WhatsAppQueue();
         $this->instanceModel = new WhatsAppInstance();
         $this->contactModel = new WhatsAppContact();
+        $this->realtimeService = new RealtimeService();
     }
     
     /**
@@ -63,7 +66,8 @@ class WhatsAppAttendanceController
             'conversations' => $conversations,
             'queues' => $queues,
             'filters' => $filters,
-            'connected_instances' => $connectedInstances
+            'connected_instances' => $connectedInstances,
+            'realtime' => $this->realtimeService->getPublicConfig(),
         ];
         
         view('whatsapp/attendance/index', $data);
@@ -317,6 +321,17 @@ class WhatsAppAttendanceController
             $this->conversationModel->updateLastMessage($conversationId, substr($bodyToSave, 0, 100));
             
             $savedMessage = $this->messageModel->findById($messageId);
+
+            if ($savedMessage) {
+                $this->realtimeService->trigger(
+                    'private-conversation.' . (int) $conversationId,
+                    'message.new',
+                    [
+                        'conversation_id' => (int) $conversationId,
+                        'message' => $savedMessage
+                    ]
+                );
+            }
             
             echo json_encode([
                 'success' => true,
@@ -329,6 +344,53 @@ class WhatsAppAttendanceController
                 'success' => false,
                 'message' => $e->getMessage()
             ]);
+        }
+    }
+
+    public function realtimeAuth()
+    {
+        Auth::requireAuth();
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            $socketId = trim($_POST['socket_id'] ?? '');
+            $channelName = trim($_POST['channel_name'] ?? '');
+
+            if ($socketId === '' || $channelName === '') {
+                throw new \Exception('socket_id e channel_name são obrigatórios');
+            }
+
+            if (!preg_match('/^private-conversation\.(\d+)$/', $channelName, $matches)) {
+                throw new \Exception('Canal inválido');
+            }
+
+            $conversationId = (int) ($matches[1] ?? 0);
+            if ($conversationId <= 0) {
+                throw new \Exception('Conversa inválida');
+            }
+
+            $conversation = $this->conversationModel->findById($conversationId);
+            if (!$conversation) {
+                throw new \Exception('Conversa não encontrada');
+            }
+
+            if (!Auth::isAdmin()) {
+                $attendance = $this->attendanceModel->findActiveByConversation($conversationId);
+                $userId = (int) ($_SESSION['user_id'] ?? 0);
+                if (!$attendance || (int) ($attendance['user_id'] ?? 0) !== $userId) {
+                    throw new \Exception('Sem permissão para este canal');
+                }
+            }
+
+            $auth = $this->realtimeService->authorizePrivateChannel($socketId, $channelName);
+            if (!$auth) {
+                throw new \Exception('Realtime não configurado');
+            }
+
+            echo json_encode($auth, JSON_UNESCAPED_UNICODE);
+        } catch (\Throwable $e) {
+            http_response_code(403);
+            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
         }
     }
     
@@ -779,4 +841,3 @@ class WhatsAppAttendanceController
         }
     }
 }
-

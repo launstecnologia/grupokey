@@ -6,6 +6,7 @@ $conversations = $conversations ?? [];
 $queues = $queues ?? [];
 $filters = $filters ?? [];
 $connectedInstances = $connected_instances ?? [];
+$realtime = $realtime ?? ['enabled' => false, 'key' => '', 'cluster' => 'us2'];
 ?>
 
 <div class="pt-6 px-4">
@@ -247,14 +248,22 @@ $connectedInstances = $connected_instances ?? [];
     </div>
 </div>
 
+<?php if (!empty($realtime['enabled'])): ?>
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<?php endif; ?>
 <script>
 let currentConversationId = null;
 let currentAttendanceId = null;
 let lastMessageId = 0;
 let pollingInterval = null;
+let pusherClient = null;
+let currentChannel = null;
 let pendingMedia = null; // { url, type, file_name }
 let mediaRecorder = null;
 let recordedChunks = [];
+const realtimeEnabled = <?= !empty($realtime['enabled']) ? 'true' : 'false' ?>;
+const realtimeKey = <?= json_encode($realtime['key'] ?? '') ?>;
+const realtimeCluster = <?= json_encode($realtime['cluster'] ?? 'us2') ?>;
 
 // Se a URL tiver ?phone= (ex: vindo do CRM ou Agenda), abrir modal e preencher número
 document.addEventListener('DOMContentLoaded', function() {
@@ -363,6 +372,7 @@ async function openConversation(conversationId) {
             
             // Iniciar polling
             startPolling();
+            bindRealtimeChannel();
         } else {
             alert('Erro ao abrir conversa: ' + (data.message || 'Erro desconhecido'));
         }
@@ -566,6 +576,14 @@ async function sendMessage(event) {
 
 // Polling para novas mensagens
 function startPolling() {
+    if (realtimeEnabled) {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+        return;
+    }
+
     if (pollingInterval) {
         clearInterval(pollingInterval);
     }
@@ -584,6 +602,38 @@ function startPolling() {
             console.error('Erro no polling:', error);
         }
     }, 3000); // Polling a cada 3 segundos
+}
+
+function ensureRealtimeClient() {
+    if (!realtimeEnabled || pusherClient || typeof Pusher === 'undefined') return;
+
+    pusherClient = new Pusher(realtimeKey, {
+        cluster: realtimeCluster,
+        forceTLS: true,
+        authEndpoint: '<?= url('whatsapp/attendance/realtime/auth') ?>'
+    });
+}
+
+function bindRealtimeChannel() {
+    if (!realtimeEnabled || !currentConversationId) return;
+    ensureRealtimeClient();
+    if (!pusherClient) return;
+
+    const channelName = 'private-conversation.' + currentConversationId;
+    if (currentChannel && currentChannel.name === channelName) return;
+
+    if (currentChannel) {
+        currentChannel.unbind_all();
+        pusherClient.unsubscribe(currentChannel.name);
+        currentChannel = null;
+    }
+
+    currentChannel = pusherClient.subscribe(channelName);
+    currentChannel.bind('message.new', function(payload) {
+        if (!payload || !payload.message) return;
+        if ((payload.conversation_id || 0) !== currentConversationId) return;
+        renderMessages([payload.message], { append: true });
+    });
 }
 
 // Fechar chat
@@ -614,6 +664,12 @@ function closeChat() {
     currentAttendanceId = null;
     if (pollingInterval) {
         clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+    if (pusherClient && currentChannel) {
+        currentChannel.unbind_all();
+        pusherClient.unsubscribe(currentChannel.name);
+        currentChannel = null;
     }
     document.getElementById('chat-container').style.display = 'none';
     document.getElementById('chat-placeholder').style.display = 'block';
@@ -660,4 +716,3 @@ document.getElementById('filter-search').addEventListener('keypress', function(e
 $content = ob_get_clean();
 include __DIR__ . '/../../layouts/app.php';
 ?>
-

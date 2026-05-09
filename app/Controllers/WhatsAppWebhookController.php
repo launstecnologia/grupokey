@@ -8,6 +8,7 @@ use App\Models\WhatsAppConversation;
 use App\Models\WhatsAppMessage;
 use App\Models\WhatsAppQueue;
 use App\Models\WhatsAppAttendance;
+use App\Services\RealtimeService;
 
 /**
  * Controller para receber webhooks da Evolution API
@@ -21,6 +22,7 @@ class WhatsAppWebhookController
     private $messageModel;
     private $queueModel;
     private $attendanceModel;
+    private $realtimeService;
     
     public function __construct()
     {
@@ -30,6 +32,7 @@ class WhatsAppWebhookController
         $this->messageModel = new WhatsAppMessage();
         $this->queueModel = new WhatsAppQueue();
         $this->attendanceModel = new WhatsAppAttendance();
+        $this->realtimeService = new RealtimeService();
     }
     
     /**
@@ -354,6 +357,18 @@ class WhatsAppWebhookController
                 'caption' => $caption,
                 'timestamp' => $timestamp
             ]);
+
+            $savedMessage = $this->messageModel->findById($messageId);
+            if ($savedMessage) {
+                $this->realtimeService->trigger(
+                    'private-conversation.' . (int) $conversation['id'],
+                    'message.new',
+                    [
+                        'conversation_id' => (int) $conversation['id'],
+                        'message' => $savedMessage
+                    ]
+                );
+            }
             
             // Atualizar última mensagem da conversa
             $preview = $body ? substr($body, 0, 100) : ($messageType !== 'TEXT' ? ucfirst(strtolower($messageType)) : 'Mensagem');
