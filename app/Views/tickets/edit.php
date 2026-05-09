@@ -69,12 +69,12 @@ ob_start();
                             <label for="produto" class="form-label fw-semibold">Produto <span class="text-danger">*</span></label>
                             <select class="form-select shadow-sm" id="produto" name="produto" required>
                                 <option value="">Selecione o produto</option>
-                                <option value="CDC" <?= ($_POST['produto'] ?? $chamado['produto']) === 'CDC' ? 'selected' : '' ?>>CDC</option>
-                                <option value="CDX_EVO" <?= ($_POST['produto'] ?? $chamado['produto']) === 'CDX_EVO' ? 'selected' : '' ?>>CDX/EVO</option>
-                                <option value="GOOGLE" <?= ($_POST['produto'] ?? $chamado['produto']) === 'GOOGLE' ? 'selected' : '' ?>>Google</option>
-                                <option value="MEMBRO_KEY" <?= ($_POST['produto'] ?? $chamado['produto']) === 'MEMBRO_KEY' ? 'selected' : '' ?>>Membro Key</option>
-                                <option value="OUTROS" <?= ($_POST['produto'] ?? $chamado['produto']) === 'OUTROS' ? 'selected' : '' ?>>Outros</option>
-                                <option value="PAGBANK" <?= ($_POST['produto'] ?? $chamado['produto']) === 'PAGBANK' ? 'selected' : '' ?>>PagSeguro</option>
+                                <?php $selectedProduct = $_POST['produto'] ?? $chamado['produto']; ?>
+                                <?php foreach (($productOptions ?? []) as $productValue => $productLabel): ?>
+                                    <option value="<?= htmlspecialchars($productValue) ?>" <?= $selectedProduct === $productValue ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($productLabel) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         

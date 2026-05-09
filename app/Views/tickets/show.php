@@ -61,12 +61,12 @@ ob_start();
                             'OUTROS' => 'Outros',
                             'PAGBANK' => 'PagSeguro',
                             // Valores antigos para compatibilidade
-                            'PAGSEGURO' => 'CDX/EVO',
+                            'PAGSEGURO' => 'PagSeguro',
                             'PAGSEGURO_MP' => 'CDX/EVO',
                             'BRASILCARD' => 'CDC',
                             'DIVERSOS' => 'Outros'
                         ];
-                        $produtoDisplay = $productMap[$chamado['produto']] ?? $chamado['produto'];
+                        $produtoDisplay = $productMap[$chamado['produto']] ?? ucwords(str_replace('_', ' ', strtolower((string) $chamado['produto'])));
                         ?>
                         <span class="badge bg-info"><?= htmlspecialchars($produtoDisplay) ?></span>
                     </div>

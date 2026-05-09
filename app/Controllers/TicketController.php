@@ -3,15 +3,18 @@
 namespace App\Controllers;
 
 use App\Core\Auth;
+use App\Models\DynamicProduct;
 use App\Models\Ticket;
 
 class TicketController
 {
     private $ticketModel;
+    private $dynamicProductModel;
 
     public function __construct()
     {
         $this->ticketModel = new Ticket();
+        $this->dynamicProductModel = new DynamicProduct();
     }
 
     public function index()
@@ -35,7 +38,8 @@ class TicketController
             'currentPage' => 'chamados',
             'chamados' => $chamados,
             'stats' => $stats,
-            'filters' => $filters
+            'filters' => $filters,
+            'productOptions' => $this->getProductOptions()
         ];
         
         view('tickets/index', $data);
@@ -47,7 +51,8 @@ class TicketController
         
         $data = [
             'title' => 'Novo Chamado',
-            'currentPage' => 'chamados'
+            'currentPage' => 'chamados',
+            'productOptions' => $this->getProductOptions()
         ];
         
         view('tickets/create', $data);
@@ -135,7 +140,8 @@ class TicketController
         $data = [
             'title' => 'Editar Chamado',
             'currentPage' => 'chamados',
-            'chamado' => $chamado
+            'chamado' => $chamado,
+            'productOptions' => $this->getProductOptions()
         ];
         
         view('tickets/edit', $data);
@@ -323,7 +329,8 @@ class TicketController
             $errors[] = 'Descrição deve ter pelo menos 10 caracteres';
         }
         
-        if (!in_array($produto, ['CDC', 'CDX_EVO', 'GOOGLE', 'MEMBRO_KEY', 'OUTROS', 'PAGBANK'])) {
+        $validProducts = array_keys($this->getProductOptions());
+        if (!in_array($produto, $validProducts, true)) {
             $errors[] = 'Produto inválido';
         }
         
@@ -339,5 +346,33 @@ class TicketController
             'produto' => $produto,
             'status' => 'OPEN'
         ];
+    }
+
+    private function getProductOptions(): array
+    {
+        $options = [
+            'PAGSEGURO' => 'PagSeguro'
+        ];
+
+        $dynamicProducts = $this->dynamicProductModel->getAll();
+        foreach ($dynamicProducts as $product) {
+            $value = strtoupper((string) ($product['slug'] ?? ''));
+            $label = (string) ($product['name'] ?? '');
+
+            if ($value === '' || $label === '') {
+                continue;
+            }
+
+            $options[$value] = $label;
+        }
+
+        // Garantir filtros de chamados antigos
+        foreach ($this->ticketModel->getDistinctProducts() as $legacyValue) {
+            if (!isset($options[$legacyValue])) {
+                $options[$legacyValue] = $this->ticketModel->formatProductLabel($legacyValue);
+            }
+        }
+
+        return $options;
     }
 }

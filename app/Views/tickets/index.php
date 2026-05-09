@@ -124,12 +124,11 @@ $filters = $filters ?? [];
                 <label class="block text-sm font-medium text-gray-700 mb-1">Produto</label>
                 <select name="produto" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">Todos os produtos</option>
-                    <option value="CDC" <?= ($filters['produto'] ?? '') === 'CDC' ? 'selected' : '' ?>>CDC</option>
-                    <option value="CDX_EVO" <?= ($filters['produto'] ?? '') === 'CDX_EVO' ? 'selected' : '' ?>>CDX/EVO</option>
-                    <option value="GOOGLE" <?= ($filters['produto'] ?? '') === 'GOOGLE' ? 'selected' : '' ?>>Google</option>
-                    <option value="MEMBRO_KEY" <?= ($filters['produto'] ?? '') === 'MEMBRO_KEY' ? 'selected' : '' ?>>Membro Key</option>
-                    <option value="OUTROS" <?= ($filters['produto'] ?? '') === 'OUTROS' ? 'selected' : '' ?>>Outros</option>
-                    <option value="PAGBANK" <?= ($filters['produto'] ?? '') === 'PAGBANK' ? 'selected' : '' ?>>PagSeguro</option>
+                    <?php foreach (($productOptions ?? []) as $productValue => $productLabel): ?>
+                        <option value="<?= htmlspecialchars($productValue) ?>" <?= ($filters['produto'] ?? '') === $productValue ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($productLabel) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
@@ -212,10 +211,10 @@ $filters = $filters ?? [];
                                 </h3>
                                 <?php
                                 $statusColors = [
-                                    'OPEN' => 'bg-blue-100 text-blue-800',
-                                    'IN_PROGRESS' => 'bg-cyan-100 text-cyan-800',
-                                    'RESOLVED' => 'bg-green-100 text-green-800',
-                                    'CLOSED' => 'bg-gray-100 text-gray-800'
+                                    'OPEN' => 'ticket-badge ticket-badge-status-open',
+                                    'IN_PROGRESS' => 'ticket-badge ticket-badge-status-progress',
+                                    'RESOLVED' => 'ticket-badge ticket-badge-status-resolved',
+                                    'CLOSED' => 'ticket-badge ticket-badge-status-closed'
                                 ];
                                 $statusLabels = [
                                     'OPEN' => 'Aberto',
@@ -223,33 +222,25 @@ $filters = $filters ?? [];
                                     'RESOLVED' => 'Resolvido',
                                     'CLOSED' => 'Fechado'
                                 ];
-                                $statusClass = $statusColors[$chamado['status']] ?? 'bg-gray-100 text-gray-800';
+                                $statusClass = $statusColors[$chamado['status']] ?? 'ticket-badge ticket-badge-status-default';
                                 $statusLabel = $statusLabels[$chamado['status']] ?? $chamado['status'];
                                 ?>
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= $statusClass ?>">
+                                <span class="<?= $statusClass ?>">
                                     <?= $statusLabel ?>
                                 </span>
                                 <?php
-                                // Mapeamento de produtos para exibição amigável
-                                $productMap = [
-                                    'CDC' => 'CDC',
-                                    'CDX_EVO' => 'CDX/EVO',
-                                    'GOOGLE' => 'Google',
-                                    'MEMBRO_KEY' => 'Membro Key',
-                                    'OUTROS' => 'Outros',
-                                    'PAGBANK' => 'PagSeguro',
-                                    // Valores antigos para compatibilidade
-                                    'PAGSEGURO' => 'CDX/EVO',
-                                    'PAGSEGURO_MP' => 'CDX/EVO',
-                                    'BRASILCARD' => 'CDC',
-                                    'DIVERSOS' => 'Outros'
-                                ];
-                                $produtoDisplay = $productMap[$chamado['produto']] ?? $chamado['produto'];
+                                $productMap = $productOptions ?? [];
+                                $productMap['PAGBANK'] = 'PagSeguro';
+                                $productMap['PAGSEGURO'] = 'PagSeguro';
+                                $productMap['PAGSEGURO_MP'] = 'CDX/EVO';
+                                $productMap['BRASILCARD'] = 'CDC';
+                                $productMap['DIVERSOS'] = 'Outros';
+                                $produtoDisplay = $productMap[$chamado['produto']] ?? ucwords(str_replace('_', ' ', strtolower((string) $chamado['produto'])));
                                 ?>
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                <span class="ticket-badge ticket-badge-product">
                                     <?= htmlspecialchars($produtoDisplay) ?>
                                 </span>
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-cyan-100 text-cyan-800">
+                                <span class="ticket-badge ticket-badge-comments">
                                     <i class="fas fa-comments mr-1"></i>
                                     <?= $chamado['total_respostas'] ?? 0 ?>
                                 </span>
@@ -301,6 +292,104 @@ $filters = $filters ?? [];
         <?php endif; ?>
     </div>
 </div>
+
+<style>
+.ticket-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    line-height: 1.1rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+.ticket-badge-status-open {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #93c5fd;
+}
+
+.ticket-badge-status-progress {
+    background: #cffafe;
+    color: #155e75;
+    border-color: #67e8f9;
+}
+
+.ticket-badge-status-resolved {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+}
+
+.ticket-badge-status-closed {
+    background: #e2e8f0;
+    color: #334155;
+    border-color: #cbd5e1;
+}
+
+.ticket-badge-status-default {
+    background: #e5e7eb;
+    color: #1f2937;
+    border-color: #d1d5db;
+}
+
+.ticket-badge-product {
+    background: #dbeafe;
+    color: #1e3a8a;
+    border-color: #93c5fd;
+}
+
+.ticket-badge-comments {
+    background: #ccfbf1;
+    color: #0f766e;
+    border-color: #99f6e4;
+}
+
+.dark .ticket-badge-status-open {
+    background: #1e3a8a;
+    color: #dbeafe;
+    border-color: #3b82f6;
+}
+
+.dark .ticket-badge-status-progress {
+    background: #164e63;
+    color: #cffafe;
+    border-color: #06b6d4;
+}
+
+.dark .ticket-badge-status-resolved {
+    background: #14532d;
+    color: #dcfce7;
+    border-color: #22c55e;
+}
+
+.dark .ticket-badge-status-closed {
+    background: #374151;
+    color: #f3f4f6;
+    border-color: #6b7280;
+}
+
+.dark .ticket-badge-status-default {
+    background: #374151;
+    color: #f3f4f6;
+    border-color: #6b7280;
+}
+
+.dark .ticket-badge-product {
+    background: #1e3a8a;
+    color: #dbeafe;
+    border-color: #2563eb;
+}
+
+.dark .ticket-badge-comments {
+    background: #134e4a;
+    color: #ccfbf1;
+    border-color: #14b8a6;
+}
+</style>
 
 <script>
 // Confirmar exclusão

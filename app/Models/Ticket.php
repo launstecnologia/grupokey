@@ -227,6 +227,34 @@ class Ticket
         
         return $this->db->fetchAll($sql, $params);
     }
+
+    public function getDistinctProducts()
+    {
+        $rows = $this->db->fetchAll("SELECT DISTINCT produto FROM tickets WHERE produto IS NOT NULL AND produto <> '' ORDER BY produto ASC");
+        return array_map(fn($row) => (string) $row['produto'], $rows);
+    }
+
+    public function formatProductLabel($value)
+    {
+        $productMap = [
+            'CDC' => 'CDC',
+            'CDX_EVO' => 'CDX/EVO',
+            'GOOGLE' => 'Google',
+            'MEMBRO_KEY' => 'Membro Key',
+            'OUTROS' => 'Outros',
+            'PAGBANK' => 'PagSeguro',
+            'PAGSEGURO' => 'PagSeguro',
+            'PAGSEGURO_MP' => 'CDX/EVO',
+            'BRASILCARD' => 'CDC',
+            'DIVERSOS' => 'Outros'
+        ];
+
+        if (isset($productMap[$value])) {
+            return $productMap[$value];
+        }
+
+        return ucwords(str_replace('_', ' ', strtolower((string) $value)));
+    }
     
     /**
      * Valida e corrige o valor do ENUM produto
@@ -234,49 +262,10 @@ class Ticket
      */
     private function validateProdutoEnum($produto)
     {
-        // Valores esperados do formulário
-        $expectedValues = ['PAGSEGURO', 'CDX_EVO', 'CDC', 'GOOGLE', 'MEMBRO_KEY', 'OUTROS', 'PAGBANK'];
-        
-        // Se já é um valor esperado, verificar se está no ENUM do banco
-        if (in_array($produto, $expectedValues)) {
-            // Buscar valores válidos do ENUM no banco de dados
-            $enumValues = [];
-            try {
-                $enumCheck = $this->db->fetchAll("SHOW COLUMNS FROM tickets WHERE Field = 'produto'");
-                if (!empty($enumCheck) && isset($enumCheck[0]['Type'])) {
-                    $typeDefinition = $enumCheck[0]['Type'];
-                    if (preg_match("/^enum\((.*)\)$/i", $typeDefinition, $matches)) {
-                        if (!empty($matches[1])) {
-                            $enumValues = array_map(function($val) {
-                                return trim($val, "'\"");
-                            }, explode(',', $matches[1]));
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                write_log("Erro ao buscar ENUM produto: " . $e->getMessage(), 'app.log');
-            }
-            
-            // Se o valor está no ENUM do banco, usar diretamente
-            if (!empty($enumValues) && in_array($produto, $enumValues)) {
-                return $produto;
-            }
-            
-            // Se não está no ENUM, tentar usar um valor que existe
-            if (!empty($enumValues)) {
-                // Tentar OUTROS primeiro (mais comum)
-                if (in_array('OUTROS', $enumValues)) {
-                    write_log("Produto '{$produto}' não encontrado no ENUM. Usando 'OUTROS' como fallback.", 'app.log');
-                    return 'OUTROS';
-                }
-                // Usar o primeiro valor disponível
-                write_log("Produto '{$produto}' não encontrado no ENUM. Usando '{$enumValues[0]}' como fallback.", 'app.log');
-                return $enumValues[0];
-            }
+        $produto = strtoupper(trim((string) $produto));
+        if ($produto === '') {
+            return 'OUTROS';
         }
-        
-        // Se não é um valor esperado ou não conseguiu validar, usar OUTROS
-        write_log("Produto '{$produto}' inválido. Usando 'OUTROS' como padrão.", 'app.log');
-        return 'OUTROS';
+        return $produto;
     }
 }
