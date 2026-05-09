@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\Database;
+use App\Core\Permission;
 
 class User
 {
@@ -46,6 +47,14 @@ class User
             }
         }
         
+        if (isset($data['module_permissions']) && is_array($data['module_permissions'])) {
+            try {
+                Permission::saveByUserId((int) $userId, $data['module_permissions']);
+            } catch (\Throwable $e) {
+                // Ignorar para não quebrar criação de usuário se migração ainda não rodou
+            }
+        }
+
         return $userId;
     }
     
@@ -69,7 +78,18 @@ class User
                 LEFT JOIN permissions perm ON u.id = perm.user_id
                 WHERE u.id = ?";
         
-        return $this->db->fetch($sql, [$id]);
+        $user = $this->db->fetch($sql, [$id]);
+        if (!$user) {
+            return null;
+        }
+
+        try {
+            $user['module_permissions'] = Permission::loadByUserId((int) $id);
+        } catch (\Throwable $e) {
+            $user['module_permissions'] = [];
+        }
+
+        return $user;
     }
     
     public function getAll($filters = [])
@@ -110,7 +130,17 @@ class User
         
         $sql .= " ORDER BY u.name ASC";
         
-        return $this->db->fetchAll($sql, $params);
+        $users = $this->db->fetchAll($sql, $params);
+        foreach ($users as &$user) {
+            try {
+                $user['module_permissions'] = Permission::loadByUserId((int) $user['id']);
+            } catch (\Throwable $e) {
+                $user['module_permissions'] = [];
+            }
+        }
+        unset($user);
+
+        return $users;
     }
     
     public function update($id, $data)
@@ -164,6 +194,14 @@ class User
             $this->updatePermissions($id, $data['permissions']);
         }
         
+        if (isset($data['module_permissions']) && is_array($data['module_permissions'])) {
+            try {
+                Permission::saveByUserId((int) $id, $data['module_permissions']);
+            } catch (\Throwable $e) {
+                // Ignorar para não quebrar atualização se migração ainda não rodou
+            }
+        }
+
         return true;
     }
     

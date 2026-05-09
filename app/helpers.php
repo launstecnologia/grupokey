@@ -488,3 +488,10 @@ if (!function_exists('old')) {
         return $default;
     }
 }
+
+if (!function_exists('auth_can')) {
+    function auth_can($module, $action = 'view')
+    {
+        return \App\Core\Auth::can($module, $action);
+    }
+}

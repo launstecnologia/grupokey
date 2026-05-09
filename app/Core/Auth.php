@@ -70,6 +70,7 @@ class Auth
         $_SESSION['user_photo'] = $user['photo'] ?? null;
         $_SESSION['user_type'] = $user['type'];
         $_SESSION['user_profile'] = $user['profile'] ?? null;
+        $_SESSION['user_permissions'] = Permission::loadByUserId((int) $user['id']);
         
         // Limpar dados de representante se existirem
         unset($_SESSION['representative_id']);
@@ -107,6 +108,10 @@ class Auth
         if (!self::check()) {
             redirect(url('login'));
         }
+
+        if (self::isAdmin()) {
+            self::enforceRequestPermission();
+        }
     }
     
     public static function requireAdmin()
@@ -129,5 +134,51 @@ class Auth
     {
         self::start();
         session_regenerate_id(true);
+    }
+
+    public static function can(string $module, string $action = 'view'): bool
+    {
+        self::start();
+
+        if (!self::isAdmin()) {
+            return false;
+        }
+
+        $permissions = $_SESSION['user_permissions'] ?? [];
+        if (empty($permissions)) {
+            return true;
+        }
+
+        $modulePermissions = $permissions[$module] ?? null;
+        if (!$modulePermissions) {
+            return false;
+        }
+
+        return !empty($modulePermissions[$action]);
+    }
+
+    private static function enforceRequestPermission(): void
+    {
+        $permissions = $_SESSION['user_permissions'] ?? [];
+        if (empty($permissions)) {
+            return;
+        }
+
+        $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+        $uriPath = trim($uriPath, '/');
+        $folder = trim((defined('FOLDER') ? FOLDER : ''), '/');
+        if ($folder !== '' && str_starts_with($uriPath, $folder)) {
+            $uriPath = ltrim(substr($uriPath, strlen($folder)), '/');
+        }
+
+        $map = Permission::inferFromRequest($uriPath, $_SERVER['REQUEST_METHOD'] ?? 'GET');
+        if (!$map) {
+            return;
+        }
+
+        if (!self::can($map['module'], $map['action'])) {
+            $_SESSION['error'] = 'Você não possui permissão para acessar esta funcionalidade.';
+            redirect(url('dashboard'));
+        }
     }
 }

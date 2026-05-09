@@ -725,174 +725,29 @@
                     </div>
                     <ul class="space-y-2 pb-2">
                         <?php if (App\Core\Auth::isAdmin()): ?>
-                        <li>
-                            <a href="<?= url('crm') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'crm' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">CRM</span>
-                            </a>
-                        </li>
-                        <?php endif; ?>
-                        <li>
-                            <a href="<?= url('dashboard') ?>" class="text-base text-white font-normal rounded-lg flex items-center p-2 hover:bg-gray-600 group <?= $currentPage === 'dashboard' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
-                                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
-                                </svg>
-                                <span class="ml-3">Dashboard</span>
-                            </a>
-                        </li>
-                        
-                        <?php if (App\Core\Auth::isAdmin()): ?>
-                        <li>
-                            <a href="<?= url('estabelecimentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'estabelecimentos' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-6a1 1 0 00-1-1H9a1 1 0 00-1 1v6a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Estabelecimentos</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('representantes') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'representantes' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Representantes</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('usuarios') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'usuarios' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Usuários</span>
-                            </a>
-                        </li>
+                            <?php if (auth_can('crm', 'view')): ?><li><a href="<?= url('crm') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'crm' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">CRM</span></a></li><?php endif; ?>
+                            <?php if (auth_can('dashboard', 'view')): ?><li><a href="<?= url('dashboard') ?>" class="text-base text-white font-normal rounded-lg flex items-center p-2 hover:bg-gray-600 group <?= $currentPage === 'dashboard' ? 'bg-gray-600' : '' ?>"><span class="ml-3">Dashboard</span></a></li><?php endif; ?>
+                            <?php if (auth_can('estabelecimentos', 'view')): ?><li><a href="<?= url('estabelecimentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'estabelecimentos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Estabelecimentos</span></a></li><?php endif; ?>
+                            <?php if (auth_can('representantes', 'view')): ?><li><a href="<?= url('representantes') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'representantes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Representantes</span></a></li><?php endif; ?>
+                            <?php if (auth_can('usuarios', 'view')): ?><li><a href="<?= url('usuarios') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'usuarios' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Usuários</span></a></li><?php endif; ?>
+                            <?php if (auth_can('chamados', 'view')): ?><li><a href="<?= url('chamados') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'chamados' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Chamados</span></a></li><?php endif; ?>
+                            <?php if (auth_can('material', 'view')): ?><li><a href="<?= url('material') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'material' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Material de Apoio</span></a></li><?php endif; ?>
+                            <?php if (auth_can('segmentos', 'view')): ?><li><a href="<?= url('segmentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'segmentos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Segmentos</span></a></li><?php endif; ?>
+                            <?php if (auth_can('produtos_dinamicos', 'view')): ?><li><a href="<?= url('produtos-dinamicos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'produtos-dinamicos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Produtos Dinâmicos</span></a></li><?php endif; ?>
+                            <?php if (auth_can('campos_dinamicos', 'view')): ?><li><a href="<?= url('campos-dinamicos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'campos-dinamicos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Campos Dinâmicos</span></a></li><?php endif; ?>
+                            <?php if (auth_can('billing', 'view')): ?><li><a href="<?= url('billing') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'billing' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Faturamento</span></a></li><?php endif; ?>
+                            <?php if (auth_can('agenda', 'view')): ?><li><a href="<?= url('agenda') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= ($currentPage ?? '') === 'agenda' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Agenda</span></a></li><?php endif; ?>
+                            <?php if (auth_can('whatsapp', 'view')): ?><li><a href="<?= url('whatsapp/attendance') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= in_array($currentPage ?? '', ['whatsapp', 'whatsapp-attendance']) ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">WhatsApp</span></a></li><?php endif; ?>
+                            <?php if (auth_can('whatsapp_instances', 'view')): ?><li><a href="<?= url('whatsapp/instances') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'whatsapp-instances' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Instâncias WhatsApp</span></a></li><?php endif; ?>
+                            <?php if (auth_can('email_marketing', 'view')): ?><li><a href="<?= url('email-marketing') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'email-marketing' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">E-mail Marketing</span></a></li><?php endif; ?>
+                            <?php if (auth_can('email_settings', 'view')): ?><li><a href="<?= url('email-settings') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'configuracoes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Configurações Email</span></a></li><?php endif; ?>
+                            <?php if (auth_can('sistpay_settings', 'view')): ?><li><a href="<?= url('sistpay-settings') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'configuracoes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">API SistPay</span></a></li><?php endif; ?>
                         <?php else: ?>
-                        <li>
-                            <a href="<?= url('estabelecimentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'clientes' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-6a1 1 0 00-1-1H9a1 1 0 00-1 1v6a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Meus Clientes</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('estabelecimentos/create') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'novo-cliente' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Novo Cliente</span>
-                            </a>
-                        </li>
+                            <li><a href="<?= url('estabelecimentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'clientes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Meus Clientes</span></a></li>
+                            <li><a href="<?= url('estabelecimentos/create') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'novo-cliente' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Novo Cliente</span></a></li>
+                            <li><a href="<?= url('chamados') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'chamados' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Chamados</span></a></li>
+                            <li><a href="<?= url('material') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'material' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Material de Apoio</span></a></li>
                         <?php endif; ?>
-                        
-                        <li>
-                            <a href="<?= url('chamados') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'chamados' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-2 0c0 .993-.241 1.929-.668 2.754l-1.524-1.525a3.997 3.997 0 00.078-2.183l1.562-1.562C15.802 8.249 16 9.1 16 10zm-5.165 3.913l1.58 1.58A5.98 5.98 0 0110 16a5.976 5.976 0 01-2.516-.552l1.562-1.562a4.006 4.006 0 001.789.027zm-4.677-2.796a4.002 4.002 0 01-.041-2.08l-.08.08-1.53-1.533A5.98 5.98 0 004 10c0 .954.223 1.856.619 2.657l1.54-1.54zm1.088-6.45A5.974 5.974 0 0110 4c.954 0 1.856.223 2.657.619l-1.54 1.54a4.002 4.002 0 00-2.346.033L7.246 4.668zM12 10a2 2 0 11-4 0 2 2 0 014 0z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Chamados</span>
-                            </a>
-                        </li>
-                        
-                        <li>
-                            <a href="<?= url('material') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'material' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Material de Apoio</span>
-                            </a>
-                        </li>
-                        
-                        <?php if (App\Core\Auth::isAdmin()): ?>
-                        <li>
-                            <a href="<?= url('segmentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'segmentos' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Segmentos</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('produtos-dinamicos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'produtos-dinamicos' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M11 17a1 1 0 01-1 1H6a2 2 0 01-2-2V6a2 2 0 012-2h4a1 1 0 110 2H6v10h4a1 1 0 011 1zm4.707-9.707a1 1 0 00-1.414-1.414L11 9.172V8a1 1 0 10-2 0v4a1 1 0 001 1h4a1 1 0 100-2h-1.172l2.879-2.879z"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Produtos Dinâmicos</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('campos-dinamicos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'campos-dinamicos' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h2a1 1 0 010 2H5v2a1 1 0 11-2 0V5zm10-2a1 1 0 100 2h2v2a1 1 0 102 0V5a2 2 0 00-2-2h-2zM5 13a1 1 0 10-2 0v2a2 2 0 002 2h2a1 1 0 100-2H5v-2zm12 0a1 1 0 10-2 0v2h-2a1 1 0 100 2h2a2 2 0 002-2v-2zM8 8a1 1 0 000 2h4a1 1 0 100-2H8zm-1 4a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Campos Dinâmicos</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('billing') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'billing' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a1 1 0 100-2 1 1 0 000 2zm0 2a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Faturamento</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('agenda') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= ($currentPage ?? '') === 'agenda' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Agenda</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('whatsapp/attendance') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= in_array($currentPage ?? '', ['whatsapp', 'whatsapp-attendance']) ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.386 1.262.617 1.694.789.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">WhatsApp</span>
-                            </a>
-                        </li>
-                        <?php if (App\Core\Auth::isAdmin()): ?>
-                        <li>
-                            <a href="<?= url('whatsapp/instances') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'whatsapp-instances' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Instâncias WhatsApp</span>
-                            </a>
-                        </li>
-                        <?php endif; ?>
-                        <li>
-                            <a href="<?= url('email-marketing') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'email-marketing' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
-                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">E-mail Marketing</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('email-settings') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'configuracoes' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
-                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">Configurações Email</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?= url('sistpay-settings') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'configuracoes' ? 'bg-gray-600' : '' ?>">
-                                <svg class="w-6 h-6 text-white flex-shrink-0 group-hover:text-white transition duration-75" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="ml-3 flex-1 whitespace-nowrap">API SistPay</span>
-                            </a>
-                        </li>
-                        <?php endif; ?>
-                        
                     </ul>
                 </div>
             </div>

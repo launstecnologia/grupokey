@@ -114,6 +114,42 @@ ob_start();
                     </div>
                 </div>
             </div>
+
+            <div class="mb-8">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-user-shield mr-2 text-blue-600"></i>
+                    Perfil de Permissões
+                </h4>
+                <?php $currentPermissions = $_POST['module_permissions'] ?? ($user['module_permissions'] ?? []); ?>
+                <div class="overflow-x-auto border border-gray-200 rounded-md">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-600">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-gray-700">Menu/Módulo</th>
+                                <?php foreach (($permissionActions ?? []) as $actionKey => $actionLabel): ?>
+                                    <th class="px-3 py-2 text-center text-gray-700"><?= htmlspecialchars($actionLabel) ?></th>
+                                <?php endforeach; ?>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach (($permissionModules ?? []) as $moduleKey => $moduleLabel): ?>
+                                <tr class="border-t border-gray-200">
+                                    <td class="px-3 py-2 font-medium text-gray-900"><?= htmlspecialchars($moduleLabel) ?></td>
+                                    <?php foreach (($permissionActions ?? []) as $actionKey => $actionLabel): ?>
+                                        <td class="px-3 py-2 text-center">
+                                            <input type="checkbox"
+                                                   name="module_permissions[<?= htmlspecialchars($moduleKey) ?>][<?= htmlspecialchars($actionKey) ?>]"
+                                                   value="1"
+                                                   <?= !empty($currentPermissions[$moduleKey][$actionKey]) ? 'checked' : '' ?>>
+                                        </td>
+                                    <?php endforeach; ?>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-2 text-sm text-gray-500">Menus e ações serão liberados conforme os checks marcados.</p>
+            </div>
             
             <!-- Acesso ao Sistema -->
             <div class="mb-8">

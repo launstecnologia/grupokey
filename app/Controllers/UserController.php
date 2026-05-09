@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Auth;
+use App\Core\Permission;
 use App\Models\User;
 use App\Core\Mailer;
 
@@ -42,7 +43,9 @@ class UserController
         
         $data = [
             'title' => 'Novo Usuário',
-            'currentPage' => 'usuarios'
+            'currentPage' => 'usuarios',
+            'permissionModules' => Permission::modules(),
+            'permissionActions' => Permission::actionLabels()
         ];
         
         view('users/create', $data);
@@ -123,7 +126,9 @@ class UserController
         $data = [
             'title' => 'Editar Usuário',
             'currentPage' => 'usuarios',
-            'user' => $user
+            'user' => $user,
+            'permissionModules' => Permission::modules(),
+            'permissionActions' => Permission::actionLabels()
         ];
         
         view('users/edit', $data);
@@ -177,7 +182,8 @@ class UserController
             $data = [
                 'name' => $name,
                 'email' => $email,
-                'status' => $status
+                'status' => $status,
+                'module_permissions' => $this->extractModulePermissions()
             ];
             
             if (!empty($password)) {
@@ -487,7 +493,8 @@ class UserController
         $data = [
             'name' => $name,
             'email' => $email,
-            'status' => sanitize_input($_POST['status'] ?? 'ACTIVE')
+            'status' => sanitize_input($_POST['status'] ?? 'ACTIVE'),
+            'module_permissions' => $this->extractModulePermissions()
         ];
         
         // Adicionar senha apenas se fornecida
@@ -496,5 +503,15 @@ class UserController
         }
         
         return $data;
+    }
+
+    private function extractModulePermissions(): array
+    {
+        $rawPermissions = $_POST['module_permissions'] ?? [];
+        if (!is_array($rawPermissions)) {
+            $rawPermissions = [];
+        }
+
+        return Permission::normalizePostedPermissions($rawPermissions);
     }
 }
