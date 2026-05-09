@@ -718,9 +718,9 @@
                         <a href="<?= url('dashboard') ?>" class="flex items-center justify-center">
                             <?php $logoUrl = url('public/images/logo-key-login-navbar.png'); ?>
                             <!-- Logo para modo claro -->
-                            <img id="logoLight" src="<?= $logoUrl ?>" class="h-32 w-auto" alt="GRUPO Key Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <img id="logoLight" src="<?= $logoUrl ?>" class="h-20 w-full max-w-[210px] object-contain" alt="GRUPO Key Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                             <!-- Logo para modo escuro -->
-                            <img id="logoDark" src="<?= $logoUrl ?>" class="h-32 w-auto hidden" alt="GRUPO Key Logo" onerror="this.style.display='none';"> 
+                            <img id="logoDark" src="<?= $logoUrl ?>" class="h-20 w-full max-w-[210px] object-contain hidden" alt="GRUPO Key Logo" onerror="this.style.display='none';"> 
                         </a>
                     </div>
                     <ul class="space-y-2 pb-2">
