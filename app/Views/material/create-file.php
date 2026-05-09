@@ -55,27 +55,14 @@ ob_start();
                             <div class="form-text">Seja claro e objetivo no título</div>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <label for="category_id" class="form-label fw-semibold">Categoria <span class="text-danger">*</span></label>
-                            <select class="form-select shadow-sm" id="category_id" name="category_id" required>
-                                <option value="">Selecione uma categoria</option>
-                                <?php foreach ($categories as $category): ?>
-                                <option value="<?= $category['id'] ?>" 
-                                        <?= ($_POST['category_id'] ?? '') == $category['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($category['name']) ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="subcategory_id" class="form-label fw-semibold">Subcategoria</label>
-                            <select class="form-select shadow-sm" id="subcategory_id" name="subcategory_id">
-                                <option value="">Selecione uma subcategoria (opcional)</option>
-                                <?php foreach ($subcategories as $subcategory): ?>
-                                <option value="<?= $subcategory['id'] ?>" 
-                                        <?= ($_POST['subcategory_id'] ?? '') == $subcategory['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($subcategory['name']) ?>
+                        <div class="col-md-12 mb-3">
+                            <label for="product" class="form-label fw-semibold">Produto <span class="text-danger">*</span></label>
+                            <select class="form-select shadow-sm" id="product" name="product" required>
+                                <option value="">Selecione um produto</option>
+                                <?php foreach (($productOptions ?? []) as $productValue => $productLabel): ?>
+                                <option value="<?= htmlspecialchars($productValue) ?>" 
+                                        <?= ($_POST['product'] ?? '') === $productValue ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($productLabel) ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
@@ -139,7 +126,7 @@ ob_start();
                 <h6 class="text-primary">Dicas:</h6>
                 <ul class="list-unstyled">
                     <li><i class="fas fa-check text-success me-2"></i> Use títulos descritivos</li>
-                    <li><i class="fas fa-check text-success me-2"></i> Organize por categorias</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Relacione ao produto correto</li>
                     <li><i class="fas fa-check text-success me-2"></i> Adicione descrições úteis</li>
                     <li><i class="fas fa-check text-success me-2"></i> Verifique o tamanho do arquivo</li>
                 </ul>
@@ -152,22 +139,6 @@ ob_start();
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Atualizar subcategorias quando categoria mudar
-    const categorySelect = document.getElementById('category_id');
-    const subcategorySelect = document.getElementById('subcategory_id');
-    
-    categorySelect.addEventListener('change', function() {
-        const categoryId = this.value;
-        
-        // Limpar subcategorias
-        subcategorySelect.innerHTML = '<option value="">Selecione uma subcategoria (opcional)</option>';
-        
-        if (categoryId) {
-            // Aqui você poderia fazer uma requisição AJAX para carregar subcategorias
-            // Por enquanto, vamos manter todas as subcategorias visíveis
-        }
-    });
-    
     // Validar arquivo antes do envio
     const fileInput = document.getElementById('file');
     const form = document.querySelector('form');

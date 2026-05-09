@@ -7,6 +7,7 @@ use App\Core\Database;
 class Material
 {
     private $db;
+    private const PRODUCT_MARKER = '__PRODUCT_KEY__:';
 
     public function __construct()
     {
@@ -170,14 +171,14 @@ class Material
         
         $params = [];
         
-        if (!empty($filters['category_id'])) {
-            $sql .= " AND f.category_id = ?";
-            $params[] = $filters['category_id'];
-        }
-        
-        if (!empty($filters['subcategory_id'])) {
-            $sql .= " AND f.subcategory_id = ?";
-            $params[] = $filters['subcategory_id'];
+        if (!empty($filters['product'])) {
+            $categoryId = $this->getCategoryIdByProductKey($filters['product']);
+            if ($categoryId !== null) {
+                $sql .= " AND f.category_id = ?";
+                $params[] = $categoryId;
+            } else {
+                $sql .= " AND 1 = 0";
+            }
         }
         
         if (!empty($filters['search'])) {
@@ -206,13 +207,14 @@ class Material
     public function createFile($data)
     {
         $id = uniqid();
+        $categoryId = $this->resolveCategoryIdFromProductKey($data['product_key'] ?? '');
         $sql = "INSERT INTO material_files (id, category_id, subcategory_id, title, description, filename, original_filename, file_path, file_size, file_type, mime_type, uploaded_by) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $params = [
             $id,
-            $data['category_id'],
-            $data['subcategory_id'] ?? null,
+            $categoryId,
+            null,
             $data['title'],
             $data['description'] ?? null,
             $data['filename'],
@@ -230,13 +232,14 @@ class Material
 
     public function updateFile($id, $data)
     {
+        $categoryId = $this->resolveCategoryIdFromProductKey($data['product_key'] ?? '');
         $sql = "UPDATE material_files 
                 SET category_id = ?, subcategory_id = ?, title = ?, description = ?, updated_at = NOW() 
                 WHERE id = ?";
         
         $params = [
-            $data['category_id'],
-            $data['subcategory_id'] ?? null,
+            $categoryId,
+            null,
             $data['title'],
             $data['description'] ?? null,
             $id
@@ -279,28 +282,122 @@ class Material
         $result = $this->db->fetch("SELECT COUNT(*) as total FROM material_files WHERE is_active = 1");
         $stats['total_files'] = $result['total'];
         
-        // Total de categorias
-        $result = $this->db->fetch("SELECT COUNT(*) as total FROM material_categories WHERE is_active = 1");
+        // Total de produtos (mapeados como categorias)
+        $result = $this->db->fetch("SELECT COUNT(*) as total FROM material_categories WHERE is_active = 1 AND description LIKE ?", [self::PRODUCT_MARKER . '%']);
         $stats['total_categories'] = $result['total'];
         
-        // Total de subcategorias
-        $result = $this->db->fetch("SELECT COUNT(*) as total FROM material_subcategories WHERE is_active = 1");
-        $stats['total_subcategories'] = $result['total'];
+        $stats['total_subcategories'] = 0;
         
         // Total de downloads
         $result = $this->db->fetch("SELECT SUM(download_count) as total FROM material_files WHERE is_active = 1");
         $stats['total_downloads'] = $result['total'] ?? 0;
         
-        // Arquivos por categoria
+        // Arquivos por produto
         $stats['files_by_category'] = $this->db->fetchAll("
             SELECT c.name, COUNT(f.id) as count 
             FROM material_categories c
             LEFT JOIN material_files f ON c.id = f.category_id AND f.is_active = 1
-            WHERE c.is_active = 1
+            WHERE c.is_active = 1 AND c.description LIKE ?
             GROUP BY c.id, c.name
             ORDER BY count DESC
-        ");
+        ", [self::PRODUCT_MARKER . '%']);
         
         return $stats;
+    }
+
+    public function getProductOptions(): array
+    {
+        $options = [
+            'PAGSEGURO' => 'PagSeguro',
+        ];
+
+        try {
+            $dynamicProducts = $this->db->fetchAll(
+                "SELECT slug, name
+                 FROM dynamic_products
+                 WHERE is_active = 1
+                 ORDER BY name ASC"
+            );
+
+            foreach ($dynamicProducts as $product) {
+                $slug = strtoupper(trim((string) ($product['slug'] ?? '')));
+                $name = trim((string) ($product['name'] ?? ''));
+                if ($slug === '' || $name === '') {
+                    continue;
+                }
+                $options[$slug] = $name;
+            }
+        } catch (\Throwable $e) {
+            // Fallback silencioso quando tabela de produtos dinâmicos não existir no ambiente.
+        }
+
+        return $options;
+    }
+
+    public function getProductKeyByCategoryId($categoryId): string
+    {
+        if (empty($categoryId)) {
+            return '';
+        }
+
+        $category = $this->getCategoryById($categoryId);
+        if (!$category) {
+            return '';
+        }
+
+        $description = (string) ($category['description'] ?? '');
+        if (strpos($description, self::PRODUCT_MARKER) === 0) {
+            return strtoupper(trim(substr($description, strlen(self::PRODUCT_MARKER))));
+        }
+
+        return strtoupper(trim((string) ($category['name'] ?? '')));
+    }
+
+    private function getCategoryIdByProductKey(string $productKey): ?string
+    {
+        $productKey = strtoupper(trim($productKey));
+        if ($productKey === '') {
+            return null;
+        }
+
+        $marker = self::PRODUCT_MARKER . $productKey;
+        $row = $this->db->fetch(
+            "SELECT id FROM material_categories WHERE is_active = 1 AND description = ? LIMIT 1",
+            [$marker]
+        );
+
+        return $row['id'] ?? null;
+    }
+
+    private function resolveCategoryIdFromProductKey(string $productKey): string
+    {
+        $productKey = strtoupper(trim($productKey));
+        if ($productKey === '') {
+            throw new \InvalidArgumentException('Produto é obrigatório.');
+        }
+
+        $existingId = $this->getCategoryIdByProductKey($productKey);
+        if ($existingId !== null) {
+            return (string) $existingId;
+        }
+
+        $options = $this->getProductOptions();
+        $name = $options[$productKey] ?? $productKey;
+        $newId = uniqid();
+
+        $this->db->query(
+            "INSERT INTO material_categories (id, name, description, icon, color, sort_order, is_active, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())",
+            [
+                $newId,
+                $name,
+                self::PRODUCT_MARKER . $productKey,
+                'fas fa-box',
+                '#2563eb',
+                0,
+            ]
+        );
+
+        return $newId;
     }
 }

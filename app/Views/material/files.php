@@ -5,9 +5,8 @@ ob_start();
 
 // Definir variáveis com valores padrão para evitar warnings
 $files = $files ?? [];
-$categories = $categories ?? [];
-$subcategories = $subcategories ?? [];
-$filters = $filters ?? ['search' => '', 'category_id' => '', 'subcategory_id' => ''];
+$productOptions = $productOptions ?? [];
+$filters = $filters ?? ['search' => '', 'product' => ''];
 ?>
 
 <div class="container-fluid">
@@ -46,26 +45,13 @@ $filters = $filters ?? ['search' => '', 'category_id' => '', 'subcategory_id' =>
             </div>
             
             <div class="col-md-3">
-                <label for="category_id" class="form-label fw-semibold">Categoria</label>
-                <select class="form-select shadow-sm" id="category_id" name="category_id">
-                    <option value="">Todas as categorias</option>
-                    <?php foreach ($categories as $category): ?>
-                    <option value="<?= $category['id'] ?>" 
-                            <?= $filters['category_id'] == $category['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($category['name']) ?>
-                    </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <div class="col-md-3">
-                <label for="subcategory_id" class="form-label fw-semibold">Subcategoria</label>
-                <select class="form-select shadow-sm" id="subcategory_id" name="subcategory_id">
-                    <option value="">Todas as subcategorias</option>
-                    <?php foreach ($subcategories as $subcategory): ?>
-                    <option value="<?= $subcategory['id'] ?>" 
-                            <?= $filters['subcategory_id'] == $subcategory['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($subcategory['name']) ?>
+                <label for="product" class="form-label fw-semibold">Produto</label>
+                <select class="form-select shadow-sm" id="product" name="product">
+                    <option value="">Todos os produtos</option>
+                    <?php foreach ($productOptions as $productValue => $productLabel): ?>
+                    <option value="<?= htmlspecialchars($productValue) ?>" 
+                            <?= ($filters['product'] ?? '') === $productValue ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($productLabel) ?>
                     </option>
                     <?php endforeach; ?>
                 </select>
@@ -102,7 +88,7 @@ $filters = $filters ?? ['search' => '', 'category_id' => '', 'subcategory_id' =>
             <i class="fas fa-file-alt fa-3x text-gray-300 mb-3"></i>
             <h5 class="text-gray-600">Nenhum arquivo encontrado</h5>
             <p class="text-muted">
-                <?php if (!empty($filters['search']) || !empty($filters['category_id']) || !empty($filters['subcategory_id'])): ?>
+                <?php if (!empty($filters['search']) || !empty($filters['product'])): ?>
                     Tente ajustar os filtros para encontrar o que procura.
                 <?php else: ?>
                     <a href="<?= url('material/files/create') ?>" class="btn btn-primary">
@@ -118,7 +104,7 @@ $filters = $filters ?? ['search' => '', 'category_id' => '', 'subcategory_id' =>
                 <thead class="table-light">
                     <tr>
                         <th>Título</th>
-                        <th>Categoria</th>
+                        <th>Produto</th>
                         <th>Arquivo</th>
                         <th>Tamanho</th>
                         <th>Downloads</th>
@@ -141,10 +127,6 @@ $filters = $filters ?? ['search' => '', 'category_id' => '', 'subcategory_id' =>
                         </td>
                         <td>
                             <span class="badge bg-info"><?= htmlspecialchars($file['category_name'] ?? 'Sem categoria') ?></span>
-                            <?php if (!empty($file['subcategory_name'])): ?>
-                            <br>
-                            <small class="text-muted"><?= htmlspecialchars($file['subcategory_name']) ?></small>
-                            <?php endif; ?>
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
@@ -209,25 +191,13 @@ $filters = $filters ?? ['search' => '', 'category_id' => '', 'subcategory_id' =>
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-6 mb-2">
                         <a href="<?= url('material') ?>" class="btn btn-outline-primary w-100 shadow-sm">
                             <i class="fas fa-eye me-2"></i>
                             Visualizar Material
                         </a>
                     </div>
-                    <div class="col-md-3 mb-2">
-                        <a href="<?= url('material/categories') ?>" class="btn btn-outline-info w-100 shadow-sm">
-                            <i class="fas fa-folder me-2"></i>
-                            Categorias
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <a href="<?= url('material/subcategories') ?>" class="btn btn-outline-success w-100 shadow-sm">
-                            <i class="fas fa-tags me-2"></i>
-                            Subcategorias
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-6 mb-2">
                         <a href="<?= url('material/files/create') ?>" class="btn btn-outline-warning w-100 shadow-sm">
                             <i class="fas fa-plus me-2"></i>
                             Novo Arquivo

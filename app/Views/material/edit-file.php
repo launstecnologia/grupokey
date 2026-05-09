@@ -57,27 +57,14 @@ ob_start();
                             <div class="form-text">Seja claro e objetivo no título</div>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <label for="category_id" class="form-label fw-semibold">Categoria <span class="text-danger">*</span></label>
-                            <select class="form-select shadow-sm" id="category_id" name="category_id" required>
-                                <option value="">Selecione uma categoria</option>
-                                <?php foreach ($categories as $category): ?>
-                                <option value="<?= $category['id'] ?>" 
-                                        <?= ($_POST['category_id'] ?? $file['category_id']) == $category['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($category['name']) ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="subcategory_id" class="form-label fw-semibold">Subcategoria</label>
-                            <select class="form-select shadow-sm" id="subcategory_id" name="subcategory_id">
-                                <option value="">Selecione uma subcategoria (opcional)</option>
-                                <?php foreach ($subcategories as $subcategory): ?>
-                                <option value="<?= $subcategory['id'] ?>" 
-                                        <?= ($_POST['subcategory_id'] ?? $file['subcategory_id']) == $subcategory['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($subcategory['name']) ?>
+                        <div class="col-md-12 mb-3">
+                            <label for="product" class="form-label fw-semibold">Produto <span class="text-danger">*</span></label>
+                            <select class="form-select shadow-sm" id="product" name="product" required>
+                                <option value="">Selecione um produto</option>
+                                <?php foreach (($productOptions ?? []) as $productValue => $productLabel): ?>
+                                <option value="<?= htmlspecialchars($productValue) ?>" 
+                                        <?= ($_POST['product'] ?? ($selectedProduct ?? '')) === $productValue ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($productLabel) ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
@@ -118,10 +105,7 @@ ob_start();
                 <h6 class="text-primary">Arquivo Atual:</h6>
                 <ul class="list-unstyled">
                     <li><strong>Título:</strong> <?= htmlspecialchars($file['title']) ?></li>
-                    <li><strong>Categoria:</strong> <?= htmlspecialchars($file['category_name']) ?></li>
-                    <?php if ($file['subcategory_name']): ?>
-                    <li><strong>Subcategoria:</strong> <?= htmlspecialchars($file['subcategory_name']) ?></li>
-                    <?php endif; ?>
+                    <li><strong>Produto:</strong> <?= htmlspecialchars($file['category_name']) ?></li>
                     <li><strong>Arquivo:</strong> <?= htmlspecialchars($file['original_filename']) ?></li>
                     <li><strong>Tipo:</strong> <?= strtoupper($file['file_type']) ?></li>
                     <li><strong>Tamanho:</strong> <?= format_file_size($file['file_size']) ?></li>
@@ -145,26 +129,6 @@ ob_start();
 </div>
 
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Atualizar subcategorias quando categoria mudar
-    const categorySelect = document.getElementById('category_id');
-    const subcategorySelect = document.getElementById('subcategory_id');
-    
-    categorySelect.addEventListener('change', function() {
-        const categoryId = this.value;
-        
-        // Limpar subcategorias
-        subcategorySelect.innerHTML = '<option value="">Selecione uma subcategoria (opcional)</option>';
-        
-        if (categoryId) {
-            // Aqui você poderia fazer uma requisição AJAX para carregar subcategorias
-            // Por enquanto, vamos manter todas as subcategorias visíveis
-        }
-    });
-});
-</script>
 
 <?php
 $content = ob_get_clean();

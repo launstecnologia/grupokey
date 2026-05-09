@@ -6,7 +6,7 @@ ob_start();
 // Definir variáveis com valores padrão para evitar warnings
 $stats = $stats ?? ['total_files' => 0, 'total_categories' => 0, 'total_downloads' => 0, 'total_subcategories' => 0];
 $files = $files ?? [];
-$categories = $categories ?? [];
+$productOptions = $productOptions ?? [];
 $filters = $filters ?? [];
 ?>
 
@@ -22,77 +22,6 @@ $filters = $filters ?? [];
         </div>
     </div>
 
-    <!-- Estatísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-        <!-- Total de Arquivos -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
-                        <i class="fas fa-file-alt text-blue-600"></i>
-                    </div>
-                </div>
-                <div class="ml-4 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Total de Arquivos</dt>
-                        <dd class="text-lg font-medium text-gray-900"><?= number_format($stats['total_files']) ?></dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Categorias -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
-                        <i class="fas fa-folder text-green-600"></i>
-                    </div>
-                </div>
-                <div class="ml-4 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Categorias</dt>
-                        <dd class="text-lg font-medium text-gray-900"><?= number_format($stats['total_categories']) ?></dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Downloads -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-cyan-100 rounded-md flex items-center justify-center">
-                        <i class="fas fa-download text-cyan-600"></i>
-                    </div>
-                </div>
-                <div class="ml-4 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Downloads</dt>
-                        <dd class="text-lg font-medium text-gray-900"><?= number_format($stats['total_downloads']) ?></dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Subcategorias -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
-                        <i class="fas fa-tags text-yellow-600"></i>
-                    </div>
-                </div>
-                <div class="ml-4 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Subcategorias</dt>
-                        <dd class="text-lg font-medium text-gray-900"><?= number_format($stats['total_subcategories']) ?></dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Filtros -->
     <div class="bg-white rounded-lg shadow mb-6 p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Filtros</h3>
@@ -103,15 +32,15 @@ $filters = $filters ?? [];
                 <input type="text" name="search" value="<?= htmlspecialchars($filters['search'] ?? '') ?>" placeholder="Título ou descrição..." class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             </div>
 
-            <!-- Categoria -->
+            <!-- Produto -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                <select name="category_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Todas as categorias</option>
-                    <?php foreach ($categories as $category): ?>
-                    <option value="<?= $category['id'] ?>" 
-                            <?= ($filters['category_id'] ?? '') == $category['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($category['name']) ?>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Produto</label>
+                <select name="product" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Todos os produtos</option>
+                    <?php foreach ($productOptions as $productValue => $productLabel): ?>
+                    <option value="<?= htmlspecialchars($productValue) ?>" 
+                            <?= ($filters['product'] ?? '') === $productValue ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($productLabel) ?>
                     </option>
                     <?php endforeach; ?>
                 </select>
@@ -146,7 +75,7 @@ $filters = $filters ?? [];
                 <i class="fas fa-file-alt text-6xl text-gray-300 mb-4"></i>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum arquivo encontrado</h3>
                 <p class="text-gray-500 mb-6">
-                    <?php if (!empty($filters['search']) || !empty($filters['category_id'])): ?>
+                    <?php if (!empty($filters['search']) || !empty($filters['product'])): ?>
                         Tente ajustar os filtros para encontrar o que procura.
                     <?php else: ?>
                         Ainda não há arquivos disponíveis no material de apoio.
@@ -172,11 +101,6 @@ $filters = $filters ?? [];
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-600 text-white">
                                     <?= htmlspecialchars($file['category_name']) ?>
                                 </span>
-                                <?php if ($file['subcategory_name']): ?>
-                                <span class="text-xs text-gray-500">
-                                    <?= htmlspecialchars($file['subcategory_name']) ?>
-                                </span>
-                                <?php endif; ?>
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-600 text-white">
                                     <?= strtoupper($file['file_type']) ?>
                                 </span>
@@ -215,15 +139,7 @@ $filters = $filters ?? [];
                 <i class="fas fa-cog mr-2"></i>
                 Administração
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <a href="<?= url('material/categories') ?>" class="bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-md text-center transition-colors">
-                    <i class="fas fa-folder mb-2 block text-xl"></i>
-                    <span class="text-sm font-medium">Categorias</span>
-                </a>
-                <a href="<?= url('material/subcategories') ?>" class="bg-white border border-cyan-600 text-cyan-600 hover:bg-cyan-50 px-4 py-3 rounded-md text-center transition-colors">
-                    <i class="fas fa-tags mb-2 block text-xl"></i>
-                    <span class="text-sm font-medium">Subcategorias</span>
-                </a>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <a href="<?= url('material/files') ?>" class="bg-white border border-green-600 text-green-600 hover:bg-green-50 px-4 py-3 rounded-md text-center transition-colors">
                     <i class="fas fa-file-alt mb-2 block text-xl"></i>
                     <span class="text-sm font-medium">Arquivos</span>

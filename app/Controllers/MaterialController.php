@@ -24,14 +24,14 @@ class MaterialController
         
         $filters = $this->getFilters();
         $files = $this->materialModel->getAllFiles($filters);
-        $categories = $this->materialModel->getAllCategories();
+        $productOptions = $this->materialModel->getProductOptions();
         $stats = $this->materialModel->getStats();
         
         $data = [
             'title' => 'Material de Apoio',
             'currentPage' => 'material',
             'files' => $files,
-            'categories' => $categories,
+            'productOptions' => $productOptions,
             'stats' => $stats,
             'filters' => $filters
         ];
@@ -327,15 +327,13 @@ class MaterialController
         
         $filters = $this->getFilters();
         $files = $this->materialModel->getAllFiles($filters);
-        $categories = $this->materialModel->getAllCategories();
-        $subcategories = $this->materialModel->getAllSubcategories();
+        $productOptions = $this->materialModel->getProductOptions();
         
         $data = [
             'title' => 'Arquivos - Material de Apoio',
             'currentPage' => 'material',
             'files' => $files,
-            'categories' => $categories,
-            'subcategories' => $subcategories,
+            'productOptions' => $productOptions,
             'filters' => $filters
         ];
         
@@ -346,14 +344,12 @@ class MaterialController
     {
         Auth::requireAdmin();
         
-        $categories = $this->materialModel->getAllCategories();
-        $subcategories = $this->materialModel->getAllSubcategories();
+        $productOptions = $this->materialModel->getProductOptions();
         
         $data = [
             'title' => 'Novo Arquivo',
             'currentPage' => 'material',
-            'categories' => $categories,
-            'subcategories' => $subcategories
+            'productOptions' => $productOptions
         ];
         
         view('material/create-file', $data);
@@ -390,15 +386,15 @@ class MaterialController
             redirect(url('material/files'));
         }
         
-        $categories = $this->materialModel->getAllCategories();
-        $subcategories = $this->materialModel->getAllSubcategories();
+        $productOptions = $this->materialModel->getProductOptions();
+        $selectedProduct = $this->materialModel->getProductKeyByCategoryId($file['category_id'] ?? '');
         
         $data = [
             'title' => 'Editar Arquivo',
             'currentPage' => 'material',
             'file' => $file,
-            'categories' => $categories,
-            'subcategories' => $subcategories
+            'productOptions' => $productOptions,
+            'selectedProduct' => $selectedProduct
         ];
         
         view('material/edit-file', $data);
@@ -460,8 +456,7 @@ class MaterialController
     {
         return [
             'search' => $_GET['search'] ?? '',
-            'category_id' => $_GET['category_id'] ?? '',
-            'subcategory_id' => $_GET['subcategory_id'] ?? ''
+            'product' => strtoupper(trim($_GET['product'] ?? ''))
         ];
     }
 
@@ -497,9 +492,14 @@ class MaterialController
     {
         $errors = [];
         
-        $categoryId = trim($_POST['category_id'] ?? '');
-        if (empty($categoryId)) {
-            $errors[] = 'Categoria é obrigatória';
+        $productKey = strtoupper(trim($_POST['product'] ?? ''));
+        if (empty($productKey)) {
+            $errors[] = 'Produto é obrigatório';
+        } else {
+            $validProducts = array_keys($this->materialModel->getProductOptions());
+            if (!in_array($productKey, $validProducts, true)) {
+                $errors[] = 'Produto inválido';
+            }
         }
         
         $name = trim($_POST['name'] ?? '');
@@ -526,6 +526,7 @@ class MaterialController
     private function validateAndSanitizeFileInput()
     {
         $errors = [];
+        $isUpdate = strtoupper($_POST['_method'] ?? '') === 'PUT';
         
         $categoryId = trim($_POST['category_id'] ?? '');
         if (empty($categoryId)) {
@@ -538,75 +539,83 @@ class MaterialController
         }
         
         $description = trim($_POST['description'] ?? '');
-        $subcategoryId = trim($_POST['subcategory_id'] ?? '');
-        
-        // Verificar upload de arquivo
-        if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-            $errors[] = 'Arquivo é obrigatório';
-        } else {
-            $file = $_FILES['file'];
-            
-            // Validar tipo de arquivo
-            $allowedTypes = [
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-powerpoint',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                'text/plain',
-                'image/jpeg',
-                'image/png',
-                'image/gif',
-                'video/mp4',
-                'video/avi',
-                'application/zip',
-                'application/x-rar-compressed'
-            ];
-            
-            if (!in_array($file['type'], $allowedTypes)) {
-                $errors[] = 'Tipo de arquivo não permitido';
-            }
-            
-            // Validar tamanho (máximo 50MB)
-            if ($file['size'] > 50 * 1024 * 1024) {
-                $errors[] = 'Arquivo muito grande (máximo 50MB)';
+        $fileData = [];
+
+        // Verificar upload de arquivo apenas na criação
+        if (!$isUpdate) {
+            if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+                $errors[] = 'Arquivo é obrigatório';
+            } else {
+                $file = $_FILES['file'];
+                
+                // Validar tipo de arquivo
+                $allowedTypes = [
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/vnd.ms-powerpoint',
+                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    'text/plain',
+                    'image/jpeg',
+                    'image/png',
+                    'image/gif',
+                    'video/mp4',
+                    'video/avi',
+                    'application/zip',
+                    'application/x-rar-compressed'
+                ];
+                
+                if (!in_array($file['type'], $allowedTypes)) {
+                    $errors[] = 'Tipo de arquivo não permitido';
+                }
+                
+                // Validar tamanho (máximo 50MB)
+                if ($file['size'] > 50 * 1024 * 1024) {
+                    $errors[] = 'Arquivo muito grande (máximo 50MB)';
+                }
             }
         }
-        
+
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             return [];
         }
-        
-        // Processar upload
-        $uploadDir = 'storage/uploads/material/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+
+        if (!$isUpdate) {
+            $file = $_FILES['file'];
+
+            // Processar upload
+            $uploadDir = 'storage/uploads/material/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            
+            $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = uniqid() . '.' . $fileExtension;
+            $filePath = $uploadDir . $filename;
+            
+            if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+                $_SESSION['error'] = 'Erro ao fazer upload do arquivo';
+                return [];
+            }
+
+            $fileData = [
+                'filename' => $filename,
+                'original_filename' => $file['name'],
+                'file_path' => $filePath,
+                'file_size' => $file['size'],
+                'file_type' => $fileExtension,
+                'mime_type' => $file['type'],
+                'uploaded_by' => Auth::user()['id'],
+            ];
         }
         
-        $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $filename = uniqid() . '.' . $fileExtension;
-        $filePath = $uploadDir . $filename;
-        
-        if (!move_uploaded_file($file['tmp_name'], $filePath)) {
-            $_SESSION['error'] = 'Erro ao fazer upload do arquivo';
-            return [];
-        }
-        
-        return [
-            'category_id' => $categoryId,
-            'subcategory_id' => $subcategoryId ?: null,
+        return array_merge([
+            'product_key' => $productKey,
             'title' => $title,
-            'description' => $description,
-            'filename' => $filename,
-            'original_filename' => $file['name'],
-            'file_path' => $filePath,
-            'file_size' => $file['size'],
-            'file_type' => $fileExtension,
-            'mime_type' => $file['type'],
-            'uploaded_by' => Auth::user()['id']
-        ];
+            'description' => $description
+        ], $fileData);
     }
 }
