@@ -562,6 +562,35 @@ class EstablishmentController
         readfile($document['file_path']);
         exit;
     }
+
+    public function deleteDocument($id, $documentId)
+    {
+        Auth::requireAdmin();
+
+        $establishment = $this->establishmentModel->findById($id);
+        if (!$establishment) {
+            $_SESSION['error'] = 'Estabelecimento não encontrado';
+            redirect(url('estabelecimentos'));
+        }
+
+        $document = $this->establishmentModel->getDocumentById($documentId, $id);
+        if (!$document) {
+            $_SESSION['error'] = 'Documento não encontrado';
+            redirect(url('estabelecimentos/' . $id));
+        }
+
+        try {
+            $this->establishmentModel->deleteDocumentById($documentId, $id);
+            if (!empty($document['file_path']) && file_exists($document['file_path'])) {
+                @unlink($document['file_path']);
+            }
+            $_SESSION['success'] = 'Documento excluído com sucesso!';
+        } catch (\Throwable $e) {
+            $_SESSION['error'] = 'Erro ao excluir documento: ' . $e->getMessage();
+        }
+
+        redirect(url('estabelecimentos/' . $id));
+    }
     
     private function getFilters()
     {

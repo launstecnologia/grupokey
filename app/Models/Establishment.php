@@ -938,6 +938,12 @@ class Establishment
         $sql = "SELECT * FROM documents WHERE id = ? AND establishment_id = ?";
         return $this->db->fetch($sql, [$documentId, $establishmentId]);
     }
+
+    public function deleteDocumentById($documentId, $establishmentId)
+    {
+        $sql = "DELETE FROM documents WHERE id = ? AND establishment_id = ?";
+        return $this->db->query($sql, [$documentId, $establishmentId]);
+    }
     
     /**
      * Atualiza o sistpay_id do estabelecimento

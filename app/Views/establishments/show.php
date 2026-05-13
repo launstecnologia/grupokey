@@ -280,10 +280,20 @@ $statusLabels = [
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"><?= $fileSize ?> KB</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download') ?>" 
-                                               class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
-                                                <i class="fas fa-download mr-1"></i> Baixar
-                                            </a>
+                                            <div class="flex items-center gap-3">
+                                                <a href="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download') ?>" 
+                                                   class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
+                                                    <i class="fas fa-download mr-1"></i> Baixar
+                                                </a>
+                                                <?php if (\App\Core\Auth::isAdmin()): ?>
+                                                <form method="POST" action="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id']) ?>" class="inline" onsubmit="return confirm('Deseja excluir este documento?');">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                                                        <i class="fas fa-trash mr-1"></i> Excluir
+                                                    </button>
+                                                </form>
+                                                <?php endif; ?>
+                                            </div>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
