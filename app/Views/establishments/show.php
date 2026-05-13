@@ -296,66 +296,6 @@ $statusLabels = [
                 </div>
             </div>
 
-            <!-- Dados Bancários -->
-            <?php
-            // Verificar se tem PagSeguro selecionado
-            $hasPagSeguro = false;
-            if (isset($productData['other']) && is_array($productData['other'])) {
-                foreach ($productData['other'] as $product) {
-                    if (($product['product_type'] ?? $product['product_name'] ?? '') === 'prod-pagbank') {
-                        $hasPagSeguro = true;
-                        break;
-                    }
-                }
-            }
-            // Só mostrar dados bancários se NÃO tiver PagSeguro
-            if (!$hasPagSeguro):
-            ?>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-                        <i class="fas fa-university mr-2 text-blue-600 dark:text-blue-400"></i>
-                        Dados Bancários
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Banco</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['banco'] ?? '-') ?></dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Agência</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['agencia'] ?? '-') ?></dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Conta</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark-white"><?= htmlspecialchars($establishment['conta'] ?? '-') ?></dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipo de Conta</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                                <?php
-                                $tipoConta = $establishment['tipo_conta'] ?? '';
-                                if ($tipoConta === 'conta_corrente') {
-                                    echo 'Conta Corrente';
-                                } elseif ($tipoConta === 'conta_poupanca') {
-                                    echo 'Conta Poupança';
-                                } else {
-                                    echo '-';
-                                }
-                                ?>
-                            </dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Chave PIX</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['chave_pix'] ?? '-') ?></dd>
-                        </div>
-                    </dl>
-                </div>
-            </div>
-            <?php endif; ?>
-
             <!-- Observações -->
             <?php if (!empty($establishment['observacoes'])): ?>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
