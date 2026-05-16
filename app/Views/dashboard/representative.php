@@ -43,7 +43,7 @@ $pending_modal = $pending_modal ?? null;
 
     <?php if (!empty($banners)): ?>
     <div class="mb-6 bg-white shadow rounded-lg p-4">
-        <div id="rep-banner-slider" class="relative overflow-hidden rounded-lg bg-black">
+        <div id="rep-banner-slider" class="relative overflow-hidden rounded-lg bg-black h-[800px]">
             <?php foreach ($banners as $index => $banner): ?>
                 <?php
                     $imageSrc = !empty($banner['image_path'])
@@ -53,11 +53,13 @@ $pending_modal = $pending_modal ?? null;
                     $slideLink = $banner['resolved_link'] ?? null;
                     $slideTarget = !empty($banner['target_blank']) ? '_blank' : '_self';
                 ?>
-                <div class="rep-banner-slide transition-opacity duration-500 <?= $index === 0 ? 'block' : 'hidden' ?>" data-duration-ms="<?= $slideSeconds * 1000 ?>">
+                <div class="rep-banner-slide transition-opacity duration-500 <?= $index === 0 ? 'block' : 'hidden' ?> h-full" data-duration-ms="<?= $slideSeconds * 1000 ?>">
                     <?php if (!empty($slideLink)): ?>
-                        <a href="<?= htmlspecialchars((string) $slideLink) ?>" target="<?= $slideTarget ?>" class="block">
+                        <a href="<?= htmlspecialchars((string) $slideLink) ?>" target="<?= $slideTarget ?>" class="block h-full">
                     <?php endif; ?>
-                    <img src="<?= htmlspecialchars($imageSrc) ?>" alt="<?= htmlspecialchars((string) ($banner['title'] ?? 'Banner')) ?>" class="w-full h-auto object-contain">
+                    <div class="w-full h-full flex items-center justify-center bg-black">
+                        <img src="<?= htmlspecialchars($imageSrc) ?>" alt="<?= htmlspecialchars((string) ($banner['title'] ?? 'Banner')) ?>" class="max-w-full max-h-full object-contain">
+                    </div>
                     <?php if (!empty($banner['title']) || !empty($banner['subtitle'])): ?>
                     <div class="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                         <?php if (!empty($banner['title'])): ?><h4 class="text-white text-lg font-bold"><?= htmlspecialchars((string) $banner['title']) ?></h4><?php endif; ?>
@@ -69,6 +71,15 @@ $pending_modal = $pending_modal ?? null;
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
+
+            <?php if (count($banners) > 1): ?>
+            <button type="button" id="rep-banner-prev" class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center" aria-label="Banner anterior">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button type="button" id="rep-banner-next" class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center" aria-label="Próximo banner">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <?php endif; ?>
         </div>
         <?php if (count($banners) > 1): ?>
         <div id="rep-banner-dots" class="flex justify-center gap-2 mt-3">
@@ -138,6 +149,8 @@ $pending_modal = $pending_modal ?? null;
     const slides = Array.from(slider.querySelectorAll('.rep-banner-slide'));
     if (slides.length <= 1) return;
     const dots = Array.from(document.querySelectorAll('.rep-banner-dot'));
+    const prevBtn = document.getElementById('rep-banner-prev');
+    const nextBtn = document.getElementById('rep-banner-next');
     let active = 0;
     let timer = null;
 
@@ -172,6 +185,22 @@ $pending_modal = $pending_modal ?? null;
             queueNext();
         });
     });
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            const next = (active - 1 + slides.length) % slides.length;
+            setActive(next);
+            queueNext();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const next = (active + 1) % slides.length;
+            setActive(next);
+            queueNext();
+        });
+    }
 
     queueNext();
 })();
