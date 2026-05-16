@@ -657,7 +657,12 @@ class Establishment
             'contrato_social_requerimento' => 'CONTRATO_SOCIAL',
             'documento_foto_frente' => 'DOCUMENTO_FOTO_FRENTE',
             'documento_foto_verso' => 'DOCUMENTO_FOTO_VERSO',
+            'documento_socio_titular_frente' => 'DOCUMENTO_FOTO_FRENTE',
+            'documento_socio_titular_verso' => 'DOCUMENTO_FOTO_VERSO',
             'comprovante_residencia' => 'COMPROVANTE_RESIDENCIA',
+            'comprovante_bancario' => 'COMPROVANTE_BANCARIO',
+            'comprovante_endereco_comercial' => 'COMPROVANTE_ENDERECO',
+            'comprovante_endereco' => 'COMPROVANTE_ENDERECO',
             'fotos' => 'FOTO_FACHADA',
             'outros_documentos' => 'OUTROS_DOCUMENTOS',
             // Compatibilidade com tipos antigos
