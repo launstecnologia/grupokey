@@ -34,8 +34,10 @@ ob_start();
                 Dados do Representante
             </h3>
         </div>
-        <form method="POST" action="<?= url('representantes/' . $representative['id']) ?>" class="p-6">
+        <form method="POST" action="<?= url('representantes/' . $representative['id']) ?>" class="p-6" autocomplete="off">
             <?= csrf_field() ?>
+            <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
+            <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
             <input type="hidden" name="_method" value="PUT">
             <input type="hidden" name="original_nome_completo" value="<?= htmlspecialchars($representative['nome_completo']) ?>">
             <input type="hidden" name="original_email" value="<?= htmlspecialchars($representative['email']) ?>">
@@ -144,6 +146,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
                         <input type="text" name="nome_completo" required 
                                value="<?= htmlspecialchars($oldInput['nome_completo'] ?? $representative['nome_completo']) ?>"
+                               autocomplete="off"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome completo">
                     </div>
@@ -152,6 +155,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
                         <input type="text" readonly
                                value="<?= htmlspecialchars($representative['cpf']) ?>"
+                               autocomplete="off"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="000.000.000-00">
                         <p class="mt-1 text-xs text-gray-500">CPF não pode ser alterado</p>
@@ -161,6 +165,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                         <input type="email" name="email" required 
                                value="<?= htmlspecialchars($oldInput['email'] ?? $representative['email']) ?>"
+                               autocomplete="new-email" autocapitalize="off" spellcheck="false"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
@@ -169,6 +174,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Telefone *</label>
                         <input type="text" name="telefone" required 
                                value="<?= htmlspecialchars($oldInput['telefone'] ?? $representative['telefone']) ?>"
+                               autocomplete="off"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="(11) 99999-9999">
                     </div>
@@ -188,6 +194,7 @@ ob_start();
                         <div class="flex gap-2">
                             <input type="text" name="cep" id="cep" required 
                                    value="<?= htmlspecialchars($oldInput['cep'] ?? $representative['cep']) ?>"
+                                   autocomplete="postal-code"
                                    class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="00000-000">
                             <button type="button" id="btn-buscar-cep" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -201,6 +208,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Logradouro *</label>
                         <input type="text" name="logradouro" required 
                                value="<?= htmlspecialchars($oldInput['logradouro'] ?? $representative['logradouro']) ?>"
+                               autocomplete="address-line1"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nome da rua/avenida">
                     </div>
@@ -209,6 +217,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Número *</label>
                         <input type="text" name="numero" required 
                                value="<?= htmlspecialchars($oldInput['numero'] ?? $representative['numero']) ?>"
+                               autocomplete="off"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="123">
                     </div>
@@ -217,6 +226,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
                         <input type="text" name="complemento" 
                                value="<?= htmlspecialchars($oldInput['complemento'] ?? $representative['complemento']) ?>"
+                               autocomplete="address-line2"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Apto, sala, etc.">
                     </div>
@@ -225,6 +235,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Bairro *</label>
                         <input type="text" name="bairro" required 
                                value="<?= htmlspecialchars($oldInput['bairro'] ?? $representative['bairro']) ?>"
+                               autocomplete="off"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nome do bairro">
                     </div>
@@ -233,6 +244,7 @@ ob_start();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Cidade *</label>
                         <input type="text" name="cidade" required 
                                value="<?= htmlspecialchars($oldInput['cidade'] ?? $representative['cidade']) ?>"
+                               autocomplete="address-level2"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nome da cidade">
                     </div>
@@ -240,6 +252,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">UF *</label>
                         <select name="uf" required 
+                                autocomplete="address-level1"
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Selecione</option>
                             <option value="AC" <?= ($oldInput['uf'] ?? $representative['uf']) === 'AC' ? 'selected' : '' ?>>AC</option>
