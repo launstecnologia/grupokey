@@ -90,21 +90,21 @@ $statusLabels = [
                         <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-sm mr-2 mt-0.5"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="text-xs font-semibold text-red-800 dark:text-red-200 mb-1.5">
+                        <h4 class="text-xs font-semibold text-red-800 dark:text-red-100 mb-1.5">
                             Motivo da Reprovação
                         </h4>
                         <div class="bg-white dark:!bg-black rounded-md p-2 border border-red-100 dark:border-gray-800">
-                            <p class="text-xs text-red-700 dark:text-red-300 leading-relaxed whitespace-pre-wrap">
+                            <p class="text-xs text-red-700 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
                                 <?= htmlspecialchars($reprovalReason) ?>
                             </p>
                         </div>
                         <?php if (!empty($reprovalObservation)): ?>
                         <div class="mt-2 pt-2 border-t border-red-200 dark:border-gray-800">
-                            <h5 class="text-xs font-medium text-red-700 dark:text-red-300 mb-1">
+                            <h5 class="text-xs font-medium text-red-700 dark:text-red-200 mb-1">
                                 Observação:
                             </h5>
                             <div class="bg-white dark:!bg-black rounded-md p-2 border border-red-100 dark:border-gray-800">
-                                <p class="text-xs text-red-600 dark:text-red-400 leading-relaxed whitespace-pre-wrap">
+                                <p class="text-xs text-red-600 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                                     <?= htmlspecialchars($reprovalObservation) ?>
                                 </p>
                             </div>
@@ -789,15 +789,7 @@ document.addEventListener('keydown', function(e) {
     border-color: #1f2937 !important;
 }
 
-.dark .reproval-card > div > div > div {
-    background-color: #000000 !important;
-}
-
 .dark .reproval-card .bg-white {
-    background-color: #000000 !important;
-}
-
-.dark .reproval-card div[class*="bg-white"] {
     background-color: #000000 !important;
 }
 </style>

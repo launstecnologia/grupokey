@@ -68,7 +68,7 @@ class RepresentativeController
         $options = [
             [
                 'value' => 'PAGBANK',
-                'label' => 'PagSeguro',
+                'label' => 'PAGSEGURO',
                 'slug' => 'pagseguro'
             ]
         ];

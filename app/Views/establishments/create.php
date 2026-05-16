@@ -78,33 +78,25 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
             </h3>
         </div>
 
-        <form method="POST" action="<?= url('estabelecimentos') ?>" enctype="multipart/form-data" class="p-6">
+        <form method="POST" action="<?= url('estabelecimentos') ?>" enctype="multipart/form-data" class="p-6" autocomplete="off">
             <?= csrf_field() ?>
+            <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
+            <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
             
             <!-- Tipo de Registro -->
             <div class="mb-8" id="registration-type-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-id-card mr-2 text-blue-600"></i>
-                    Tipo de Registro
+                    Tipo de Registro *
                 </h4>
                 <small id="registration-type-product-help" class="text-gray-500 hidden mb-3 block">Pessoa Física disponível apenas quando o produto PagSeguro estiver selecionado.</small>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label class="relative flex cursor-pointer" id="registration-type-option-pf">
-                        <input type="radio" name="registration_type" id="registration-type-pf" value="PF" class="sr-only peer" required <?= old('registration_type') === 'PF' ? 'checked' : '' ?>>
-                        <div class="w-full p-4 border-2 border-gray-300 rounded-lg transition-all duration-200 peer-checked:border-blue-600 peer-checked:bg-blue-600 hover:border-blue-400">
-                            <div class="flex items-center justify-center">
-                                <div class="text-sm font-medium text-gray-900 peer-checked:text-white transition-colors">Pessoa Física</div>
-                            </div>
-                        </div>
-                    </label>
-                    <label class="relative flex cursor-pointer" id="registration-type-option-pj">
-                        <input type="radio" name="registration_type" id="registration-type-pj" value="PJ" class="sr-only peer" required <?= old('registration_type') === 'PJ' ? 'checked' : '' ?>>
-                        <div class="w-full p-4 border-2 border-gray-300 rounded-lg transition-all duration-200 peer-checked:border-blue-600 peer-checked:bg-blue-600 hover:border-blue-400">
-                            <div class="flex items-center justify-center">
-                                <div class="text-sm font-medium text-gray-900 peer-checked:text-white transition-colors">Pessoa Jurídica</div>
-                            </div>
-                        </div>
-                    </label>
+                <div class="max-w-xl">
+                    <select name="registration_type" id="registration-type-select" required
+                            class="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Selecione o tipo de registro</option>
+                        <option value="PF" <?= old('registration_type') === 'PF' ? 'selected' : '' ?>>Pessoa Física</option>
+                        <option value="PJ" <?= old('registration_type') === 'PJ' ? 'selected' : '' ?>>Pessoa Jurídica</option>
+                    </select>
                 </div>
             </div>
 
@@ -172,6 +164,7 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                         <input type="email" name="email" value="<?= htmlspecialchars(old('email')) ?>" required 
+                               autocomplete="new-email" autocapitalize="off" spellcheck="false"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
@@ -447,7 +440,7 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
                         // Verificar se deve substituir o nome
                         $displayName = $productName;
                         if (($product['id'] ?? '') === 'prod-pagbank') {
-                            $displayName = 'PagSeguro';
+                            $displayName = 'PAGSEGURO';
                         }
                         if (isset($productNameMap[$productName])) {
                             $displayName = $productNameMap[$productName];
@@ -935,11 +928,8 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Mostrar/ocultar campos específicos por tipo de registro
-    const registrationTypeInputs = document.querySelectorAll('input[name="registration_type"]');
+    const registrationTypeSelect = document.getElementById('registration-type-select');
     const registrationTypeSection = document.getElementById('registration-type-section');
-    const pfOption = document.getElementById('registration-type-option-pf');
-    const pfInput = document.getElementById('registration-type-pf');
-    const pjInput = document.getElementById('registration-type-pj');
     const registrationProductHelp = document.getElementById('registration-type-product-help');
     const pagSeguroCpfField = document.getElementById('pj-pagseguro-cpf-field');
     const pagSeguroBirthField = document.getElementById('pj-pagseguro-birth-field');
@@ -966,29 +956,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function syncPagSeguroRegistrationRules() {
-        const selectedType = document.querySelector('input[name="registration_type"]:checked');
-        const isPj = selectedType && selectedType.value === 'PJ';
+        const selectedTypeValue = registrationTypeSelect ? registrationTypeSelect.value : '';
+        const isPj = selectedTypeValue === 'PJ';
         const pagSeguroSelected = isPagSeguroSelected();
         const cpfPj = document.querySelector('input[name="cpf_pj"]');
         const dataNasc = document.querySelector('input[name="data_nascimento"]');
 
-        if (pfOption) {
-            pfOption.classList.toggle('hidden', !pagSeguroSelected);
-        }
         if (registrationProductHelp) {
             registrationProductHelp.classList.toggle('hidden', pagSeguroSelected);
         }
-        if (pfInput) {
-            if (pagSeguroSelected) {
-                pfInput.removeAttribute('disabled');
-            } else {
-                pfInput.setAttribute('disabled', 'disabled');
+        if (registrationTypeSelect) {
+            const pfSelectOption = registrationTypeSelect.querySelector('option[value="PF"]');
+            if (pfSelectOption) {
+                pfSelectOption.disabled = !pagSeguroSelected;
             }
         }
 
-        if (!pagSeguroSelected && selectedType && selectedType.value === 'PF' && pjInput) {
-            pjInput.checked = true;
+        if (!pagSeguroSelected && selectedTypeValue === 'PF' && registrationTypeSelect) {
+            registrationTypeSelect.value = 'PJ';
             updateRegistrationVisibility();
+            return;
         }
 
         if (pagSeguroCpfField) {
@@ -1015,13 +1002,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateRegistrationVisibility() {
-        const selectedType = document.querySelector('input[name="registration_type"]:checked');
-        if (!selectedType) {
+        const selectedTypeValue = registrationTypeSelect ? registrationTypeSelect.value : '';
+        if (!selectedTypeValue) {
             syncPagSeguroRegistrationRules();
             return;
         }
 
-        if (selectedType.value === 'PF') {
+        if (selectedTypeValue === 'PF') {
             pfFields.classList.remove('hidden');
             pjFields.classList.add('hidden');
             if (btnBuscarCep) {
@@ -1043,12 +1030,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         syncPagSeguroRegistrationRules();
     }
-    
-    registrationTypeInputs.forEach(input => {
-        input.addEventListener('change', function() {
+
+    if (registrationTypeSelect) {
+        registrationTypeSelect.addEventListener('change', function() {
             updateRegistrationVisibility();
         });
-    });
+    }
     
     updateRegistrationVisibility();
     
@@ -1594,10 +1581,10 @@ if ($registrationType): ?>
 document.addEventListener('DOMContentLoaded', function() {
     const registrationType = '<?= htmlspecialchars($registrationType) ?>';
     if (registrationType) {
-        const radio = document.querySelector(`input[name="registration_type"][value="${registrationType}"]`);
-        if (radio) {
-            radio.checked = true;
-            radio.dispatchEvent(new Event('change'));
+        const select = document.getElementById('registration-type-select');
+        if (select) {
+            select.value = registrationType;
+            select.dispatchEvent(new Event('change'));
         }
     }
 });

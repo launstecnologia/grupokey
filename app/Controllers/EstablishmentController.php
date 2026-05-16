@@ -1544,7 +1544,7 @@ class EstablishmentController
     private function getAvailableProducts()
     {
         $products = [
-            'PAGBANK' => 'PagSeguro',
+            'PAGBANK' => 'PAGSEGURO',
         ];
         
         // Se for representante, filtrar apenas produtos permitidos
@@ -1622,7 +1622,7 @@ class EstablishmentController
         $options = [
             [
                 'value' => 'manual:pagseguro',
-                'label' => 'PagSeguro',
+                'label' => 'PAGSEGURO',
             ],
         ];
 

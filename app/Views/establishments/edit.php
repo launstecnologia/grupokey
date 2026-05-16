@@ -165,8 +165,10 @@ function isProductSelected($productId, $productData) {
             </h3>
         </div>
 
-        <form method="POST" action="<?= url('estabelecimentos/' . ($establishment['id'] ?? '')) ?>" enctype="multipart/form-data" class="p-6">
+        <form method="POST" action="<?= url('estabelecimentos/' . ($establishment['id'] ?? '')) ?>" enctype="multipart/form-data" class="p-6" autocomplete="off">
             <?= csrf_field() ?>
+            <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
+            <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
             <input type="hidden" name="_method" value="PUT">
             
             <!-- Tipo de Registro -->
@@ -251,6 +253,7 @@ function isProductSelected($productId, $productData) {
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                         <input type="email" name="email" required 
                                value="<?= htmlspecialchars($establishment['email'] ?? '') ?>"
+                               autocomplete="new-email" autocapitalize="off" spellcheck="false"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
@@ -574,7 +577,7 @@ function isProductSelected($productId, $productData) {
                         // Verificar se deve substituir o nome
                         $displayName = $productName;
                         if (($product['id'] ?? '') === 'prod-pagbank') {
-                            $displayName = 'PagSeguro';
+                            $displayName = 'PAGSEGURO';
                         }
                         if (isset($productNameMap[$productName])) {
                             $displayName = $productNameMap[$productName];
