@@ -92,29 +92,29 @@ $readMap = $readMap ?? [];
                 </p>
             </div>
         <?php else: ?>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 <?php foreach ($files as $file): ?>
                 <?php $isImage = stripos((string) ($file['mime_type'] ?? ''), 'image/') === 0; ?>
-                <div class="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-all duration-200">
                     <?php if ($isImage): ?>
                     <a href="<?= url('material/preview/' . $file['id']) ?>" target="_blank" title="Ver imagem">
-                        <img src="<?= url('material/preview/' . $file['id']) ?>" alt="Miniatura" class="w-full h-48 object-cover">
+                        <img src="<?= url('material/preview/' . $file['id']) ?>" alt="Miniatura" class="w-full aspect-square object-cover">
                     </a>
                     <?php else: ?>
-                    <div class="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
+                    <div class="w-full aspect-square bg-gray-100 flex items-center justify-center text-gray-500">
                         <i class="fas fa-file-alt text-4xl"></i>
                     </div>
                     <?php endif; ?>
 
                     <div class="p-4">
-                        <h3 class="text-base font-semibold text-gray-900 mb-2"><?= htmlspecialchars($file['title']) ?></h3>
+                        <h3 class="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]"><?= htmlspecialchars($file['title']) ?></h3>
                         <?php if ($file['description']): ?>
-                        <p class="text-sm text-gray-600 mb-3">
+                        <p class="text-xs text-gray-600 mb-3 line-clamp-2 min-h-[2rem]">
                             <?= htmlspecialchars(substr($file['description'], 0, 90)) ?><?= strlen($file['description']) > 90 ? '...' : '' ?>
                         </p>
                         <?php endif; ?>
 
-                        <div class="flex flex-wrap gap-2 mb-4">
+                        <div class="flex flex-wrap gap-1.5 mb-4">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-600 text-white"><?= htmlspecialchars($file['category_name']) ?></span>
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-600 text-white"><?= strtoupper($file['file_type']) ?></span>
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-600 text-white"><i class="fas fa-download mr-1"></i><?= number_format($file['download_count']) ?></span>
@@ -122,20 +122,20 @@ $readMap = $readMap ?? [];
                         </div>
 
                         <?php if (Auth::isRepresentative()): ?>
-                        <a href="<?= url('material/download/' . $file['id']) ?>" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md inline-flex items-center justify-center" title="Download">
+                        <a href="<?= url('material/download/' . $file['id']) ?>" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center font-medium" title="Download">
                             <i class="fas fa-download mr-2"></i>Download
                         </a>
                         <?php else: ?>
-                        <div class="flex items-center gap-2">
-                            <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center" title="Download">
+                        <div class="grid grid-cols-3 gap-2">
+                            <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center" title="Download">
                                 <i class="fas fa-download"></i>
                             </a>
-                            <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center" title="Editar">
+                            <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <form method="POST" action="<?= url('material/files/' . $file['id']) ?>" onsubmit="return confirm('Deseja excluir este arquivo?');" class="inline">
                                 <input type="hidden" name="_method" value="DELETE">
-                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center" title="Excluir">
+                                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center" title="Excluir">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
