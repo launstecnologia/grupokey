@@ -90,24 +90,16 @@ $statusLabels = [
                         <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-sm mr-2 mt-0.5"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="text-xs font-semibold text-red-800 dark:text-red-100 mb-1.5">
+                        <h4 class="text-xs font-semibold text-red-800 dark:text-red-100 mb-1">
                             Motivo da Reprovação
                         </h4>
-                        <div class="rounded-md px-3 py-2 border border-red-200" style="background-color: #ffffff !important;">
-                            <p class="m-0 w-full text-sm font-bold text-red-600 leading-relaxed whitespace-pre-wrap text-left" style="text-align: left !important;">
-                                <?= htmlspecialchars($reprovalReason) ?>
-                            </p>
-                        </div>
+                        <p class="m-0 text-sm font-bold text-red-600 leading-relaxed whitespace-pre-wrap text-left" style="text-align: left !important;"><?= htmlspecialchars($reprovalReason) ?></p>
                         <?php if (!empty($reprovalObservation)): ?>
                         <div class="mt-2 pt-2 border-t border-red-200 dark:border-gray-800">
                             <h5 class="text-xs font-medium text-red-700 dark:text-red-200 mb-1">
                                 Observação:
                             </h5>
-                            <div class="rounded-md px-3 py-2 border border-red-200" style="background-color: #ffffff !important;">
-                                <p class="m-0 w-full text-sm font-semibold text-red-500 leading-relaxed whitespace-pre-wrap text-left" style="text-align: left !important;">
-                                    <?= htmlspecialchars($reprovalObservation) ?>
-                                </p>
-                            </div>
+                            <p class="m-0 text-sm font-semibold text-red-500 leading-relaxed whitespace-pre-wrap text-left" style="text-align: left !important;"><?= htmlspecialchars($reprovalObservation) ?></p>
                         </div>
                         <?php endif; ?>
                     </div>
