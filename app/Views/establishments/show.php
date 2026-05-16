@@ -17,6 +17,36 @@ if (!empty($establishment['products'])) {
 }
 $dynamicProductData = $establishment['dynamic_products'] ?? [];
 
+$formatCustomFieldValue = static function (string $value, string $fieldType, string $fieldKey, string $fieldLabel): string {
+    $digitsOnly = preg_replace('/\D+/', '', $value);
+    $normalizedType = strtolower(trim($fieldType));
+    $normalizedKey = strtolower(trim($fieldKey));
+    $normalizedLabel = strtolower(trim($fieldLabel));
+
+    $isCpfField = $normalizedType === 'cpf'
+        || strpos($normalizedKey, 'cpf') !== false
+        || strpos($normalizedLabel, 'cpf') !== false;
+    if ($isCpfField && strlen($digitsOnly) === 11) {
+        return preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $digitsOnly);
+    }
+
+    $isPhoneField = $normalizedType === 'phone'
+        || strpos($normalizedKey, 'telefone') !== false
+        || strpos($normalizedKey, 'celular') !== false
+        || strpos($normalizedLabel, 'telefone') !== false
+        || strpos($normalizedLabel, 'celular') !== false;
+    if ($isPhoneField) {
+        if (strlen($digitsOnly) === 11) {
+            return preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $digitsOnly);
+        }
+        if (strlen($digitsOnly) === 10) {
+            return preg_replace('/(\d{2})(\d{4})(\d{4})/', '($1) $2-$3', $digitsOnly);
+        }
+    }
+
+    return $value;
+};
+
 // Status badges
 $statusColors = [
     'PENDING' => 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
@@ -200,8 +230,15 @@ $statusLabels = [
                 }
 
                 $visibleCustomFields[] = [
+                    'type' => (string) ($customField['field_type'] ?? ''),
+                    'key' => $fieldKey,
                     'label' => (string) ($customField['label'] ?? $fieldKey),
-                    'value' => $value,
+                    'value' => $formatCustomFieldValue(
+                        $value,
+                        (string) ($customField['field_type'] ?? ''),
+                        $fieldKey,
+                        (string) ($customField['label'] ?? $fieldKey)
+                    ),
                 ];
             }
             ?>
