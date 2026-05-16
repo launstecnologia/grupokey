@@ -30,8 +30,10 @@ ob_start();
             </h3>
         </div>
 
-        <form method="POST" action="<?= url('usuarios') ?>" class="p-6">
+        <form method="POST" action="<?= url('usuarios') ?>" class="p-6" autocomplete="off">
             <?= csrf_field() ?>
+            <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
+            <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
             
             <!-- Mensagens de erro -->
             <?php if (isset($_SESSION['validation_errors'])): ?>
@@ -74,10 +76,14 @@ ob_start();
                     <!-- Email -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" name="email" required 
+                        <input type="email" id="email_display" required 
                                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                               autocomplete="off" autocapitalize="off" spellcheck="false"
+                               data-lpignore="true"
+                               data-1p-ignore="true"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
+                        <input type="hidden" name="email" id="email_hidden" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
                     </div>
                 </div>
             </div>
@@ -136,6 +142,7 @@ ob_start();
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Senha *</label>
                         <input type="password" name="password" required 
+                               autocomplete="new-password"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite a senha">
                         <p class="mt-1 text-sm text-gray-500">Mínimo de 6 caracteres</p>
@@ -235,7 +242,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Validação de email em tempo real
-    const emailInput = document.querySelector('input[name="email"]');
+    const emailInput = document.getElementById('email_display');
+    const emailHiddenInput = document.getElementById('email_hidden');
+    const createUserForm = document.querySelector('form[action="<?= url('usuarios') ?>"]');
+
+    if (emailInput && emailHiddenInput) {
+        // Evita autofill agressivo no campo visível para novo cadastro
+        const oldEmailFromPost = <?= json_encode((string)($_POST['email'] ?? '')) ?>;
+        if (!oldEmailFromPost) {
+            emailInput.value = '';
+            emailHiddenInput.value = '';
+        }
+
+        emailInput.addEventListener('input', function() {
+            emailHiddenInput.value = this.value.trim();
+        });
+    }
+
+    if (createUserForm && emailInput && emailHiddenInput) {
+        createUserForm.addEventListener('submit', function(e) {
+            const emailValue = emailInput.value.trim();
+            emailHiddenInput.value = emailValue;
+
+            if (!emailValue) {
+                e.preventDefault();
+                emailInput.focus();
+                alert('Informe um e-mail válido.');
+            }
+        });
+    }
+
     emailInput.addEventListener('blur', function() {
         const email = this.value;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
