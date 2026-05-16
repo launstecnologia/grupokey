@@ -59,10 +59,16 @@ if (isset($old['selected_representative_ids']) && is_array($old['selected_repres
                     <button type="button" data-editor-cmd="italic" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 italic">Itálico</button>
                     <button type="button" data-editor-cmd="underline" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 underline">Sublinhado</button>
                     <button type="button" data-editor-cmd="insertUnorderedList" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Lista</button>
+                    <select id="rep-modal-metadata-select" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-900">
+                        <option value="">Inserir metadado...</option>
+                        <option value="{nome_representante}">Nome do representante</option>
+                        <option value="{email_representante}">E-mail do representante</option>
+                        <option value="{data_atual}">Data atual</option>
+                    </select>
                 </div>
-                <div id="rep-modal-editor" contenteditable="true" class="w-full min-h-[140px] px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"><?= $initialMessageValue ?></div>
+                <div id="rep-modal-editor" contenteditable="true" class="w-full min-h-[140px] px-3 py-2 border border-gray-300 rounded-md bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"><?= $initialMessageValue ?></div>
                 <textarea id="rep-modal-message-input" name="message" rows="4" required class="hidden"></textarea>
-                <p class="text-xs text-gray-500 mt-1">Você pode formatar texto com negrito, itálico, sublinhado e lista.</p>
+                <p class="text-xs text-gray-500 mt-1">Use metadados como {nome_representante}, {email_representante} e {data_atual}.</p>
             </div>
 
             <div>
@@ -227,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewMessage = document.getElementById('rep-modal-preview-message');
     const editor = document.getElementById('rep-modal-editor');
     const messageInput = document.getElementById('rep-modal-message-input');
+    const metadataSelect = document.getElementById('rep-modal-metadata-select');
 
     function syncEditorToInput() {
         if (!editor || !messageInput) return;
@@ -245,6 +252,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (editor) {
         editor.addEventListener('input', syncEditorToInput);
+    }
+
+    function insertTextAtCursor(text) {
+        if (!editor || !text) return;
+        editor.focus();
+        document.execCommand('insertText', false, text);
+        syncEditorToInput();
+    }
+
+    if (metadataSelect) {
+        metadataSelect.addEventListener('change', function() {
+            if (this.value) {
+                insertTextAtCursor(this.value);
+                this.value = '';
+            }
+        });
     }
     syncEditorToInput();
 
@@ -304,7 +327,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         previewTitle.textContent = title || 'Sem título';
         previewTitle.classList.toggle('hidden', !title);
-        previewMessage.innerHTML = message || 'Sem texto informado.';
+        const previewResolved = message
+            .split('{nome_representante}').join('Nome do Representante')
+            .split('{email_representante}').join('representante@exemplo.com')
+            .split('{data_atual}').join(new Date().toLocaleDateString('pt-BR'));
+        previewMessage.innerHTML = previewResolved || 'Sem texto informado.';
 
         let src = '';
         if (imageMode === 'url' && imageUrl) {

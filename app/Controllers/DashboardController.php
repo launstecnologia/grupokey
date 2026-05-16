@@ -161,7 +161,10 @@ class DashboardController
             'pending_clients' => $pendingClients,
             'current_month_stats' => $currentMonthStats,
             'banners' => $this->resolveBannerLinks($this->bannerModel->getActiveForRepresentative()),
-            'pending_modal' => $this->resolveRepresentativeModalLink($this->representativeModalModel->getPendingForRepresentative((int) $representative['id']))
+            'pending_modal' => $this->resolveRepresentativeModalLink(
+                $this->representativeModalModel->getPendingForRepresentative((int) $representative['id']),
+                $representative
+            )
         ];
         
         view('dashboard/representative', $data);
@@ -198,7 +201,7 @@ class DashboardController
         return $resolved;
     }
 
-    private function resolveRepresentativeModalLink($modal)
+    private function resolveRepresentativeModalLink($modal, array $representative = [])
     {
         if (!$modal) {
             return null;
@@ -225,6 +228,24 @@ class DashboardController
 
         $modal['resolved_link'] = $link;
         $modal['target_blank'] = $targetBlank;
+        $modal['message'] = $this->resolveModalMetadata((string) ($modal['message'] ?? ''), $representative);
         return $modal;
+    }
+
+    private function resolveModalMetadata(string $message, array $representative): string
+    {
+        if ($message === '') {
+            return '';
+        }
+
+        $name = trim((string) ($representative['nome_completo'] ?? $representative['name'] ?? 'Representante'));
+        $email = trim((string) ($representative['email'] ?? ''));
+        $currentDate = date('d/m/Y');
+
+        return strtr($message, [
+            '{nome_representante}' => $name !== '' ? $name : 'Representante',
+            '{email_representante}' => $email,
+            '{data_atual}' => $currentDate,
+        ]);
     }
 }
