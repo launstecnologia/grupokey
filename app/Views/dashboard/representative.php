@@ -6,6 +6,7 @@ ob_start();
 $client_stats = $client_stats ?? ['total_clientes' => 0, 'aprovados' => 0, 'pendentes' => 0, 'reprovados' => 0];
 $current_month_stats = $current_month_stats ?? ['total' => 0, 'cadastros_ultimo_mes' => 0];
 $open_tickets = $open_tickets ?? 0;
+$monthly_evolution = $monthly_evolution ?? [];
 $banners = $banners ?? [];
 $pending_modal = $pending_modal ?? null;
 ?>
@@ -95,7 +96,7 @@ $pending_modal = $pending_modal ?? null;
     </div>
     <?php endif; ?>
 
-    <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         <a href="<?= url('estabelecimentos') ?>" title="Abrir lista de estabelecimentos" class="bg-white shadow rounded-lg p-5 block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
@@ -143,10 +144,81 @@ $pending_modal = $pending_modal ?? null;
                 </div>
             </div>
         </a>
+
+        <a href="<?= url('estabelecimentos') ?>?date_from=<?= date('Y-m-01') ?>" title="Abrir cadastros do mês" class="bg-white shadow rounded-lg p-5 block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Cadastro do mês</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-1"><?= (int) ($client_stats['cadastros_ultimo_mes'] ?? 0) ?></p>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center">
+                    <i class="fas fa-calendar-alt text-lg"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="mt-6 bg-white shadow rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-3">Evolução de Cadastros</h3>
+        <div class="h-64">
+            <canvas id="rep-evolution-chart"></canvas>
+        </div>
     </div>
 </div>
 
 <script>
+(function() {
+    const chartEl = document.getElementById('rep-evolution-chart');
+    if (!chartEl || typeof Chart === 'undefined') return;
+
+    const labels = <?= json_encode(array_map(static function($row) {
+        $mes = (string) ($row['mes'] ?? '');
+        if (!preg_match('/^\d{4}-\d{2}$/', $mes)) return $mes;
+        $dt = \DateTime::createFromFormat('Y-m', $mes);
+        return $dt ? $dt->format('M/Y') : $mes;
+    }, $monthly_evolution), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const values = <?= json_encode(array_map(static function($row) {
+        return (int) ($row['total'] ?? 0);
+    }, $monthly_evolution), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+
+    new Chart(chartEl.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Cadastros',
+                data: values,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                pointBackgroundColor: '#3b82f6',
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                borderWidth: 2,
+                tension: 0.35,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(148,163,184,0.15)' },
+                    ticks: { color: '#64748b' }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(148,163,184,0.15)' },
+                    ticks: { color: '#64748b', precision: 0 }
+                }
+            }
+        }
+    });
+})();
+
 (function() {
     const slider = document.getElementById('rep-banner-slider');
     if (!slider) return;

@@ -606,6 +606,20 @@ class Establishment
         
         return $this->db->fetchAll($sql, [$months]);
     }
+
+    public function getMonthlyEvolutionByRepresentative($representativeId, $months = 6)
+    {
+        $sql = "SELECT 
+                    DATE_FORMAT(created_at, '%Y-%m') as mes,
+                    COUNT(*) as total
+                FROM establishments
+                WHERE created_by_representative_id = ?
+                  AND created_at >= DATE_SUB(NOW(), INTERVAL ? MONTH)
+                GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+                ORDER BY mes ASC";
+
+        return $this->db->fetchAll($sql, [$representativeId, $months]);
+    }
     
     public function findByEmail($email)
     {

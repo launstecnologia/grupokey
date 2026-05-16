@@ -158,6 +158,7 @@ class DashboardController
         $ticketStats = $this->ticketModel->getStats([
             'representative_id' => $representative['id']
         ]);
+        $monthlyEvolution = $this->establishmentModel->getMonthlyEvolutionByRepresentative((int) $representative['id'], 6);
         
         $data = [
             'title' => 'Dashboard Representante',
@@ -167,6 +168,7 @@ class DashboardController
             'pending_clients' => $pendingClients,
             'current_month_stats' => $currentMonthStats,
             'open_tickets' => (int) ($ticketStats['abertos'] ?? 0),
+            'monthly_evolution' => $monthlyEvolution,
             'banners' => $this->resolveBannerLinks($this->bannerModel->getActiveForRepresentative()),
             'pending_modal' => $this->resolveRepresentativeModalLink(
                 $this->representativeModalModel->getPendingForRepresentative((int) $representative['id']),
