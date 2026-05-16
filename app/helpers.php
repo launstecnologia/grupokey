@@ -119,6 +119,31 @@ if (!function_exists('asset')) {
     }
 }
 
+if (!function_exists('absolute_url')) {
+    function absolute_url($path = '')
+    {
+        $path = ltrim((string) $path, '/');
+
+        // Prioridade: APP_URL configurada no config.env
+        $appUrl = trim((string) ($_ENV['APP_URL'] ?? ''));
+        if ($appUrl !== '') {
+            return rtrim($appUrl, '/') . ($path !== '' ? '/' . $path : '');
+        }
+
+        // Fallback para URL detectada automaticamente
+        $baseUrl = trim((string) (defined('URL') ? URL : ''));
+        if ($baseUrl !== '') {
+            return rtrim($baseUrl, '/') . ($path !== '' ? '/' . $path : '');
+        }
+
+        // Último fallback para contexto HTTP atual
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+        return rtrim($scheme . '://' . $host, '/') . ($path !== '' ? '/' . $path : '');
+    }
+}
+
 if (!function_exists('format_currency')) {
     function format_currency($value)
     {

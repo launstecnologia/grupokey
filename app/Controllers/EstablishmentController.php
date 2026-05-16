@@ -281,7 +281,7 @@ class EstablishmentController
             $establishmentName = $data['nome_fantasia'] ?? $data['nome_completo'] ?? 'Novo estabelecimento';
             $establishmentEmail = $data['email'] ?? '-';
             $establishmentPhone = $data['telefone'] ?? '-';
-            $detailsUrl = url('estabelecimentos/' . $establishmentId);
+            $detailsUrl = absolute_url('estabelecimentos/' . $establishmentId);
 
             $subject = 'Novo estabelecimento cadastrado por representante';
             $body = sprintf(

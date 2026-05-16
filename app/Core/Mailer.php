@@ -161,7 +161,7 @@ class Mailer
     
     public function sendPasswordReset($email, $name, $resetToken)
     {
-        $resetUrl = url("reset-password?token={$resetToken}");
+        $resetUrl = absolute_url("reset-password?token={$resetToken}");
         
         $subject = "Redefinição de Senha - Sistema CRM";
         $body = $this->getPasswordResetTemplate($name, $resetUrl);
@@ -171,7 +171,7 @@ class Mailer
     
     public function sendWelcomeUser($email, $name, $password)
     {
-        $loginUrl = url('login');
+        $loginUrl = absolute_url('login');
         
         $subject = "Bem-vindo ao Sistema CRM - Suas Credenciais";
         $body = $this->getWelcomeUserTemplate($name, $email, $password, $loginUrl);
@@ -181,7 +181,7 @@ class Mailer
     
     public function sendWelcomeRepresentative($email, $name, $password)
     {
-        $loginUrl = url('login');
+        $loginUrl = absolute_url('login');
         
         $subject = "Bem-vindo ao Sistema CRM - Suas Credenciais";
         $body = $this->getWelcomeTemplate($name, $email, $password, $loginUrl);
