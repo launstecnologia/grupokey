@@ -7,6 +7,8 @@ ob_start();
 $establishment = $establishment ?? [];
 $documents = $documents ?? [];
 $approvalHistory = $approvalHistory ?? [];
+$customFieldDefinitions = $custom_field_definitions ?? [];
+$customFieldValues = $custom_field_values ?? [];
 
 // Decodificar dados dos produtos se existirem
 $productData = [];
@@ -182,6 +184,47 @@ $statusLabels = [
                     </dl>
                 </div>
             </div>
+
+            <?php
+            $visibleCustomFields = [];
+            foreach ($customFieldDefinitions as $customField) {
+                $fieldKey = (string) ($customField['field_key'] ?? '');
+                if ($fieldKey === '') {
+                    continue;
+                }
+
+                $rawValue = $customFieldValues[$fieldKey] ?? '';
+                $value = is_string($rawValue) ? trim($rawValue) : (string) $rawValue;
+                if ($value === '') {
+                    continue;
+                }
+
+                $visibleCustomFields[] = [
+                    'label' => (string) ($customField['label'] ?? $fieldKey),
+                    'value' => $value,
+                ];
+            }
+            ?>
+            <?php if (!empty($visibleCustomFields)): ?>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                        <i class="fas fa-sliders-h mr-2 text-blue-600 dark:text-blue-400"></i>
+                        Campos Dinâmicos
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <?php foreach ($visibleCustomFields as $field): ?>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400"><?= htmlspecialchars($field['label']) ?></dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap"><?= htmlspecialchars($field['value']) ?></dd>
+                        </div>
+                        <?php endforeach; ?>
+                    </dl>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <!-- Endereço -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">

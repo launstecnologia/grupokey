@@ -350,6 +350,8 @@ class EstablishmentController
             'establishment' => $establishment,
             'documents' => $documents,
             'approvalHistory' => $approvalHistory,
+            'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
+            'custom_field_values' => $this->getSafeCustomFieldValues('establishment', (int) $id),
             'sistPayApiActive' => $sistPayApiActive,
             'sistPaySettings' => $sistPaySettings ?? []
         ];
