@@ -174,7 +174,7 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
             </div>
 
             <!-- Campos específicos por tipo -->
-            <div class="mb-8">
+            <div id="document-upload-section" class="mb-8 hidden">
                 <!-- Campos PF -->
                 <div id="pf-fields" class="hidden">
                     <div>
@@ -1538,6 +1538,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return Array.from(required);
     }
 
+    function hasAnySelectedProductsForDocuments() {
+        return document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked').length > 0;
+    }
+
     function renderDocumentTypeOptions(select, selectedCode, allowedCodes) {
         if (!select) {
             return;
@@ -1566,6 +1570,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function syncDocumentRowsWithSelectedProducts() {
+        if (documentUploadSection) {
+            documentUploadSection.classList.toggle('hidden', !hasAnySelectedProductsForDocuments());
+        }
+
         const requiredCodes = getRequiredDocumentCodesByProducts();
         if (!documentosContainer) {
             return;
@@ -1621,6 +1629,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gerenciar campos de documentos
     const adicionarDocumentoBtn = document.getElementById('adicionar-documento');
     const documentosContainer = document.getElementById('documentos-container');
+    const documentUploadSection = document.getElementById('document-upload-section');
     
     if (adicionarDocumentoBtn && documentosContainer) {
         adicionarDocumentoBtn.addEventListener('click', function() {

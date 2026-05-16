@@ -106,7 +106,8 @@ class DocumentTypeController
     {
         Auth::requireAdmin();
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        if (!in_array($method, ['POST', 'PUT'], true)) {
             redirect(url('tipos-documentos/' . $id . '/edit'));
         }
 
@@ -149,6 +150,10 @@ class DocumentTypeController
 
     private function buildPayload()
     {
+        if (isset($_SESSION['validation_errors'])) {
+            unset($_SESSION['validation_errors']);
+        }
+
         $errors = [];
 
         $code = strtoupper(trim((string) sanitize_input($_POST['code'] ?? '')));
