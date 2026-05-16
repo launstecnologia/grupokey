@@ -608,6 +608,8 @@ class EstablishmentController
         
         try {
             $this->establishmentModel->reprove($id, $reason, $observation);
+            $this->notifyRepresentativeAboutReprovedEstablishment($establishment, $reason);
+            $this->emailRepresentativeAboutReprovedEstablishment($establishment);
             $_SESSION['success'] = 'Estabelecimento reprovado com sucesso!';
             
         } catch (\Exception $e) {
@@ -615,6 +617,68 @@ class EstablishmentController
         }
         
         redirect(url('estabelecimentos/' . $id));
+    }
+
+    private function notifyRepresentativeAboutReprovedEstablishment(array $establishment, string $reason): void
+    {
+        try {
+            $representativeId = (int) ($establishment['created_by_representative_id'] ?? 0);
+            if ($representativeId <= 0) {
+                return;
+            }
+
+            $establishmentId = (int) ($establishment['id'] ?? 0);
+            if ($establishmentId <= 0) {
+                return;
+            }
+
+            $establishmentName = (string) ($establishment['nome_fantasia'] ?? $establishment['nome_completo'] ?? 'estabelecimento');
+            $message = sprintf(
+                'O estabelecimento "%s" foi reprovado. Motivo: %s',
+                $establishmentName,
+                $reason
+            );
+
+            $this->notificationModel->create([
+                'recipient_type' => 'representative',
+                'representative_id' => $representativeId,
+                'type' => 'ESTABLISHMENT_REPROVED',
+                'title' => 'Estabelecimento reprovado',
+                'message' => $message,
+                'related_type' => 'establishment',
+                'related_id' => $establishmentId
+            ]);
+        } catch (\Throwable $e) {
+            write_log('Falha ao notificar representante sobre reprovação de estabelecimento: ' . $e->getMessage(), 'app.log');
+        }
+    }
+
+    private function emailRepresentativeAboutReprovedEstablishment(array $establishment): void
+    {
+        try {
+            $representativeId = (int) ($establishment['created_by_representative_id'] ?? 0);
+            if ($representativeId <= 0) {
+                return;
+            }
+
+            $representative = $this->representativeModel->findById($representativeId);
+            if (empty($representative)) {
+                return;
+            }
+
+            $email = trim((string) ($representative['email'] ?? ''));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return;
+            }
+
+            $representativeName = (string) ($representative['nome_completo'] ?? 'Representante');
+            $establishmentName = (string) ($establishment['nome_fantasia'] ?? $establishment['nome_completo'] ?? 'Estabelecimento');
+
+            $mailer = new Mailer();
+            $mailer->sendClientApprovalNotification($email, $representativeName, $establishmentName, 'reproved');
+        } catch (\Throwable $e) {
+            write_log('Falha ao enviar e-mail de reprovação para representante: ' . $e->getMessage(), 'app.log');
+        }
     }
     
     public function downloadDocument($id, $documentId)
