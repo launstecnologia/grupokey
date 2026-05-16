@@ -124,6 +124,7 @@ class EstablishmentController
             'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
             'document_type_options' => $this->getDocumentTypeOptions(),
+            'document_type_product_map' => $this->documentTypeModel->getProductMapForActiveTypes(),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];
@@ -420,6 +421,7 @@ class EstablishmentController
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
             'custom_field_values' => $this->getSafeCustomFieldValues('establishment', (int) $id),
             'document_type_options' => $this->getDocumentTypeOptions(),
+            'document_type_product_map' => $this->documentTypeModel->getProductMapForActiveTypes(),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];

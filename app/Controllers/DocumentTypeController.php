@@ -4,14 +4,17 @@ namespace App\Controllers;
 
 use App\Core\Auth;
 use App\Models\DocumentType;
+use App\Models\DynamicProduct;
 
 class DocumentTypeController
 {
     private $model;
+    private $dynamicProductModel;
 
     public function __construct()
     {
         $this->model = new DocumentType();
+        $this->dynamicProductModel = new DynamicProduct();
     }
 
     public function index()
@@ -30,7 +33,9 @@ class DocumentTypeController
             'title' => 'Tipos de Documento',
             'currentPage' => 'tipos-documentos',
             'types' => $this->model->getAll($filters),
-            'filters' => $filters
+            'filters' => $filters,
+            'productLabelMap' => $this->getProductLabelMap(),
+            'typeProductLinksMap' => $this->getTypeProductLinksMap()
         ];
 
         view('document-types/index', $data);
@@ -43,7 +48,9 @@ class DocumentTypeController
         $data = [
             'title' => 'Novo Tipo de Documento',
             'currentPage' => 'tipos-documentos',
-            'type' => null
+            'type' => null,
+            'selectedProductKeys' => [],
+            'availableProducts' => $this->getAvailableProductKeys()
         ];
 
         view('document-types/form', $data);
@@ -87,7 +94,9 @@ class DocumentTypeController
         $data = [
             'title' => 'Editar Tipo de Documento',
             'currentPage' => 'tipos-documentos',
-            'type' => $type
+            'type' => $type,
+            'selectedProductKeys' => array_column($this->model->getProductLinksByTypeId((int) $id), 'product_key'),
+            'availableProducts' => $this->getAvailableProductKeys()
         ];
 
         view('document-types/form', $data);
@@ -167,7 +176,63 @@ class DocumentTypeController
             'label' => $label,
             'sort_order' => $sortOrder,
             'is_active' => $isActive,
+            'product_keys' => isset($_POST['product_keys']) && is_array($_POST['product_keys']) ? $_POST['product_keys'] : [],
         ];
     }
-}
 
+    private function getAvailableProductKeys(): array
+    {
+        $options = [
+            ['key' => 'PAGSEGURO', 'label' => 'PAGSEGURO'],
+        ];
+
+        $dynamicProducts = $this->dynamicProductModel->getAll();
+        usort($dynamicProducts, function ($a, $b) {
+            return strcasecmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
+        });
+
+        foreach ($dynamicProducts as $product) {
+            $id = (int) ($product['id'] ?? 0);
+            $name = trim((string) ($product['name'] ?? ''));
+            if ($id <= 0 || $name === '') {
+                continue;
+            }
+
+            $options[] = [
+                'key' => 'DYNAMIC_' . $id,
+                'label' => $name,
+            ];
+        }
+
+        return $options;
+    }
+
+    private function getProductLabelMap(): array
+    {
+        $map = ['PAGSEGURO' => 'PAGSEGURO'];
+        foreach ($this->dynamicProductModel->getAll() as $product) {
+            $id = (int) ($product['id'] ?? 0);
+            $name = trim((string) ($product['name'] ?? ''));
+            if ($id > 0 && $name !== '') {
+                $map['DYNAMIC_' . $id] = $name;
+            }
+        }
+
+        return $map;
+    }
+
+    private function getTypeProductLinksMap(): array
+    {
+        $map = [];
+        $types = $this->model->getAll();
+        foreach ($types as $type) {
+            $typeId = (int) ($type['id'] ?? 0);
+            if ($typeId <= 0) {
+                continue;
+            }
+            $map[$typeId] = array_column($this->model->getProductLinksByTypeId($typeId), 'product_key');
+        }
+
+        return $map;
+    }
+}

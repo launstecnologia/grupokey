@@ -4,6 +4,8 @@ ob_start();
 
 $types = $types ?? [];
 $filters = $filters ?? [];
+$productLabelMap = $productLabelMap ?? [];
+$typeProductLinksMap = $typeProductLinksMap ?? [];
 ?>
 
 <div class="pt-6 px-4">
@@ -57,13 +59,14 @@ $filters = $filters ?? [];
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ordem</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produtos</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 <?php if (empty($types)): ?>
                     <tr>
-                        <td colspan="5" class="px-6 py-6 text-center text-gray-500">Nenhum tipo de documento encontrado.</td>
+                        <td colspan="6" class="px-6 py-6 text-center text-gray-500">Nenhum tipo de documento encontrado.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($types as $type): ?>
@@ -76,6 +79,25 @@ $filters = $filters ?? [];
                                     <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Ativo</span>
                                 <?php else: ?>
                                     <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Inativo</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-700">
+                                <?php
+                                $links = $typeProductLinksMap[(int) ($type['id'] ?? 0)] ?? [];
+                                if (empty($links)): ?>
+                                    <span class="text-gray-400">Todos</span>
+                                <?php else: ?>
+                                    <?php
+                                    $labels = [];
+                                    foreach ($links as $link) {
+                                        $key = strtoupper((string) $link);
+                                        if ($key === '') {
+                                            continue;
+                                        }
+                                        $labels[] = $productLabelMap[$key] ?? $key;
+                                    }
+                                    echo htmlspecialchars(implode(', ', $labels));
+                                    ?>
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 text-right text-sm">
@@ -102,4 +124,3 @@ $filters = $filters ?? [];
 $content = ob_get_clean();
 include __DIR__ . '/../layouts/app.php';
 ?>
-

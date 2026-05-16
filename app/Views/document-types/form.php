@@ -10,6 +10,11 @@ $code = $old['code'] ?? ($type['code'] ?? '');
 $label = $old['label'] ?? ($type['label'] ?? '');
 $sortOrder = $old['sort_order'] ?? ($type['sort_order'] ?? 0);
 $isActive = (string) ($old['is_active'] ?? ($type['is_active'] ?? 1));
+$availableProducts = $availableProducts ?? [];
+$selectedProductKeys = isset($old['product_keys']) && is_array($old['product_keys'])
+    ? $old['product_keys']
+    : ($selectedProductKeys ?? []);
+$selectedProductKeys = array_map('strtoupper', array_map('strval', $selectedProductKeys));
 ?>
 
 <div class="pt-6 px-4">
@@ -76,6 +81,26 @@ $isActive = (string) ($old['is_active'] ?? ($type['is_active'] ?? 1));
                     <label class="block text-sm font-medium text-gray-700 mb-1">Ordem</label>
                     <input type="number" name="sort_order" value="<?= (int) $sortOrder ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md">
                 </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Produtos Vinculados</label>
+                    <p class="text-xs text-gray-500 mb-2">Ao selecionar o produto no estabelecimento, este tipo de documento aparecerá automaticamente.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 border border-gray-200 rounded-md p-3 max-h-56 overflow-y-auto">
+                        <?php foreach ($availableProducts as $product): ?>
+                            <?php
+                                $productKey = strtoupper((string) ($product['key'] ?? ''));
+                                $productLabel = (string) ($product['label'] ?? $productKey);
+                                if ($productKey === '') {
+                                    continue;
+                                }
+                                $checked = in_array($productKey, $selectedProductKeys, true);
+                            ?>
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-800">
+                                <input type="checkbox" name="product_keys[]" value="<?= htmlspecialchars($productKey) ?>" class="h-4 w-4 text-blue-600 border-gray-300 rounded" <?= $checked ? 'checked' : '' ?>>
+                                <span><?= htmlspecialchars($productLabel) ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
@@ -93,4 +118,3 @@ unset($_SESSION['old_input']);
 $content = ob_get_clean();
 include __DIR__ . '/../layouts/app.php';
 ?>
-

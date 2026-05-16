@@ -9,6 +9,7 @@ $dynamicProductsCatalog = $dynamic_products_catalog ?? [];
 $customFieldDefinitions = $custom_field_definitions ?? [];
 $customFieldValues = $custom_field_values ?? [];
 $documentTypeOptions = $document_type_options ?? [];
+$documentTypeProductMap = $document_type_product_map ?? [];
 $representatives = $representatives ?? [];
 $segments = $segments ?? [];
 $oldInput = $_SESSION['old_input'] ?? [];
@@ -608,6 +609,7 @@ function isProductSelected($productId, $productData) {
                     <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-blue-600 hover:text-white transition-colors">
                         <input type="checkbox" name="products[]" value="<?= $product['id'] ?>" 
                                class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                               data-product-key="PAGSEGURO"
                                <?= $isSelected ? 'checked' : '' ?>>
                         <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($displayName) ?></span>
                     </label>
@@ -625,6 +627,7 @@ function isProductSelected($productId, $productData) {
                                    value="<?= $dynamicProductId ?>"
                                    class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dynamic-product-checkbox"
                                    data-target="dyn-prod-<?= $dynamicProductId ?>-config"
+                                   data-product-key="DYNAMIC_<?= $dynamicProductId ?>"
                                    <?= $selectedDynamic ? 'checked' : '' ?>>
                             <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($dynamicProduct['name'] ?? '') ?></span>
                         </label>
@@ -1025,6 +1028,14 @@ function isProductSelected($productId, $productData) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const documentTypeOptions = <?= json_encode(array_values(array_map(function ($item) {
+        return [
+            'code' => (string) ($item['code'] ?? ''),
+            'label' => (string) ($item['label'] ?? ($item['code'] ?? '')),
+        ];
+    }, $documentTypeOptions)), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const documentTypeProductMap = <?= json_encode($documentTypeProductMap, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+
     // Mostrar/ocultar campos específicos por tipo de registro
     const registrationTypeInputs = document.querySelectorAll('input[name="registration_type"]');
     const registrationTypeSection = document.getElementById('registration-type-section');
@@ -1241,6 +1252,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Verificar campos bancários quando produto mudar
             verificarCamposBancarios();
             syncPagSeguroPjRequired();
+            syncDocumentRowsWithSelectedProducts();
         });
         
         // Verificar estado inicial (se já estiver marcado)
@@ -1262,6 +1274,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (target) {
                 target.classList.toggle('hidden', !this.checked);
             }
+            syncDocumentRowsWithSelectedProducts();
         });
 
         if (checkbox.checked) {
@@ -1598,12 +1611,123 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    function getSelectedProductKeysForDocuments() {
+        const keys = [];
+        document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked').forEach(function(input) {
+            const key = String(input.dataset.productKey || '').trim().toUpperCase();
+            if (key && !keys.includes(key)) {
+                keys.push(key);
+            }
+        });
+        return keys;
+    }
+
+    function getRequiredDocumentCodesByProducts() {
+        const selectedKeys = getSelectedProductKeysForDocuments();
+        if (!selectedKeys.length) {
+            return [];
+        }
+        const required = new Set();
+        selectedKeys.forEach(function(key) {
+            (documentTypeProductMap[key] || []).forEach(function(code) {
+                const normalized = String(code || '').trim().toUpperCase();
+                if (normalized) {
+                    required.add(normalized);
+                }
+            });
+        });
+        return Array.from(required);
+    }
+
+    function renderDocumentTypeOptions(select, selectedCode, allowedCodes) {
+        if (!select) {
+            return;
+        }
+        const filtered = allowedCodes.length
+            ? documentTypeOptions.filter(function(opt) {
+                return allowedCodes.includes(String(opt.code || '').trim().toUpperCase());
+            })
+            : documentTypeOptions;
+
+        select.innerHTML = '<option value="">Selecione o tipo</option>';
+        filtered.forEach(function(opt) {
+            const code = String(opt.code || '').trim();
+            const label = String(opt.label || code);
+            if (!code) {
+                return;
+            }
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = label;
+            if (String(selectedCode || '').toUpperCase() === code.toUpperCase()) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+    }
+
+    function syncDocumentRowsWithSelectedProducts() {
+        const requiredCodes = getRequiredDocumentCodesByProducts();
+        if (!documentosContainer) {
+            return;
+        }
+
+        if (!requiredCodes.length) {
+            documentosContainer.querySelectorAll('select[name="document_type[]"]').forEach(function(select) {
+                const current = select.value;
+                renderDocumentTypeOptions(select, current, []);
+                if (current) {
+                    select.value = current;
+                }
+            });
+            return;
+        }
+
+        const firstItem = documentosContainer.querySelector('.documento-item');
+        if (!firstItem) {
+            return;
+        }
+
+        Array.from(documentosContainer.querySelectorAll('.documento-item')).forEach(function(item, index) {
+            if (index > 0) {
+                item.remove();
+            }
+        });
+
+        const firstSelect = firstItem.querySelector('select[name="document_type[]"]');
+        renderDocumentTypeOptions(firstSelect, requiredCodes[0], requiredCodes);
+        if (firstSelect) {
+            firstSelect.value = requiredCodes[0];
+        }
+
+        for (let i = 1; i < requiredCodes.length; i++) {
+            const clone = firstItem.cloneNode(true);
+            const select = clone.querySelector('select[name="document_type[]"]');
+            const fileInput = clone.querySelector('input[type="file"]');
+            const removeBtn = clone.querySelector('.remove-documento');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            renderDocumentTypeOptions(select, requiredCodes[i], requiredCodes);
+            if (select) {
+                select.value = requiredCodes[i];
+            }
+            if (removeBtn) {
+                removeBtn.classList.remove('hidden');
+            }
+            documentosContainer.appendChild(clone);
+        }
+    }
+
     // Gerenciar campos de documentos
     const adicionarDocumentoBtn = document.getElementById('adicionar-documento');
     const documentosContainer = document.getElementById('documentos-container');
     
     if (adicionarDocumentoBtn && documentosContainer) {
         adicionarDocumentoBtn.addEventListener('click', function() {
+            if (getRequiredDocumentCodesByProducts().length > 0) {
+                return;
+            }
             const primeiroItem = document.querySelector('.documento-item');
             if (primeiroItem) {
                 const novoDocumento = primeiroItem.cloneNode(true);
@@ -1634,6 +1758,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     atualizarEventListenersDocumentos();
+    syncDocumentRowsWithSelectedProducts();
     
     // Validar tipo de documento apenas se arquivo foi selecionado
     document.querySelectorAll('input[name="documents[]"]').forEach(function(fileInput) {

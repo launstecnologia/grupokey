@@ -12,6 +12,7 @@ class DocumentType
     {
         $this->db = Database::getInstance();
         $this->ensureTable();
+        $this->ensureProductLinkTable();
         $this->ensureSeed();
     }
 
@@ -39,6 +40,45 @@ class DocumentType
     public function getActive()
     {
         return $this->getAll(['is_active' => 1]);
+    }
+
+    public function getProductLinksByTypeId(int $typeId): array
+    {
+        return $this->db->fetchAll(
+            "SELECT product_key
+             FROM document_type_products
+             WHERE document_type_id = ?
+             ORDER BY product_key ASC",
+            [$typeId]
+        );
+    }
+
+    public function getProductMapForActiveTypes(): array
+    {
+        $rows = $this->db->fetchAll(
+            "SELECT dtp.product_key, dt.code
+             FROM document_type_products dtp
+             INNER JOIN document_types dt ON dt.id = dtp.document_type_id
+             WHERE dt.is_active = 1
+             ORDER BY dt.sort_order ASC, dt.label ASC"
+        );
+
+        $map = [];
+        foreach ($rows as $row) {
+            $productKey = strtoupper(trim((string) ($row['product_key'] ?? '')));
+            $code = strtoupper(trim((string) ($row['code'] ?? '')));
+            if ($productKey === '' || $code === '') {
+                continue;
+            }
+            if (!isset($map[$productKey])) {
+                $map[$productKey] = [];
+            }
+            if (!in_array($code, $map[$productKey], true)) {
+                $map[$productKey][] = $code;
+            }
+        }
+
+        return $map;
     }
 
     public function findById($id)
@@ -74,7 +114,9 @@ class DocumentType
             [$code, $label, $sortOrder, $isActive]
         );
 
-        return (int) $this->db->lastInsertId();
+        $id = (int) $this->db->lastInsertId();
+        $this->syncProductLinks($id, $data['product_keys'] ?? []);
+        return $id;
     }
 
     public function update($id, array $data)
@@ -113,6 +155,8 @@ class DocumentType
             [$code, $label, $sortOrder, $isActive, $id]
         );
 
+        $this->syncProductLinks($id, $data['product_keys'] ?? []);
+
         return true;
     }
 
@@ -133,6 +177,7 @@ class DocumentType
             throw new \RuntimeException('Não é possível excluir. Este tipo está vinculado a ' . $links . ' documento(s).');
         }
 
+        $this->db->query("DELETE FROM document_type_products WHERE document_type_id = ?", [(int) $id]);
         $this->db->query("DELETE FROM document_types WHERE id = ?", [(int) $id]);
         return true;
     }
@@ -161,6 +206,50 @@ class DocumentType
                 INDEX idx_document_types_sort (sort_order)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
         );
+    }
+
+    private function ensureProductLinkTable(): void
+    {
+        $this->db->query(
+            "CREATE TABLE IF NOT EXISTS document_type_products (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                document_type_id INT NOT NULL,
+                product_key VARCHAR(64) NOT NULL,
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_document_type_product (document_type_id, product_key),
+                INDEX idx_document_type_products_key (product_key),
+                CONSTRAINT fk_document_type_products_type
+                    FOREIGN KEY (document_type_id)
+                    REFERENCES document_types(id)
+                    ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+        );
+    }
+
+    private function syncProductLinks(int $typeId, array $productKeys): void
+    {
+        $normalized = [];
+        foreach ($productKeys as $key) {
+            $productKey = strtoupper(trim((string) $key));
+            if ($productKey === '') {
+                continue;
+            }
+            if (!preg_match('/^[A-Z0-9_]+$/', $productKey)) {
+                continue;
+            }
+            if (!in_array($productKey, $normalized, true)) {
+                $normalized[] = $productKey;
+            }
+        }
+
+        $this->db->query("DELETE FROM document_type_products WHERE document_type_id = ?", [$typeId]);
+        foreach ($normalized as $productKey) {
+            $this->db->query(
+                "INSERT INTO document_type_products (document_type_id, product_key, created_at)
+                 VALUES (?, ?, NOW())",
+                [$typeId, $productKey]
+            );
+        }
     }
 
     private function ensureSeed(): void
@@ -238,4 +327,3 @@ class DocumentType
         $this->db->query($sql);
     }
 }
-
