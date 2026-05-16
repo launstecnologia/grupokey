@@ -278,9 +278,10 @@ $representatives = $representatives ?? [];
                                     foreach ($produtosAdicionais as $prod) {
                                         $prod = trim($prod);
                                         // Manter apenas produto manual atual
-                                        $produtosValidos = ['PagSeguro'];
-                                        if (!empty($prod) && in_array($prod, $produtosValidos) && !in_array($prod, $produtos)) {
-                                            $produtos[] = $prod;
+                                        $produtoNormalizado = strcasecmp($prod, 'PagSeguro') === 0 ? 'PAGSEGURO' : $prod;
+                                        $produtosValidos = ['PAGSEGURO'];
+                                        if (!empty($produtoNormalizado) && in_array($produtoNormalizado, $produtosValidos) && !in_array($produtoNormalizado, $produtos)) {
+                                            $produtos[] = $produtoNormalizado;
                                         }
                                     }
                                 }
@@ -300,7 +301,7 @@ $representatives = $representatives ?? [];
                                     $produtoEnum = $establishment['produto'];
                                     // Fallback para legado
                                     $produtoMap = [
-                                        'PAGBANK' => 'PagSeguro',
+                                        'PAGBANK' => 'PAGSEGURO',
                                     ];
                                     $produtoNome = $produtoMap[$produtoEnum] ?? null;
                                     if ($produtoNome && !in_array($produtoNome, $produtos)) {
