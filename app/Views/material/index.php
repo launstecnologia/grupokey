@@ -92,92 +92,55 @@ $readMap = $readMap ?? [];
                 </p>
             </div>
         <?php else: ?>
-            <div class="divide-y divide-gray-200">
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <?php foreach ($files as $file): ?>
-                <div class="px-6 py-4 bg-transparent hover:bg-blue-200 transition-colors">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <?php $isImage = stripos((string) ($file['mime_type'] ?? ''), 'image/') === 0; ?>
-                                <?php if ($isImage): ?>
-                                <a href="<?= url('material/preview/' . $file['id']) ?>" target="_blank" class="inline-flex items-center" title="Ver imagem">
-                                    <img src="<?= url('material/preview/' . $file['id']) ?>" alt="Miniatura" class="w-12 h-12 object-cover rounded border border-gray-300">
-                                </a>
-                                <?php endif; ?>
-                                <h3 class="text-sm font-medium text-gray-900">
-                                    <?= htmlspecialchars($file['title']) ?>
-                                </h3>
-                                <?php if ($file['description']): ?>
-                                <span class="text-xs text-gray-500">
-                                    <?= htmlspecialchars(substr($file['description'], 0, 80)) ?>
-                                    <?= strlen($file['description']) > 80 ? '...' : '' ?>
-                                </span>
-                                <?php endif; ?>
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-600 text-white">
-                                    <?= htmlspecialchars($file['category_name']) ?>
-                                </span>
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-600 text-white">
-                                    <?= strtoupper($file['file_type']) ?>
-                                </span>
-                                <span class="text-xs text-gray-500">
-                                    <?= format_file_size($file['file_size']) ?>
-                                </span>
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-600 text-white">
-                                    <i class="fas fa-download mr-1"></i>
-                                    <?= number_format($file['download_count']) ?>
-                                </span>
-                                <span class="text-xs text-gray-500">
-                                    <?= format_datetime($file['created_at'], 'd/m/Y') ?>
-                                </span>
-                                <?php if (Auth::isRepresentative()): ?>
-                                    <?php $readAt = $readMap[$file['id']] ?? null; ?>
-                                    <?php if ($readAt): ?>
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-600 text-white">
-                                        <i class="fas fa-check mr-1"></i>
-                                        Lido em <?= format_datetime($readAt, 'd/m/Y H:i') ?>
-                                    </span>
-                                    <?php else: ?>
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-500 text-white">
-                                        <i class="fas fa-book-reader mr-1"></i>
-                                        Leitura pendente
-                                    </span>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </div>
+                <?php $isImage = stripos((string) ($file['mime_type'] ?? ''), 'image/') === 0; ?>
+                <div class="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <?php if ($isImage): ?>
+                    <a href="<?= url('material/preview/' . $file['id']) ?>" target="_blank" title="Ver imagem">
+                        <img src="<?= url('material/preview/' . $file['id']) ?>" alt="Miniatura" class="w-full h-48 object-cover">
+                    </a>
+                    <?php else: ?>
+                    <div class="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
+                        <i class="fas fa-file-alt text-4xl"></i>
+                    </div>
+                    <?php endif; ?>
+
+                    <div class="p-4">
+                        <h3 class="text-base font-semibold text-gray-900 mb-2"><?= htmlspecialchars($file['title']) ?></h3>
+                        <?php if ($file['description']): ?>
+                        <p class="text-sm text-gray-600 mb-3">
+                            <?= htmlspecialchars(substr($file['description'], 0, 90)) ?><?= strlen($file['description']) > 90 ? '...' : '' ?>
+                        </p>
+                        <?php endif; ?>
+
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-600 text-white"><?= htmlspecialchars($file['category_name']) ?></span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-600 text-white"><?= strtoupper($file['file_type']) ?></span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-600 text-white"><i class="fas fa-download mr-1"></i><?= number_format($file['download_count']) ?></span>
+                            <span class="text-xs text-gray-500 self-center"><?= format_file_size($file['file_size']) ?></span>
                         </div>
-                        <div class="flex items-center space-x-2 flex-shrink-0">
-                            <a href="<?= url('material/download/' . $file['id']) ?>" 
-                               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md inline-flex items-center" 
-                               title="Download">
-                                <i class="fas fa-download mr-1"></i>
-                                Download
+
+                        <?php if (Auth::isRepresentative()): ?>
+                        <a href="<?= url('material/download/' . $file['id']) ?>" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md inline-flex items-center justify-center" title="Download">
+                            <i class="fas fa-download mr-2"></i>Download
+                        </a>
+                        <?php else: ?>
+                        <div class="flex items-center gap-2">
+                            <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center" title="Download">
+                                <i class="fas fa-download"></i>
                             </a>
-                            <?php if (Auth::isRepresentative()): ?>
-                            <?php $readAt = $readMap[$file['id']] ?? null; ?>
-                            <form method="POST" action="<?= url('material/files/' . $file['id'] . '/read') ?>" class="inline">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="<?= $readAt ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-emerald-600 hover:bg-emerald-700' ?> text-white px-4 py-2 rounded-md inline-flex items-center">
-                                    <i class="fas fa-check-circle mr-1"></i>
-                                    <?= $readAt ? 'Atualizar leitura' : 'Confirmar leitura' ?>
-                                </button>
-                            </form>
-                            <?php endif; ?>
-                            <?php if (Auth::isAdmin()): ?>
-                            <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" 
-                               class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md inline-flex items-center" 
-                               title="Editar">
-                                <i class="fas fa-edit mr-1"></i>
-                                Editar
+                            <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center" title="Editar">
+                                <i class="fas fa-edit"></i>
                             </a>
                             <form method="POST" action="<?= url('material/files/' . $file['id']) ?>" onsubmit="return confirm('Deseja excluir este arquivo?');" class="inline">
                                 <input type="hidden" name="_method" value="DELETE">
-                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md inline-flex items-center" title="Excluir">
-                                    <i class="fas fa-trash mr-1"></i>
-                                    Excluir
+                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center" title="Excluir">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </form>
-                            <?php endif; ?>
                         </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
