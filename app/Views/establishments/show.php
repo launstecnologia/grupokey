@@ -303,96 +303,6 @@ $statusLabels = [
                 </div>
             </div>
 
-            <!-- Documentos -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-                        <i class="fas fa-file-alt mr-2 text-blue-600 dark:text-blue-400"></i>
-                        Documentos
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <?php if (!empty($documents)): ?>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nome do Arquivo</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Data de Upload</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tamanho</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <?php 
-                                    $documentTypeLabels = [
-                                        'CONTRATO_SOCIAL' => 'Contrato Social/ Requerimento de Empresario/CCMEI',
-                                        'DOCUMENTO_FOTO_FRENTE' => 'Documento com Foto Frente',
-                                        'DOCUMENTO_FOTO_VERSO' => 'Documento com Foto Verso',
-                                        'COMPROVANTE_RESIDENCIA' => 'Comprovante de Residencia',
-                                        'FOTO_FACHADA' => 'Fotos',
-                                        'OUTROS_DOCUMENTOS' => 'Outros Documentos',
-                                        'RG_CPF_CNH' => 'RG/CPF/CNH',
-                                        'COMPROVANTE_BANCARIO' => 'Comprovante Bancário'
-                                    ];
-                                    
-                                    foreach ($documents as $document): 
-                                        $tipoLabel = $documentTypeLabels[$document['document_type'] ?? ''] ?? $document['document_type'] ?? 'Desconhecido';
-                                        $fileSize = isset($document['size']) ? number_format($document['size'] / 1024, 2) : '0';
-                                    ?>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($tipoLabel) ?></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            <i class="fas fa-file mr-2 text-blue-500 dark:text-blue-400"></i>
-                                            <?= htmlspecialchars($document['original_name'] ?? basename($document['file_path'] ?? '')) ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            <?= date('d/m/Y H:i', strtotime($document['uploaded_at'] ?? '')) ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"><?= $fileSize ?> KB</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex items-center gap-3">
-                                                <a href="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download') ?>" 
-                                                   class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
-                                                    <i class="fas fa-download mr-1"></i> Baixar
-                                                </a>
-                                                <?php if (\App\Core\Auth::isAdmin()): ?>
-                                                <form method="POST" action="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id']) ?>" class="inline" onsubmit="return confirm('Deseja excluir este documento?');">
-                                                    <input type="hidden" name="_method" value="DELETE">
-                                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
-                                                        <i class="fas fa-trash mr-1"></i> Excluir
-                                                    </button>
-                                                </form>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php else: ?>
-                        <p class="text-gray-500 dark:text-gray-400 text-center py-8">Nenhum documento anexado</p>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Observações -->
-            <?php if (!empty($establishment['observacoes'])): ?>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-                        <i class="fas fa-sticky-note mr-2 text-blue-600 dark:text-blue-400"></i>
-                        Observações
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <p class="text-sm text-gray-900 dark:text-white whitespace-pre-wrap"><?= htmlspecialchars($establishment['observacoes']) ?></p>
-                </div>
-            </div>
-            <?php endif; ?>
-
             <!-- Produtos -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -608,6 +518,96 @@ $statusLabels = [
                         <?php endif; ?>
                     <?php else: ?>
                         <p class="text-gray-500 dark:text-gray-400 text-center py-8">Nenhum produto configurado</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <?php if (!empty($establishment['observacoes'])): ?>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                        <i class="fas fa-sticky-note mr-2 text-blue-600 dark:text-blue-400"></i>
+                        Observações
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm text-gray-900 dark:text-white whitespace-pre-wrap"><?= htmlspecialchars($establishment['observacoes']) ?></p>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Documentos -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                        <i class="fas fa-file-alt mr-2 text-blue-600 dark:text-blue-400"></i>
+                        Documentos
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <?php if (!empty($documents)): ?>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nome do Arquivo</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Data de Upload</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tamanho</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    <?php 
+                                    $documentTypeLabels = [
+                                        'CONTRATO_SOCIAL' => 'Contrato Social/ Requerimento de Empresario/CCMEI',
+                                        'DOCUMENTO_FOTO_FRENTE' => 'Documento com Foto Frente',
+                                        'DOCUMENTO_FOTO_VERSO' => 'Documento com Foto Verso',
+                                        'COMPROVANTE_RESIDENCIA' => 'Comprovante de Residencia',
+                                        'FOTO_FACHADA' => 'Fotos',
+                                        'OUTROS_DOCUMENTOS' => 'Outros Documentos',
+                                        'RG_CPF_CNH' => 'RG/CPF/CNH',
+                                        'COMPROVANTE_BANCARIO' => 'Comprovante Bancário'
+                                    ];
+                                    
+                                    foreach ($documents as $document): 
+                                        $tipoLabel = $documentTypeLabels[$document['document_type'] ?? ''] ?? $document['document_type'] ?? 'Desconhecido';
+                                        $fileSize = isset($document['size']) ? number_format($document['size'] / 1024, 2) : '0';
+                                    ?>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($tipoLabel) ?></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            <i class="fas fa-file mr-2 text-blue-500 dark:text-blue-400"></i>
+                                            <?= htmlspecialchars($document['original_name'] ?? basename($document['file_path'] ?? '')) ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            <?= date('d/m/Y H:i', strtotime($document['uploaded_at'] ?? '')) ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"><?= $fileSize ?> KB</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div class="flex items-center gap-3">
+                                                <a href="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download') ?>" 
+                                                   class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
+                                                    <i class="fas fa-download mr-1"></i> Baixar
+                                                </a>
+                                                <?php if (\App\Core\Auth::isAdmin()): ?>
+                                                <form method="POST" action="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id']) ?>" class="inline" onsubmit="return confirm('Deseja excluir este documento?');">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                                                        <i class="fas fa-trash mr-1"></i> Excluir
+                                                    </button>
+                                                </form>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <p class="text-gray-500 dark:text-gray-400 text-center py-8">Nenhum documento anexado</p>
                     <?php endif; ?>
                 </div>
             </div>
