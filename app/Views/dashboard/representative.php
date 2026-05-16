@@ -57,8 +57,12 @@ $pending_modal = $pending_modal ?? null;
                     <?php if (!empty($slideLink)): ?>
                         <a href="<?= htmlspecialchars((string) $slideLink) ?>" target="<?= $slideTarget ?>" class="block h-full">
                     <?php endif; ?>
-                    <div class="w-full h-full flex items-center justify-center bg-black">
-                        <img src="<?= htmlspecialchars($imageSrc) ?>" alt="<?= htmlspecialchars((string) ($banner['title'] ?? 'Banner')) ?>" class="max-w-full max-h-full object-contain">
+                    <div class="relative w-full h-full overflow-hidden bg-black">
+                        <img src="<?= htmlspecialchars($imageSrc) ?>" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-110">
+                        <div class="absolute inset-0 bg-black/35"></div>
+                        <div class="relative z-10 w-full h-full flex items-center justify-center">
+                            <img src="<?= htmlspecialchars($imageSrc) ?>" alt="<?= htmlspecialchars((string) ($banner['title'] ?? 'Banner')) ?>" class="w-full h-full object-contain">
+                        </div>
                     </div>
                     <?php if (!empty($banner['title']) || !empty($banner['subtitle'])): ?>
                     <div class="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
