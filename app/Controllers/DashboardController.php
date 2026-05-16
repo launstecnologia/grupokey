@@ -8,6 +8,7 @@ use App\Models\Representative;
 use App\Models\Establishment;
 use App\Models\Banner;
 use App\Models\RepresentativeModal;
+use App\Models\Ticket;
 
 class DashboardController
 {
@@ -16,6 +17,7 @@ class DashboardController
     private $establishmentModel;
     private $bannerModel;
     private $representativeModalModel;
+    private $ticketModel;
     
     public function __construct()
     {
@@ -24,6 +26,7 @@ class DashboardController
         $this->establishmentModel = new Establishment();
         $this->bannerModel = new Banner();
         $this->representativeModalModel = new RepresentativeModal();
+        $this->ticketModel = new Ticket();
     }
     
     public function index()
@@ -152,6 +155,9 @@ class DashboardController
             'representative_id' => $representative['id'],
             'date_from' => $currentMonth
         ]);
+        $ticketStats = $this->ticketModel->getStats([
+            'representative_id' => $representative['id']
+        ]);
         
         $data = [
             'title' => 'Dashboard Representante',
@@ -160,6 +166,7 @@ class DashboardController
             'recent_clients' => $recentClients,
             'pending_clients' => $pendingClients,
             'current_month_stats' => $currentMonthStats,
+            'open_tickets' => (int) ($ticketStats['abertos'] ?? 0),
             'banners' => $this->resolveBannerLinks($this->bannerModel->getActiveForRepresentative()),
             'pending_modal' => $this->resolveRepresentativeModalLink(
                 $this->representativeModalModel->getPendingForRepresentative((int) $representative['id']),
