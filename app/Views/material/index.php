@@ -98,6 +98,12 @@ $readMap = $readMap ?? [];
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div class="flex-1 min-w-0">
                             <div class="flex flex-wrap items-center gap-2">
+                                <?php $isImage = stripos((string) ($file['mime_type'] ?? ''), 'image/') === 0; ?>
+                                <?php if ($isImage): ?>
+                                <a href="<?= url('material/preview/' . $file['id']) ?>" target="_blank" class="inline-flex items-center" title="Ver imagem">
+                                    <img src="<?= url('material/preview/' . $file['id']) ?>" alt="Miniatura" class="w-12 h-12 object-cover rounded border border-gray-300">
+                                </a>
+                                <?php endif; ?>
                                 <h3 class="text-sm font-medium text-gray-900">
                                     <?= htmlspecialchars($file['title']) ?>
                                 </h3>

@@ -76,6 +76,14 @@ ob_start();
                                       placeholder="Descreva o conteúdo do arquivo..."><?= htmlspecialchars($_POST['description'] ?? $file['description']) ?></textarea>
                             <div class="form-text">Descrição opcional do arquivo</div>
                         </div>
+
+                        <div class="col-12 mb-4">
+                            <label class="form-label fw-semibold d-block">Exibir na listagem</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" value="1" <?= (($_POST['is_active'] ?? (string) ($file['is_active'] ?? '1')) === '1') ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="is_active">Arquivo visível para os usuários no Material de Apoio</label>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="d-flex justify-content-end gap-2">

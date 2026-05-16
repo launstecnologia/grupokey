@@ -87,6 +87,35 @@ class MaterialController
         exit;
     }
 
+    public function preview($id)
+    {
+        Auth::requireAuth();
+
+        $file = $this->materialModel->getFileById($id);
+        if (!$file) {
+            http_response_code(404);
+            exit('Arquivo não encontrado');
+        }
+
+        $filePath = (string) ($file['file_path'] ?? '');
+        if ($filePath === '' || !file_exists($filePath)) {
+            http_response_code(404);
+            exit('Arquivo não encontrado no servidor');
+        }
+
+        $mimeType = (string) ($file['mime_type'] ?? '');
+        if (stripos($mimeType, 'image/') !== 0) {
+            http_response_code(415);
+            exit('Preview disponível apenas para imagens');
+        }
+
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: public, max-age=86400');
+        readfile($filePath);
+        exit;
+    }
+
     // ===========================================
     // ADMINISTRAÇÃO - CATEGORIAS
     // ===========================================
@@ -638,10 +667,13 @@ class MaterialController
             ];
         }
         
+        $isActive = isset($_POST['is_active']) && (string) $_POST['is_active'] === '1' ? 1 : 0;
+
         return array_merge([
             'product_key' => $productKey,
             'title' => $title,
-            'description' => $description
+            'description' => $description,
+            'is_active' => $isActive
         ], $fileData);
     }
 

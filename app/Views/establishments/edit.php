@@ -1643,11 +1643,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked').length > 0;
     }
 
-    function renderDocumentTypeOptions(select, selectedCode, allowedCodes) {
+    function renderDocumentTypeOptions(select, selectedCode, allowedCodes, hasSelectedProducts) {
         if (!select) {
             return;
         }
-        const filtered = allowedCodes.length
+        const filtered = hasSelectedProducts
             ? documentTypeOptions.filter(function(opt) {
                 return allowedCodes.includes(String(opt.code || '').trim().toUpperCase());
             })
@@ -1671,8 +1671,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function syncDocumentRowsWithSelectedProducts() {
+        const hasSelectedProducts = hasAnySelectedProductsForDocuments();
         if (documentUploadSection) {
-            documentUploadSection.classList.toggle('hidden', !hasAnySelectedProductsForDocuments());
+            documentUploadSection.classList.toggle('hidden', !hasSelectedProducts);
         }
 
         const requiredCodes = getRequiredDocumentCodesByProducts();
@@ -1682,11 +1683,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!requiredCodes.length) {
             documentosContainer.querySelectorAll('select[name="document_type[]"]').forEach(function(select) {
-                const current = select.value;
-                renderDocumentTypeOptions(select, current, []);
-                if (current) {
-                    select.value = current;
-                }
+                renderDocumentTypeOptions(select, '', [], hasSelectedProducts);
+                select.value = '';
             });
             return;
         }
@@ -1703,7 +1701,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         const firstSelect = firstItem.querySelector('select[name="document_type[]"]');
-        renderDocumentTypeOptions(firstSelect, requiredCodes[0], requiredCodes);
+        renderDocumentTypeOptions(firstSelect, requiredCodes[0], requiredCodes, hasSelectedProducts);
         if (firstSelect) {
             firstSelect.value = requiredCodes[0];
         }
@@ -1716,7 +1714,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fileInput) {
                 fileInput.value = '';
             }
-            renderDocumentTypeOptions(select, requiredCodes[i], requiredCodes);
+            renderDocumentTypeOptions(select, requiredCodes[i], requiredCodes, hasSelectedProducts);
             if (select) {
                 select.value = requiredCodes[i];
             }
@@ -1734,7 +1732,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (adicionarDocumentoBtn && documentosContainer) {
         adicionarDocumentoBtn.addEventListener('click', function() {
-            if (getRequiredDocumentCodesByProducts().length > 0) {
+            if (hasAnySelectedProductsForDocuments()) {
                 return;
             }
             const primeiroItem = document.querySelector('.documento-item');

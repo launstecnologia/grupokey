@@ -83,6 +83,14 @@ ob_start();
                                 <strong>Tamanho máximo:</strong> 50MB
                             </div>
                         </div>
+
+                        <div class="col-12 mb-4">
+                            <label class="form-label fw-semibold d-block">Exibir na listagem</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" value="1" <?= (!isset($_POST['is_active']) || $_POST['is_active'] === '1') ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="is_active">Arquivo visível para os usuários no Material de Apoio</label>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="d-flex justify-content-end gap-2">

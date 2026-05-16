@@ -208,8 +208,8 @@ class Material
     {
         $id = uniqid();
         $categoryId = $this->resolveCategoryIdFromProductKey($data['product_key'] ?? '');
-        $sql = "INSERT INTO material_files (id, category_id, subcategory_id, title, description, filename, original_filename, file_path, file_size, file_type, mime_type, uploaded_by) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO material_files (id, category_id, subcategory_id, title, description, filename, original_filename, file_path, file_size, file_type, mime_type, uploaded_by, is_active) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $params = [
             $id,
@@ -223,7 +223,8 @@ class Material
             $data['file_size'],
             $data['file_type'],
             $data['mime_type'],
-            $data['uploaded_by']
+            $data['uploaded_by'],
+            isset($data['is_active']) ? (int) $data['is_active'] : 1
         ];
         
         $this->db->query($sql, $params);
@@ -234,7 +235,7 @@ class Material
     {
         $categoryId = $this->resolveCategoryIdFromProductKey($data['product_key'] ?? '');
         $sql = "UPDATE material_files 
-                SET category_id = ?, subcategory_id = ?, title = ?, description = ?, updated_at = NOW() 
+                SET category_id = ?, subcategory_id = ?, title = ?, description = ?, is_active = ?, updated_at = NOW() 
                 WHERE id = ?";
         
         $params = [
@@ -242,6 +243,7 @@ class Material
             null,
             $data['title'],
             $data['description'] ?? null,
+            isset($data['is_active']) ? (int) $data['is_active'] : 1,
             $id
         ];
         
