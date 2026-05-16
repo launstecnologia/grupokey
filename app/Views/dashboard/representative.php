@@ -43,7 +43,7 @@ $pending_modal = $pending_modal ?? null;
 
     <?php if (!empty($banners)): ?>
     <div class="mb-6 bg-white shadow rounded-lg p-4">
-        <div id="rep-banner-slider" class="relative overflow-hidden rounded-lg h-56 md:h-72">
+        <div id="rep-banner-slider" class="relative overflow-hidden rounded-lg bg-black">
             <?php foreach ($banners as $index => $banner): ?>
                 <?php
                     $imageSrc = !empty($banner['image_path'])
@@ -53,11 +53,11 @@ $pending_modal = $pending_modal ?? null;
                     $slideLink = $banner['resolved_link'] ?? null;
                     $slideTarget = !empty($banner['target_blank']) ? '_blank' : '_self';
                 ?>
-                <div class="rep-banner-slide absolute inset-0 transition-opacity duration-500 <?= $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' ?>" data-duration-ms="<?= $slideSeconds * 1000 ?>">
+                <div class="rep-banner-slide transition-opacity duration-500 <?= $index === 0 ? 'block' : 'hidden' ?>" data-duration-ms="<?= $slideSeconds * 1000 ?>">
                     <?php if (!empty($slideLink)): ?>
-                        <a href="<?= htmlspecialchars((string) $slideLink) ?>" target="<?= $slideTarget ?>" class="block h-full">
+                        <a href="<?= htmlspecialchars((string) $slideLink) ?>" target="<?= $slideTarget ?>" class="block">
                     <?php endif; ?>
-                    <img src="<?= htmlspecialchars($imageSrc) ?>" alt="<?= htmlspecialchars((string) ($banner['title'] ?? 'Banner')) ?>" class="w-full h-full object-cover">
+                    <img src="<?= htmlspecialchars($imageSrc) ?>" alt="<?= htmlspecialchars((string) ($banner['title'] ?? 'Banner')) ?>" class="w-full h-auto object-contain">
                     <?php if (!empty($banner['title']) || !empty($banner['subtitle'])): ?>
                     <div class="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                         <?php if (!empty($banner['title'])): ?><h4 class="text-white text-lg font-bold"><?= htmlspecialchars((string) $banner['title']) ?></h4><?php endif; ?>
@@ -81,7 +81,7 @@ $pending_modal = $pending_modal ?? null;
     <?php endif; ?>
 
     <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <a href="<?= url('estabelecimentos') ?>" class="bg-white shadow rounded-lg p-5 block hover:shadow-md transition-shadow">
+        <a href="<?= url('estabelecimentos') ?>" title="Abrir lista de estabelecimentos" class="bg-white shadow rounded-lg p-5 block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-500">Total estabelecimento</p>
@@ -93,7 +93,7 @@ $pending_modal = $pending_modal ?? null;
             </div>
         </a>
 
-        <a href="<?= url('estabelecimentos') ?>?status=PENDING" class="bg-white shadow rounded-lg p-5 block hover:shadow-md transition-shadow">
+        <a href="<?= url('estabelecimentos') ?>?status=PENDING" title="Abrir estabelecimentos pendentes" class="bg-white shadow rounded-lg p-5 block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-500">Estabelecimento pendente</p>
@@ -105,7 +105,7 @@ $pending_modal = $pending_modal ?? null;
             </div>
         </a>
 
-        <a href="<?= url('estabelecimentos') ?>?status=REPROVED" class="bg-white shadow rounded-lg p-5 block hover:shadow-md transition-shadow">
+        <a href="<?= url('estabelecimentos') ?>?status=REPROVED" title="Abrir estabelecimentos reprovados" class="bg-white shadow rounded-lg p-5 block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-500">Estabelecimento reprovado</p>
@@ -117,7 +117,7 @@ $pending_modal = $pending_modal ?? null;
             </div>
         </a>
 
-        <a href="<?= url('chamados') ?>?status=OPEN" class="bg-white shadow rounded-lg p-5 block hover:shadow-md transition-shadow">
+        <a href="<?= url('chamados') ?>?status=OPEN" title="Abrir chamados em aberto" class="bg-white shadow rounded-lg p-5 block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-500">Chamado (aberto)</p>
@@ -144,10 +144,8 @@ $pending_modal = $pending_modal ?? null;
     function setActive(nextIndex) {
         slides.forEach((slide, index) => {
             const show = index === nextIndex;
-            slide.classList.toggle('opacity-100', show);
-            slide.classList.toggle('z-10', show);
-            slide.classList.toggle('opacity-0', !show);
-            slide.classList.toggle('z-0', !show);
+            slide.classList.toggle('block', show);
+            slide.classList.toggle('hidden', !show);
         });
         dots.forEach((dot, index) => {
             dot.classList.toggle('bg-blue-600', index === nextIndex);
