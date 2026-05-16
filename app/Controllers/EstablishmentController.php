@@ -716,9 +716,18 @@ class EstablishmentController
             redirect(url('estabelecimentos/' . $id));
         }
         
-        // Configurar headers para download
-        header('Content-Type: ' . ($document['mime_type'] ?? 'application/octet-stream'));
-        header('Content-Disposition: attachment; filename="' . basename($document['original_name']) . '"');
+        $mimeType = (string) ($document['mime_type'] ?? 'application/octet-stream');
+        $originalName = (string) ($document['original_name'] ?? basename((string) ($document['file_path'] ?? 'documento')));
+        $isPreview = isset($_GET['preview']) && $_GET['preview'] === '1';
+        $isImage = stripos($mimeType, 'image/') === 0;
+
+        // Configurar headers para download/preview
+        header('Content-Type: ' . $mimeType);
+        if ($isPreview && $isImage) {
+            header('Content-Disposition: inline; filename="' . basename($originalName) . '"');
+        } else {
+            header('Content-Disposition: attachment; filename="' . basename($originalName) . '"');
+        }
         header('Content-Length: ' . filesize($document['file_path']));
         header('Cache-Control: must-revalidate');
         header('Pragma: public');

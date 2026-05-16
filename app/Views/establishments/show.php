@@ -565,12 +565,25 @@ $statusLabels = [
                                         $docTypeCode = strtoupper((string) ($document['document_type'] ?? ''));
                                         $tipoLabel = $documentTypeLabels[$docTypeCode] ?? ($docTypeCode !== '' ? $docTypeCode : 'Desconhecido');
                                         $fileSize = isset($document['size']) ? number_format($document['size'] / 1024, 2) : '0';
+                                        $mimeType = strtolower((string) ($document['mime_type'] ?? ''));
+                                        $fileName = strtolower((string) ($document['original_name'] ?? $document['file_name'] ?? ''));
+                                        $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+                                        $isImage = strpos($mimeType, 'image/') === 0 || in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], true);
+                                        $previewUrl = url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download?preview=1');
                                     ?>
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($tipoLabel) ?></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            <i class="fas fa-file mr-2 text-blue-500 dark:text-blue-400"></i>
-                                            <?= htmlspecialchars($document['original_name'] ?? basename($document['file_path'] ?? '')) ?>
+                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                            <div class="flex items-center gap-3">
+                                                <?php if ($isImage): ?>
+                                                    <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" title="Visualizar imagem">
+                                                        <img src="<?= htmlspecialchars($previewUrl) ?>" alt="Miniatura" class="w-12 h-12 rounded object-cover border border-gray-300 dark:border-gray-600">
+                                                    </a>
+                                                <?php else: ?>
+                                                    <i class="fas fa-file mr-1 text-blue-500 dark:text-blue-400"></i>
+                                                <?php endif; ?>
+                                                <span class="break-all"><?= htmlspecialchars($document['original_name'] ?? basename($document['file_path'] ?? '')) ?></span>
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             <?= date('d/m/Y H:i', strtotime($document['uploaded_at'] ?? '')) ?>
