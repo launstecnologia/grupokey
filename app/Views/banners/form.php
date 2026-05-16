@@ -36,7 +36,7 @@ $value = function (string $key, $default = '') use ($old, $banner) {
     <?php endif; ?>
 
     <div class="bg-white rounded-lg shadow p-6">
-        <form method="POST" action="<?= $isEdit ? url('banners/' . (int) $banner['id']) : url('banners') ?>" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form id="banner-form" method="POST" action="<?= $isEdit ? url('banners/' . (int) $banner['id']) : url('banners') ?>" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <?= csrf_field() ?>
             <?php if ($isEdit): ?><input type="hidden" name="_method" value="PUT"><?php endif; ?>
 
@@ -126,7 +126,9 @@ $value = function (string $key, $default = '') use ($old, $banner) {
 
             <div class="md:col-span-2 flex justify-end gap-3">
                 <a href="<?= url('banners') ?>" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancelar</a>
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Salvar</button>
+                <button type="submit" id="banner-submit-btn" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed">
+                    <span id="banner-submit-text">Salvar</span>
+                </button>
             </div>
         </form>
     </div>
@@ -161,6 +163,16 @@ document.addEventListener('DOMContentLoaded', function() {
     internalType.addEventListener('change', toggleLinkType);
     toggleImageSource();
     toggleLinkType();
+
+    const bannerForm = document.getElementById('banner-form');
+    const submitBtn = document.getElementById('banner-submit-btn');
+    const submitText = document.getElementById('banner-submit-text');
+    if (bannerForm && submitBtn && submitText) {
+        bannerForm.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
+        });
+    }
 });
 </script>
 
@@ -169,4 +181,3 @@ unset($_SESSION['old_input']);
 $content = ob_get_clean();
 include __DIR__ . '/../layouts/app.php';
 ?>
-

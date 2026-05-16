@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Representative;
 use App\Models\Establishment;
 use App\Models\Banner;
+use App\Models\RepresentativeModal;
 
 class DashboardController
 {
@@ -14,6 +15,7 @@ class DashboardController
     private $representativeModel;
     private $establishmentModel;
     private $bannerModel;
+    private $representativeModalModel;
     
     public function __construct()
     {
@@ -21,6 +23,7 @@ class DashboardController
         $this->representativeModel = new Representative();
         $this->establishmentModel = new Establishment();
         $this->bannerModel = new Banner();
+        $this->representativeModalModel = new RepresentativeModal();
     }
     
     public function index()
@@ -157,7 +160,8 @@ class DashboardController
             'recent_clients' => $recentClients,
             'pending_clients' => $pendingClients,
             'current_month_stats' => $currentMonthStats,
-            'banners' => $this->resolveBannerLinks($this->bannerModel->getActiveForRepresentative())
+            'banners' => $this->resolveBannerLinks($this->bannerModel->getActiveForRepresentative()),
+            'pending_modal' => $this->resolveRepresentativeModalLink($this->representativeModalModel->getPendingForRepresentative((int) $representative['id']))
         ];
         
         view('dashboard/representative', $data);
@@ -192,5 +196,35 @@ class DashboardController
         }
 
         return $resolved;
+    }
+
+    private function resolveRepresentativeModalLink($modal)
+    {
+        if (!$modal) {
+            return null;
+        }
+
+        $link = null;
+        $targetBlank = false;
+        $linkType = (string) ($modal['link_type'] ?? 'none');
+        if ($linkType === 'external' && !empty($modal['external_link'])) {
+            $link = (string) $modal['external_link'];
+            $targetBlank = true;
+        } elseif ($linkType === 'internal') {
+            $targetType = (string) ($modal['internal_target_type'] ?? '');
+            $targetId = (string) ($modal['internal_target_id'] ?? '');
+            $link = match ($targetType) {
+                'dashboard' => url('dashboard'),
+                'material' => url('material'),
+                'material_file' => $targetId !== '' ? url('material/download/' . $targetId) : url('material'),
+                'chamados' => url('chamados'),
+                'estabelecimentos' => url('estabelecimentos'),
+                default => null,
+            };
+        }
+
+        $modal['resolved_link'] = $link;
+        $modal['target_blank'] = $targetBlank;
+        return $modal;
     }
 }

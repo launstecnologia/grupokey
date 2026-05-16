@@ -6,9 +6,40 @@ ob_start();
 $client_stats = $client_stats ?? ['total_clientes' => 0, 'aprovados' => 0, 'pendentes' => 0, 'reprovados' => 0];
 $current_month_stats = $current_month_stats ?? ['total' => 0, 'cadastros_ultimo_mes' => 0];
 $banners = $banners ?? [];
+$pending_modal = $pending_modal ?? null;
 ?>
 
 <div class="pt-6 px-4">
+    <?php if (!empty($pending_modal)): ?>
+        <?php
+        $modalImage = !empty($pending_modal['image_path'])
+            ? url('modais-representante/' . (int) ($pending_modal['id'] ?? 0) . '/image')
+            : (string) ($pending_modal['image_url'] ?? '');
+        $modalLink = $pending_modal['resolved_link'] ?? null;
+        $modalTarget = !empty($pending_modal['target_blank']) ? '_blank' : '_self';
+        ?>
+        <div id="rep-modal-overlay" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden">
+                <?php if ($modalImage !== ''): ?>
+                    <img src="<?= htmlspecialchars($modalImage) ?>" alt="Modal" class="w-full h-56 object-cover">
+                <?php endif; ?>
+                <div class="p-6">
+                    <?php if (!empty($pending_modal['title'])): ?>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2"><?= htmlspecialchars((string) $pending_modal['title']) ?></h2>
+                    <?php endif; ?>
+                    <p class="text-gray-700 whitespace-pre-line"><?= htmlspecialchars((string) ($pending_modal['message'] ?? '')) ?></p>
+                    <div class="mt-6 flex justify-end gap-3">
+                        <?php if (!empty($modalLink)): ?>
+                            <a href="<?= htmlspecialchars((string) $modalLink) ?>" target="<?= $modalTarget ?>" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Ir para destino</a>
+                        <?php endif; ?>
+                        <button id="rep-modal-read-btn" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900">Li e fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="rep-modal-delivery-id" value="<?= (int) ($pending_modal['delivery_id'] ?? 0) ?>">
+    <?php endif; ?>
+
     <?php if (!empty($banners)): ?>
     <div class="mb-6 bg-white shadow rounded-lg p-4">
         <div id="rep-banner-slider" class="relative overflow-hidden rounded-lg h-56 md:h-72">
@@ -376,6 +407,31 @@ const statusChart = new Chart(ctx, {
     });
 
     queueNext();
+})();
+
+(function() {
+    const overlay = document.getElementById('rep-modal-overlay');
+    const btn = document.getElementById('rep-modal-read-btn');
+    const deliveryIdInput = document.getElementById('rep-modal-delivery-id');
+    if (!overlay || !btn || !deliveryIdInput) return;
+
+    btn.addEventListener('click', async function() {
+        const deliveryId = deliveryIdInput.value;
+        if (!deliveryId) {
+            overlay.remove();
+            return;
+        }
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
+        try {
+            await fetch('<?= url('modais-representante/delivery') ?>/' + deliveryId + '/ack', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'csrf_token=<?= csrf_token() ?>'
+            });
+        } catch (e) {}
+        overlay.remove();
+    });
 })();
 </script>
 

@@ -37,6 +37,16 @@ $router->put('/banners/{id}', 'BannerController@update');
 $router->delete('/banners/{id}', 'BannerController@destroy');
 $router->get('/banners/{id}/image', 'BannerController@image');
 
+// Rotas de modais para representantes (apenas admin)
+$router->get('/modais-representante', 'RepresentativeModalController@index');
+$router->get('/modais-representante/create', 'RepresentativeModalController@create');
+$router->post('/modais-representante', 'RepresentativeModalController@store');
+$router->get('/modais-representante/{id}/edit', 'RepresentativeModalController@edit');
+$router->put('/modais-representante/{id}', 'RepresentativeModalController@update');
+$router->delete('/modais-representante/{id}', 'RepresentativeModalController@destroy');
+$router->get('/modais-representante/{id}/image', 'RepresentativeModalController@image');
+$router->post('/modais-representante/delivery/{id}/ack', 'RepresentativeModalController@ack');
+
 // Rotas de tipos de documento (apenas admin)
 $router->get('/tipos-documentos', 'DocumentTypeController@index');
 $router->get('/tipos-documentos/create', 'DocumentTypeController@create');
