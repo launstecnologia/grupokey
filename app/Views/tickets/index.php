@@ -276,9 +276,10 @@ $filters = $filters ?? [];
                                 <i class="fas fa-check"></i>
                             </button>
                             <?php endif; ?>
-                            <?php 
-                            if ($chamado['status'] === 'OPEN' && 
-                                (Auth::isAdmin() || $chamado['created_by_representative_id'] == $currentUserId)): ?>
+                            <?php
+                            $canDeleteTicket = Auth::isAdmin()
+                                || ($chamado['status'] === 'OPEN' && $chamado['created_by_representative_id'] == $currentUserId);
+                            if ($canDeleteTicket): ?>
                             <button type="button" class="text-red-600 hover:text-red-900 btn-delete" 
                                     data-id="<?= $chamado['id'] ?>" 
                                     data-titulo="<?= htmlspecialchars($chamado['assunto']) ?>"
