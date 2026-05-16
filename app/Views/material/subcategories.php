@@ -123,7 +123,7 @@ ob_start();
                         </a>
                     </div>
                     <div class="col-md-3 mb-2">
-                        <a href="<?= url('material/files') ?>" class="btn btn-outline-success w-100 shadow-sm">
+                        <a href="<?= url('material') ?>" class="btn btn-outline-success w-100 shadow-sm">
                             <i class="fas fa-file-alt me-2"></i>
                             Arquivos
                         </a>

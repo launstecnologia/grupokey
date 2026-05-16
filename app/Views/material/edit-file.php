@@ -15,7 +15,7 @@ ob_start();
         <p class="text-muted mb-0">Atualize as informações do arquivo</p>
     </div>
     <div>
-        <a href="<?= url('material/files') ?>" class="btn btn-outline-secondary shadow-sm">
+        <a href="<?= url('material') ?>" class="btn btn-outline-secondary shadow-sm">
             <i class="fas fa-arrow-left me-2"></i>
             Voltar
         </a>
@@ -45,7 +45,7 @@ ob_start();
                 <?php unset($_SESSION['validation_errors']); ?>
                 <?php endif; ?>
 
-                <form method="POST" action="<?= url('material/files/' . $file['id']) ?>">
+                <form method="POST" action="<?= url('material/files/' . $file['id']) ?>" id="material-edit-file-form">
                     <input type="hidden" name="_method" value="PUT">
                     
                     <div class="row">
@@ -79,13 +79,13 @@ ob_start();
                     </div>
                     
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="<?= url('material/files') ?>" class="btn btn-outline-secondary shadow-sm">
+                        <a href="<?= url('material') ?>" class="btn btn-outline-secondary shadow-sm">
                             <i class="fas fa-times me-2"></i>
                             Cancelar
                         </a>
-                        <button type="submit" class="btn btn-primary shadow-sm">
-                            <i class="fas fa-save me-2"></i>
-                            Atualizar Arquivo
+                        <button type="submit" class="btn btn-primary shadow-sm" id="material-edit-file-submit-btn">
+                            <i class="fas fa-save me-2" id="material-edit-file-submit-icon"></i>
+                            <span id="material-edit-file-submit-text">Atualizar Arquivo</span>
                         </button>
                     </div>
                 </form>
@@ -129,6 +129,25 @@ ob_start();
 </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('material-edit-file-form');
+    const submitBtn = document.getElementById('material-edit-file-submit-btn');
+    const submitIcon = document.getElementById('material-edit-file-submit-icon');
+    const submitText = document.getElementById('material-edit-file-submit-text');
+
+    if (!form) return;
+
+    form.addEventListener('submit', function() {
+        if (submitBtn && submitIcon && submitText) {
+            submitBtn.disabled = true;
+            submitIcon.className = 'fas fa-spinner fa-spin me-2';
+            submitText.textContent = 'Salvando...';
+        }
+    });
+});
+</script>
 
 <?php
 $content = ob_get_clean();

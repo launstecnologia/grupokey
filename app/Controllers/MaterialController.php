@@ -340,20 +340,9 @@ class MaterialController
     public function files()
     {
         Auth::requireAdmin();
-        
-        $filters = $this->getFilters();
-        $files = $this->materialModel->getAllFiles($filters);
-        $productOptions = $this->materialModel->getProductOptions();
-        
-        $data = [
-            'title' => 'Arquivos - Material de Apoio',
-            'currentPage' => 'material',
-            'files' => $files,
-            'productOptions' => $productOptions,
-            'filters' => $filters
-        ];
-        
-        view('material/files', $data);
+
+        // Tela legada removida: centralizar sempre na listagem principal.
+        redirect(url('material'));
     }
 
     public function createFile()
@@ -385,7 +374,7 @@ class MaterialController
             $fileId = $this->materialModel->createFile($data);
             $this->notifyRepresentativesAboutNewMaterial($fileId, $data);
             $_SESSION['success'] = 'Arquivo enviado com sucesso!';
-            redirect(url('material/files'));
+            redirect(url('material'));
         } catch (Exception $e) {
             $_SESSION['error'] = 'Erro ao enviar arquivo: ' . $e->getMessage();
             redirect(url('material/files/create'));
@@ -420,7 +409,7 @@ class MaterialController
         
         if (!$file) {
             $_SESSION['error'] = 'Arquivo não encontrado';
-            redirect(url('material/files'));
+            redirect(url('material'));
         }
         
         $productOptions = $this->materialModel->getProductOptions();
@@ -445,7 +434,7 @@ class MaterialController
         
         if (!$file) {
             $_SESSION['error'] = 'Arquivo não encontrado';
-            redirect(url('material/files'));
+            redirect(url('material'));
         }
         
         $data = $this->validateAndSanitizeFileInput();
@@ -457,7 +446,7 @@ class MaterialController
         try {
             $this->materialModel->updateFile($id, $data);
             $_SESSION['success'] = 'Arquivo atualizado com sucesso!';
-            redirect(url('material/files'));
+            redirect(url('material'));
         } catch (Exception $e) {
             $_SESSION['error'] = 'Erro ao atualizar arquivo: ' . $e->getMessage();
             redirect(url('material/files/' . $id . '/edit'));
@@ -472,7 +461,7 @@ class MaterialController
         
         if (!$file) {
             $_SESSION['error'] = 'Arquivo não encontrado';
-            redirect(url('material/files'));
+            redirect(url('material'));
         }
         
         try {
@@ -482,7 +471,7 @@ class MaterialController
             $_SESSION['error'] = 'Erro ao excluir arquivo: ' . $e->getMessage();
         }
         
-        redirect(url('material/files'));
+        redirect(url('material'));
     }
 
     // ===========================================
