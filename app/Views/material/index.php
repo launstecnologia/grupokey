@@ -9,6 +9,12 @@ $files = $files ?? [];
 $productOptions = $productOptions ?? [];
 $filters = $filters ?? [];
 $readMap = $readMap ?? [];
+$cardFiles = array_values(array_filter($files, static function ($f) {
+    return (int) ($f['is_active'] ?? 0) === 1;
+}));
+$listFiles = array_values(array_filter($files, static function ($f) {
+    return (int) ($f['is_active'] ?? 0) !== 1;
+}));
 ?>
 
 <div class="pt-6 px-4">
@@ -92,8 +98,9 @@ $readMap = $readMap ?? [];
                 </p>
             </div>
         <?php else: ?>
+            <?php if (!empty($cardFiles)): ?>
             <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                <?php foreach ($files as $file): ?>
+                <?php foreach ($cardFiles as $file): ?>
                 <?php $isImage = stripos((string) ($file['mime_type'] ?? ''), 'image/') === 0; ?>
                 <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-all duration-200">
                     <?php if ($isImage): ?>
@@ -145,6 +152,43 @@ $readMap = $readMap ?? [];
                 </div>
                 <?php endforeach; ?>
             </div>
+            <?php endif; ?>
+
+            <?php if (!empty($listFiles)): ?>
+            <div class="px-6 pb-6">
+                <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Lista Simples</h4>
+                <div class="rounded-lg border border-gray-200 overflow-hidden bg-white">
+                    <div class="divide-y divide-gray-200">
+                        <?php foreach ($listFiles as $file): ?>
+                        <div class="px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-gray-900 truncate"><?= htmlspecialchars($file['title']) ?></p>
+                                <p class="text-xs text-gray-500 truncate">
+                                    <?= htmlspecialchars($file['category_name']) ?> • <?= strtoupper((string) $file['file_type']) ?> • <?= format_file_size((int) $file['file_size']) ?>
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center text-xs" title="Download">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <?php if (Auth::isAdmin()): ?>
+                                <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center text-xs" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="<?= url('material/files/' . $file['id']) ?>" onsubmit="return confirm('Deseja excluir este arquivo?');" class="inline">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center text-xs" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>

@@ -167,7 +167,7 @@ class Material
                 LEFT JOIN material_categories c ON f.category_id = c.id
                 LEFT JOIN material_subcategories s ON f.subcategory_id = s.id
                 LEFT JOIN users u ON f.uploaded_by = u.id
-                WHERE f.is_active = 1";
+                WHERE 1=1";
         
         $params = [];
         
@@ -179,6 +179,11 @@ class Material
             } else {
                 $sql .= " AND 1 = 0";
             }
+        }
+
+        if (isset($filters['is_active']) && $filters['is_active'] !== '') {
+            $sql .= " AND f.is_active = ?";
+            $params[] = (int) $filters['is_active'];
         }
         
         if (!empty($filters['search'])) {
