@@ -1080,32 +1080,48 @@
     function renderNotifications(notifications) {
         const list = document.getElementById('notifications-list');
         if (!list) return;
+        const isDarkMode = document.documentElement.classList.contains('dark');
         
         if (notifications.length === 0) {
-            list.innerHTML = '<div class="p-4 text-center text-gray-500 dark:text-gray-400">Nenhuma notificação</div>';
+            list.innerHTML = `<div class="p-4 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}">Nenhuma notificação</div>`;
             return;
         }
         
-        list.innerHTML = notifications.map(notif => `
+        list.innerHTML = notifications.map(notif => {
+            const itemClass = notif.is_read
+                ? (isDarkMode
+                    ? 'bg-black hover:bg-blue-900'
+                    : 'bg-white hover:bg-gray-50')
+                : (isDarkMode
+                    ? 'bg-black hover:bg-blue-900 border-l-2 border-blue-500'
+                    : 'bg-blue-50 hover:bg-blue-100 border-l-2 border-blue-500');
+
+            const iconClass = isDarkMode ? 'text-blue-400' : 'text-blue-600';
+            const titleClass = isDarkMode ? 'text-white' : 'text-gray-900';
+            const messageClass = isDarkMode ? 'text-gray-300' : 'text-gray-500';
+            const dateClass = isDarkMode ? 'text-gray-400' : 'text-gray-400';
+
+            return `
             <div 
-                class="p-4 cursor-pointer transition-colors ${notif.is_read ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700' : 'bg-blue-50 dark:bg-slate-800/80 hover:bg-blue-100 dark:hover:bg-slate-700 border-l-2 border-blue-500'}"
+                class="p-4 cursor-pointer transition-colors ${itemClass}"
                 data-notification-id="${notif.id}"
                 data-related-type="${escapeHtml(notif.related_type || '')}"
                 data-related-id="${notif.related_id || ''}"
             >
                 <div class="flex items-start">
                     <div class="flex-shrink-0">
-                        <i class="fas fa-${notif.type === 'TASK_REMINDER' ? 'bell' : 'info-circle'} text-blue-600 dark:text-blue-400"></i>
+                        <i class="fas fa-${notif.type === 'TASK_REMINDER' ? 'bell' : 'info-circle'} ${iconClass}"></i>
                     </div>
                     <div class="ml-3 flex-1">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(notif.title)}</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${escapeHtml(notif.message)}</p>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">${formatDate(notif.created_at)}</p>
+                        <p class="text-sm font-medium ${titleClass}">${escapeHtml(notif.title)}</p>
+                        <p class="text-sm ${messageClass} mt-1">${escapeHtml(notif.message)}</p>
+                        <p class="text-xs ${dateClass} mt-1">${formatDate(notif.created_at)}</p>
                     </div>
                     ${!notif.is_read ? '<div class="ml-2 w-2 h-2 bg-blue-600 rounded-full"></div>' : ''}
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         list.querySelectorAll('[data-notification-id]').forEach(item => {
             item.addEventListener('click', function() {

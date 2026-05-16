@@ -342,7 +342,7 @@ class Material
     public function getProductOptions(): array
     {
         $options = [
-            'PAGSEGURO' => 'PagSeguro',
+            'PAGSEGURO' => 'PAGSEGURO',
         ];
 
         try {
