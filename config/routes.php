@@ -28,6 +28,15 @@ $router->get('/sistpay-settings', 'SistPaySettingsController@index');
 $router->post('/sistpay-settings/update', 'SistPaySettingsController@update');
 $router->post('/sistpay-settings/test', 'SistPaySettingsController@test');
 
+// Rotas de banners (apenas admin)
+$router->get('/banners', 'BannerController@index');
+$router->get('/banners/create', 'BannerController@create');
+$router->post('/banners', 'BannerController@store');
+$router->get('/banners/{id}/edit', 'BannerController@edit');
+$router->put('/banners/{id}', 'BannerController@update');
+$router->delete('/banners/{id}', 'BannerController@destroy');
+$router->get('/banners/{id}/image', 'BannerController@image');
+
 // Rotas de tipos de documento (apenas admin)
 $router->get('/tipos-documentos', 'DocumentTypeController@index');
 $router->get('/tipos-documentos/create', 'DocumentTypeController@create');

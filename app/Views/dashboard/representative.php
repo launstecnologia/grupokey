@@ -5,9 +5,49 @@ ob_start();
 // Definir variáveis com valores padrão para evitar warnings
 $client_stats = $client_stats ?? ['total_clientes' => 0, 'aprovados' => 0, 'pendentes' => 0, 'reprovados' => 0];
 $current_month_stats = $current_month_stats ?? ['total' => 0, 'cadastros_ultimo_mes' => 0];
+$banners = $banners ?? [];
 ?>
 
 <div class="pt-6 px-4">
+    <?php if (!empty($banners)): ?>
+    <div class="mb-6 bg-white shadow rounded-lg p-4">
+        <div id="rep-banner-slider" class="relative overflow-hidden rounded-lg h-56 md:h-72">
+            <?php foreach ($banners as $index => $banner): ?>
+                <?php
+                    $imageSrc = !empty($banner['image_path'])
+                        ? url('banners/' . (int) ($banner['id'] ?? 0) . '/image')
+                        : (string) ($banner['image_url'] ?? '');
+                    $slideSeconds = max(1, min(60, (int) ($banner['slide_duration_seconds'] ?? 5)));
+                    $slideLink = $banner['resolved_link'] ?? null;
+                    $slideTarget = !empty($banner['target_blank']) ? '_blank' : '_self';
+                ?>
+                <div class="rep-banner-slide absolute inset-0 transition-opacity duration-500 <?= $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' ?>" data-duration-ms="<?= $slideSeconds * 1000 ?>">
+                    <?php if (!empty($slideLink)): ?>
+                        <a href="<?= htmlspecialchars((string) $slideLink) ?>" target="<?= $slideTarget ?>" class="block h-full">
+                    <?php endif; ?>
+                    <img src="<?= htmlspecialchars($imageSrc) ?>" alt="<?= htmlspecialchars((string) ($banner['title'] ?? 'Banner')) ?>" class="w-full h-full object-cover">
+                    <?php if (!empty($banner['title']) || !empty($banner['subtitle'])): ?>
+                    <div class="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                        <?php if (!empty($banner['title'])): ?><h4 class="text-white text-lg font-bold"><?= htmlspecialchars((string) $banner['title']) ?></h4><?php endif; ?>
+                        <?php if (!empty($banner['subtitle'])): ?><p class="text-gray-200 text-sm"><?= htmlspecialchars((string) $banner['subtitle']) ?></p><?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (!empty($slideLink)): ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <?php if (count($banners) > 1): ?>
+        <div id="rep-banner-dots" class="flex justify-center gap-2 mt-3">
+            <?php foreach ($banners as $index => $banner): ?>
+                <button type="button" class="rep-banner-dot w-2.5 h-2.5 rounded-full <?= $index === 0 ? 'bg-blue-600' : 'bg-gray-300' ?>" data-index="<?= $index ?>"></button>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
     <!-- KPIs Cards -->
     <div class="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
         <!-- Total Clientes Card -->
@@ -291,6 +331,52 @@ const statusChart = new Chart(ctx, {
         }
     }
 });
+
+(function() {
+    const slider = document.getElementById('rep-banner-slider');
+    if (!slider) return;
+    const slides = Array.from(slider.querySelectorAll('.rep-banner-slide'));
+    if (slides.length <= 1) return;
+    const dots = Array.from(document.querySelectorAll('.rep-banner-dot'));
+    let active = 0;
+    let timer = null;
+
+    function setActive(nextIndex) {
+        slides.forEach((slide, index) => {
+            const show = index === nextIndex;
+            slide.classList.toggle('opacity-100', show);
+            slide.classList.toggle('z-10', show);
+            slide.classList.toggle('opacity-0', !show);
+            slide.classList.toggle('z-0', !show);
+        });
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('bg-blue-600', index === nextIndex);
+            dot.classList.toggle('bg-gray-300', index !== nextIndex);
+        });
+        active = nextIndex;
+    }
+
+    function queueNext() {
+        clearTimeout(timer);
+        const duration = Number(slides[active].dataset.durationMs || 5000);
+        timer = setTimeout(() => {
+            const next = (active + 1) % slides.length;
+            setActive(next);
+            queueNext();
+        }, duration);
+    }
+
+    dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+            const index = Number(dot.dataset.index || 0);
+            if (Number.isNaN(index)) return;
+            setActive(index);
+            queueNext();
+        });
+    });
+
+    queueNext();
+})();
 </script>
 
 <?php

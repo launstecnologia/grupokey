@@ -6,18 +6,21 @@ use App\Core\Auth;
 use App\Models\User;
 use App\Models\Representative;
 use App\Models\Establishment;
+use App\Models\Banner;
 
 class DashboardController
 {
     private $userModel;
     private $representativeModel;
     private $establishmentModel;
+    private $bannerModel;
     
     public function __construct()
     {
         $this->userModel = new User();
         $this->representativeModel = new Representative();
         $this->establishmentModel = new Establishment();
+        $this->bannerModel = new Banner();
     }
     
     public function index()
@@ -153,9 +156,41 @@ class DashboardController
             'client_stats' => $clientStats,
             'recent_clients' => $recentClients,
             'pending_clients' => $pendingClients,
-            'current_month_stats' => $currentMonthStats
+            'current_month_stats' => $currentMonthStats,
+            'banners' => $this->resolveBannerLinks($this->bannerModel->getActiveForRepresentative())
         ];
         
         view('dashboard/representative', $data);
+    }
+
+    private function resolveBannerLinks(array $banners): array
+    {
+        $resolved = [];
+        foreach ($banners as $banner) {
+            $link = null;
+            $targetBlank = false;
+            $linkType = (string) ($banner['link_type'] ?? 'none');
+            if ($linkType === 'external' && !empty($banner['external_link'])) {
+                $link = (string) $banner['external_link'];
+                $targetBlank = true;
+            } elseif ($linkType === 'internal') {
+                $targetType = (string) ($banner['internal_target_type'] ?? '');
+                $targetId = (string) ($banner['internal_target_id'] ?? '');
+                $link = match ($targetType) {
+                    'dashboard' => url('dashboard'),
+                    'material' => url('material'),
+                    'material_file' => $targetId !== '' ? url('material/download/' . $targetId) : url('material'),
+                    'chamados' => url('chamados'),
+                    'estabelecimentos' => url('estabelecimentos'),
+                    default => null,
+                };
+            }
+
+            $banner['resolved_link'] = $link;
+            $banner['target_blank'] = $targetBlank;
+            $resolved[] = $banner;
+        }
+
+        return $resolved;
     }
 }
