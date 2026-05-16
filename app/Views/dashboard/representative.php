@@ -27,7 +27,7 @@ $pending_modal = $pending_modal ?? null;
                     <?php if (!empty($pending_modal['title'])): ?>
                         <h2 class="text-2xl font-bold text-gray-900 mb-2"><?= htmlspecialchars((string) $pending_modal['title']) ?></h2>
                     <?php endif; ?>
-                    <p class="text-gray-700 whitespace-pre-line"><?= htmlspecialchars((string) ($pending_modal['message'] ?? '')) ?></p>
+                    <div class="text-gray-700 prose prose-sm max-w-none"><?= (string) ($pending_modal['message'] ?? '') ?></div>
                     <div class="mt-6 flex justify-end gap-3">
                         <?php if (!empty($modalLink)): ?>
                             <a href="<?= htmlspecialchars((string) $modalLink) ?>" target="<?= $modalTarget ?>" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Ir para destino</a>

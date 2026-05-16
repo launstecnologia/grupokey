@@ -13,6 +13,8 @@ $value = function (string $key, $default = '') use ($old, $modal) {
     }
     return $modal[$key] ?? $default;
 };
+$initialMessageValue = (string) $value('message');
+$initialMessageValue = html_entity_decode($initialMessageValue, ENT_QUOTES, 'UTF-8');
 
 $selectedReps = [];
 if (isset($old['selected_representative_ids']) && is_array($old['selected_representative_ids'])) {
@@ -52,7 +54,15 @@ if (isset($old['selected_representative_ids']) && is_array($old['selected_repres
             </div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Texto do Modal *</label>
-                <textarea name="message" rows="4" required class="w-full px-3 py-2 border border-gray-300 rounded-md"><?= htmlspecialchars((string) $value('message')) ?></textarea>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <button type="button" data-editor-cmd="bold" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 font-semibold">Negrito</button>
+                    <button type="button" data-editor-cmd="italic" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 italic">Itálico</button>
+                    <button type="button" data-editor-cmd="underline" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 underline">Sublinhado</button>
+                    <button type="button" data-editor-cmd="insertUnorderedList" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Lista</button>
+                </div>
+                <div id="rep-modal-editor" contenteditable="true" class="w-full min-h-[140px] px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"><?= $initialMessageValue ?></div>
+                <textarea id="rep-modal-message-input" name="message" rows="4" required class="hidden"></textarea>
+                <p class="text-xs text-gray-500 mt-1">Você pode formatar texto com negrito, itálico, sublinhado e lista.</p>
             </div>
 
             <div>
@@ -184,7 +194,7 @@ if (isset($old['selected_representative_ids']) && is_array($old['selected_repres
         <img id="rep-modal-preview-image" src="" alt="Preview" class="w-full h-56 object-cover hidden">
         <div class="p-6">
             <h2 id="rep-modal-preview-title" class="text-2xl font-bold text-gray-900 mb-2 hidden"></h2>
-            <p id="rep-modal-preview-message" class="text-gray-700 whitespace-pre-line"></p>
+            <div id="rep-modal-preview-message" class="text-gray-700 prose prose-sm max-w-none"></div>
             <div class="mt-6 flex justify-end gap-3">
                 <button type="button" id="rep-modal-preview-close" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900">Fechar Preview</button>
             </div>
@@ -215,6 +225,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewImage = document.getElementById('rep-modal-preview-image');
     const previewTitle = document.getElementById('rep-modal-preview-title');
     const previewMessage = document.getElementById('rep-modal-preview-message');
+    const editor = document.getElementById('rep-modal-editor');
+    const messageInput = document.getElementById('rep-modal-message-input');
+
+    function syncEditorToInput() {
+        if (!editor || !messageInput) return;
+        messageInput.value = editor.innerHTML.trim();
+    }
+
+    document.querySelectorAll('[data-editor-cmd]').forEach((btn) => {
+        btn.addEventListener('click', function() {
+            const cmd = this.getAttribute('data-editor-cmd');
+            if (!cmd || !editor) return;
+            editor.focus();
+            document.execCommand(cmd, false);
+            syncEditorToInput();
+        });
+    });
+
+    if (editor) {
+        editor.addEventListener('input', syncEditorToInput);
+    }
+    syncEditorToInput();
 
     function toggleImage() {
         const mode = imageSourceType.value;
@@ -256,6 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const txt = document.getElementById('rep-modal-submit-text');
     if (form && btn && txt) {
         form.addEventListener('submit', function() {
+            syncEditorToInput();
             btn.disabled = true;
             txt.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
         });
@@ -263,14 +296,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function openPreview() {
         const title = document.querySelector('input[name="title"]').value.trim();
-        const message = document.querySelector('textarea[name="message"]').value.trim();
+        syncEditorToInput();
+        const message = messageInput ? messageInput.value.trim() : '';
         const imageMode = imageSourceType.value;
         const imageUrl = document.querySelector('input[name="image_url"]').value.trim();
         const fileInput = document.querySelector('input[name="image"]');
 
         previewTitle.textContent = title || 'Sem título';
         previewTitle.classList.toggle('hidden', !title);
-        previewMessage.textContent = message || 'Sem texto informado.';
+        previewMessage.innerHTML = message || 'Sem texto informado.';
 
         let src = '';
         if (imageMode === 'url' && imageUrl) {

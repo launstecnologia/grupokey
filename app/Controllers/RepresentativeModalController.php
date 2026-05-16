@@ -161,7 +161,7 @@ class RepresentativeModalController
         $errors = [];
 
         $title = trim((string) sanitize_input($_POST['title'] ?? ''));
-        $message = trim((string) sanitize_input($_POST['message'] ?? ''));
+        $message = $this->sanitizeRichTextMessage((string) ($_POST['message'] ?? ''));
         $imageSourceType = trim((string) ($_POST['image_source_type'] ?? 'upload'));
         $imageUrl = trim((string) sanitize_input($_POST['image_url'] ?? ''));
         $imagePath = $existing['image_path'] ?? null;
@@ -269,5 +269,26 @@ class RepresentativeModalController
             'is_active' => $isActive,
         ];
     }
-}
 
+    private function sanitizeRichTextMessage(string $html): string
+    {
+        $clean = trim($html);
+        if ($clean === '') {
+            return '';
+        }
+
+        $clean = preg_replace('#<\s*(script|style)[^>]*>.*?<\s*/\s*\1\s*>#is', '', $clean);
+        $clean = preg_replace('/\s+on[a-z]+\s*=\s*"[^"]*"/i', '', $clean);
+        $clean = preg_replace("/\s+on[a-z]+\s*=\s*'[^']*'/i", '', $clean);
+        $clean = preg_replace('/\s+on[a-z]+\s*=\s*[^ >]+/i', '', $clean);
+        $clean = preg_replace('/\s+style\s*=\s*"[^"]*"/i', '', $clean);
+        $clean = preg_replace("/\s+style\s*=\s*'[^']*'/i", '', $clean);
+        $clean = preg_replace('/\s+style\s*=\s*[^ >]+/i', '', $clean);
+
+        $allowedTags = '<p><br><strong><b><em><i><u><ul><ol><li><a>';
+        $clean = strip_tags($clean, $allowedTags);
+        $clean = preg_replace('/<a\b([^>]*)>/i', '<a$1 target="_blank" rel="noopener noreferrer">', $clean);
+
+        return trim($clean);
+    }
+}
