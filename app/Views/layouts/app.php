@@ -1087,8 +1087,12 @@
         }
         
         list.innerHTML = notifications.map(notif => `
-            <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${notif.is_read ? '' : 'bg-blue-50 dark:bg-blue-900/20'}" 
-                 onclick="markNotificationRead(${notif.id})">
+            <div 
+                class="p-4 cursor-pointer transition-colors ${notif.is_read ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700' : 'bg-blue-50 dark:bg-slate-800/80 hover:bg-blue-100 dark:hover:bg-slate-700 border-l-2 border-blue-500'}"
+                data-notification-id="${notif.id}"
+                data-related-type="${escapeHtml(notif.related_type || '')}"
+                data-related-id="${notif.related_id || ''}"
+            >
                 <div class="flex items-start">
                     <div class="flex-shrink-0">
                         <i class="fas fa-${notif.type === 'TASK_REMINDER' ? 'bell' : 'info-circle'} text-blue-600 dark:text-blue-400"></i>
@@ -1102,10 +1106,35 @@
                 </div>
             </div>
         `).join('');
+
+        list.querySelectorAll('[data-notification-id]').forEach(item => {
+            item.addEventListener('click', function() {
+                const notificationId = this.dataset.notificationId;
+                const relatedType = this.dataset.relatedType || '';
+                const relatedId = this.dataset.relatedId || '';
+                handleNotificationClick(notificationId, relatedType, relatedId);
+            });
+        });
     }
-    
+
+    function resolveNotificationUrl(relatedType, relatedId) {
+        if (relatedType === 'establishment' && relatedId) {
+            return '<?= url('estabelecimentos') ?>/' + relatedId;
+        }
+        if (relatedType === 'material_file' && relatedId) {
+            return '<?= url('material') ?>';
+        }
+        if (relatedType === 'deal' && relatedId) {
+            return '<?= url('crm/deals') ?>/' + relatedId;
+        }
+        if (relatedType === 'task' && relatedId) {
+            return '<?= url('crm') ?>';
+        }
+        return '';
+    }
+
     function markNotificationRead(id) {
-        fetch('<?= url('crm/notifications') ?>/' + id + '/read', {
+        return fetch('<?= url('crm/notifications') ?>/' + id + '/read', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1118,10 +1147,22 @@
         .then(data => {
             if (data.success) {
                 loadNotifications();
+                return true;
             }
+            return false;
         })
         .catch(error => {
             console.error('Erro ao marcar notificação como lida:', error);
+            return false;
+        });
+    }
+
+    function handleNotificationClick(notificationId, relatedType, relatedId) {
+        const targetUrl = resolveNotificationUrl(relatedType, relatedId);
+        markNotificationRead(notificationId).finally(() => {
+            if (targetUrl) {
+                window.location.href = targetUrl;
+            }
         });
     }
     
