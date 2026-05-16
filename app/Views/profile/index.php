@@ -173,27 +173,14 @@ $type = $type ?? 'admin';
                 <div class="p-6 text-center">
                     <?php 
                     $photoPath = null;
-                    $fullPath = null;
                     $hasPhoto = false;
                     
                     // Verificar se photo existe no array e construir caminhos
                     $photoFileName = $user['photo'] ?? null;
                     if (!empty($photoFileName)) {
-                        // Caminho absoluto do arquivo - usando caminho relativo ao arquivo atual
-                        // Estamos em app/Views/profile/index.php, então precisamos voltar 3 níveis para chegar na raiz
-                        $basePath = dirname(__DIR__, 3); // Volta 3 níveis: profile -> Views -> app -> raiz
-                        $fullPath = $basePath . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'profiles' . DIRECTORY_SEPARATOR . $photoFileName;
-                        
-                        // Normalizar caminho para Windows/Linux
-                        $fullPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $fullPath);
-                        
                         // Caminho relativo para URL
                         $photoPath = url('public/uploads/profiles/' . $photoFileName);
-                        
-                        // Verificar se o arquivo existe
-                        if (file_exists($fullPath) && is_file($fullPath)) {
-                            $hasPhoto = true;
-                        }
+                        $hasPhoto = true;
                     }
                     ?>
                     <div class="mx-auto h-32 w-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">

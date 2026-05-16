@@ -270,6 +270,40 @@ class Material
         return $this->db->query($sql, [$id]);
     }
 
+    public function markAsReadByRepresentative(string $fileId, int $representativeId): bool
+    {
+        $sql = "INSERT INTO material_file_reads (file_id, representative_id, read_at)
+                VALUES (?, ?, NOW())
+                ON DUPLICATE KEY UPDATE read_at = NOW(), updated_at = NOW()";
+
+        $this->db->query($sql, [$fileId, $representativeId]);
+        return true;
+    }
+
+    public function getReadMapForRepresentative(int $representativeId, array $fileIds): array
+    {
+        if (empty($fileIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($fileIds), '?'));
+        $params = array_merge([$representativeId], $fileIds);
+
+        $rows = $this->db->fetchAll(
+            "SELECT file_id, read_at
+             FROM material_file_reads
+             WHERE representative_id = ? AND file_id IN ({$placeholders})",
+            $params
+        );
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(string) $row['file_id']] = $row['read_at'];
+        }
+
+        return $map;
+    }
+
     // ===========================================
     // ESTATÍSTICAS
     // ===========================================

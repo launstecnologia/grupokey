@@ -8,6 +8,7 @@ $stats = $stats ?? ['total_files' => 0, 'total_categories' => 0, 'total_download
 $files = $files ?? [];
 $productOptions = $productOptions ?? [];
 $filters = $filters ?? [];
+$readMap = $readMap ?? [];
 ?>
 
 <div class="pt-6 px-4">
@@ -122,6 +123,20 @@ $filters = $filters ?? [];
                                 <span class="text-xs text-gray-500">
                                     <?= format_datetime($file['created_at'], 'd/m/Y') ?>
                                 </span>
+                                <?php if (Auth::isRepresentative()): ?>
+                                    <?php $readAt = $readMap[$file['id']] ?? null; ?>
+                                    <?php if ($readAt): ?>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-600 text-white">
+                                        <i class="fas fa-check mr-1"></i>
+                                        Lido em <?= format_datetime($readAt, 'd/m/Y H:i') ?>
+                                    </span>
+                                    <?php else: ?>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-500 text-white">
+                                        <i class="fas fa-book-reader mr-1"></i>
+                                        Leitura pendente
+                                    </span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div class="flex items-center space-x-2 flex-shrink-0">
@@ -131,6 +146,16 @@ $filters = $filters ?? [];
                                 <i class="fas fa-download mr-1"></i>
                                 Download
                             </a>
+                            <?php if (Auth::isRepresentative()): ?>
+                            <?php $readAt = $readMap[$file['id']] ?? null; ?>
+                            <form method="POST" action="<?= url('material/files/' . $file['id'] . '/read') ?>" class="inline">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="<?= $readAt ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-emerald-600 hover:bg-emerald-700' ?> text-white px-4 py-2 rounded-md inline-flex items-center">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    <?= $readAt ? 'Atualizar leitura' : 'Confirmar leitura' ?>
+                                </button>
+                            </form>
+                            <?php endif; ?>
                             <?php if (Auth::isAdmin()): ?>
                             <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" 
                                class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md inline-flex items-center" 

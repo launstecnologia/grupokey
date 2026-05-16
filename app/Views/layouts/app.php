@@ -670,15 +670,19 @@
                                             }
                                             
                                             $headerPhotoPath = null;
-                                            $headerFullPath = null;
                                             if (!empty($currentUser['photo'])) {
                                                 $headerPhotoPath = url('public/uploads/profiles/' . $currentUser['photo']);
-                                                $headerFullPath = dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'profiles' . DIRECTORY_SEPARATOR . $currentUser['photo'];
                                             }
                                             ?>
-                                            <div class="h-8 w-8 rounded-full bg-cyan-600 flex items-center justify-center overflow-hidden">
-                                                <?php if ($headerPhotoPath && isset($headerFullPath) && file_exists($headerFullPath)): ?>
-                                                    <img src="<?= $headerPhotoPath ?>" alt="Foto do perfil" class="h-full w-full object-cover">
+                                            <div class="h-9 w-9 rounded-full bg-cyan-600 flex items-center justify-center overflow-hidden">
+                                                <?php if ($headerPhotoPath): ?>
+                                                    <img src="<?= $headerPhotoPath ?>" alt="Foto do perfil" class="h-full w-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                    <span class="text-sm font-medium text-white hidden">
+                                                        <?php
+                                                        $displayName = $user['name'] ?? $representative['nome_completo'] ?? 'U';
+                                                        echo strtoupper(substr($displayName, 0, 1));
+                                                        ?>
+                                                    </span>
                                                 <?php else: ?>
                                                     <span class="text-sm font-medium text-white">
                                                         <?php

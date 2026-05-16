@@ -4,14 +4,20 @@ namespace App\Controllers;
 
 use App\Core\Auth;
 use App\Models\Material;
+use App\Models\Representative;
+use App\Models\Notification;
 
 class MaterialController
 {
     private $materialModel;
+    private $representativeModel;
+    private $notificationModel;
 
     public function __construct()
     {
         $this->materialModel = new Material();
+        $this->representativeModel = new Representative();
+        $this->notificationModel = new Notification();
     }
 
     // ===========================================
@@ -26,6 +32,15 @@ class MaterialController
         $files = $this->materialModel->getAllFiles($filters);
         $productOptions = $this->materialModel->getProductOptions();
         $stats = $this->materialModel->getStats();
+        $readMap = [];
+
+        if (Auth::isRepresentative()) {
+            $representativeId = (int) (Auth::representative()['id'] ?? 0);
+            $fileIds = array_values(array_filter(array_map(static function ($file) {
+                return $file['id'] ?? null;
+            }, $files)));
+            $readMap = $this->materialModel->getReadMapForRepresentative($representativeId, $fileIds);
+        }
         
         $data = [
             'title' => 'Material de Apoio',
@@ -33,7 +48,8 @@ class MaterialController
             'files' => $files,
             'productOptions' => $productOptions,
             'stats' => $stats,
-            'filters' => $filters
+            'filters' => $filters,
+            'readMap' => $readMap
         ];
         
         view('material/index', $data);
@@ -366,13 +382,34 @@ class MaterialController
         }
         
         try {
-            $this->materialModel->createFile($data);
+            $fileId = $this->materialModel->createFile($data);
+            $this->notifyRepresentativesAboutNewMaterial($fileId, $data);
             $_SESSION['success'] = 'Arquivo enviado com sucesso!';
             redirect(url('material/files'));
         } catch (Exception $e) {
             $_SESSION['error'] = 'Erro ao enviar arquivo: ' . $e->getMessage();
             redirect(url('material/files/create'));
         }
+    }
+
+    public function markAsRead($id)
+    {
+        Auth::requireRepresentative();
+
+        $file = $this->materialModel->getFileById($id);
+        if (!$file) {
+            $_SESSION['error'] = 'Arquivo não encontrado';
+            redirect(url('material'));
+        }
+
+        try {
+            $this->materialModel->markAsReadByRepresentative($id, (int) (Auth::representative()['id'] ?? 0));
+            $_SESSION['success'] = 'Leitura confirmada com sucesso!';
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'Erro ao confirmar leitura: ' . $e->getMessage();
+        }
+
+        redirect(url('material'));
     }
 
     public function editFile($id)
@@ -528,8 +565,8 @@ class MaterialController
         $errors = [];
         $isUpdate = strtoupper($_POST['_method'] ?? '') === 'PUT';
         
-        $categoryId = trim($_POST['category_id'] ?? '');
-        if (empty($categoryId)) {
+        $productKey = strtoupper(trim($_POST['product'] ?? ''));
+        if ($productKey === '') {
             $errors[] = 'Categoria é obrigatória';
         }
         
@@ -617,5 +654,37 @@ class MaterialController
             'title' => $title,
             'description' => $description
         ], $fileData);
+    }
+
+    private function notifyRepresentativesAboutNewMaterial(string $fileId, array $data): void
+    {
+        try {
+            $representatives = $this->representativeModel->getAll(['status' => 'ACTIVE']);
+            if (empty($representatives)) {
+                return;
+            }
+
+            $title = trim((string) ($data['title'] ?? 'Novo material'));
+            $message = sprintf('Novo material de apoio disponível: "%s".', $title);
+
+            foreach ($representatives as $representative) {
+                $repId = (int) ($representative['id'] ?? 0);
+                if ($repId <= 0) {
+                    continue;
+                }
+
+                $this->notificationModel->create([
+                    'recipient_type' => 'representative',
+                    'representative_id' => $repId,
+                    'type' => 'MATERIAL_NEW',
+                    'title' => 'Novo Material de Apoio',
+                    'message' => $message,
+                    'related_type' => 'material_file',
+                    'related_id' => null
+                ]);
+            }
+        } catch (\Throwable $e) {
+            write_log('Falha ao notificar representantes sobre novo material: ' . $e->getMessage(), 'app.log');
+        }
     }
 }

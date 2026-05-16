@@ -13,7 +13,10 @@ use App\Models\CustomFieldDefinition;
 use App\Models\CustomFieldValue;
 use App\Models\Segment;
 use App\Models\SistPaySettings;
+use App\Models\User;
+use App\Models\Notification;
 use App\Core\FileUpload;
+use App\Core\Mailer;
 use App\Services\SistPayApi;
 
 class EstablishmentController
@@ -28,6 +31,8 @@ class EstablishmentController
     private $customFieldValueModel;
     private $segmentModel;
     private $fileUpload;
+    private $userModel;
+    private $notificationModel;
     
     public function __construct()
     {
@@ -41,6 +46,8 @@ class EstablishmentController
         $this->customFieldValueModel = new CustomFieldValue();
         $this->segmentModel = new Segment();
         $this->fileUpload = new FileUpload();
+        $this->userModel = new User();
+        $this->notificationModel = new Notification();
     }
     
     public function index()
@@ -156,6 +163,11 @@ class EstablishmentController
             
             // Upload de documentos se houver
             $this->handleDocumentUpload($establishmentId);
+
+            if (Auth::isRepresentative()) {
+                $this->notifyAdminsAboutRepresentativeEstablishment((int) $establishmentId, $data);
+                $this->emailAdminsAboutRepresentativeEstablishment((int) $establishmentId, $data);
+            }
             
             // Limpar dados antigos da sessão após sucesso
             if (isset($_SESSION['old_input'])) {
@@ -221,6 +233,88 @@ class EstablishmentController
                 'line' => $e->getLine()
             ];
             redirect(url('estabelecimentos/create'));
+        }
+    }
+
+    private function notifyAdminsAboutRepresentativeEstablishment(int $establishmentId, array $data): void
+    {
+        try {
+            $admins = $this->userModel->getAll(['status' => 'ACTIVE']);
+            if (empty($admins)) {
+                return;
+            }
+
+            $representativeName = Auth::representative()['name'] ?? 'Representante';
+            $establishmentName = $data['nome_fantasia'] ?? $data['nome_completo'] ?? 'Novo estabelecimento';
+
+            foreach ($admins as $admin) {
+                $adminId = (int) ($admin['id'] ?? 0);
+                if ($adminId <= 0) {
+                    continue;
+                }
+
+                $this->notificationModel->create([
+                    'user_id' => $adminId,
+                    'type' => 'ESTABLISHMENT_CREATED',
+                    'title' => 'Novo estabelecimento cadastrado',
+                    'message' => sprintf('%s cadastrou o estabelecimento "%s".', $representativeName, $establishmentName),
+                    'related_type' => 'establishment',
+                    'related_id' => $establishmentId
+                ]);
+            }
+        } catch (\Throwable $e) {
+            write_log('Falha ao notificar admins sobre cadastro de estabelecimento: ' . $e->getMessage(), 'app.log');
+        }
+    }
+
+    private function emailAdminsAboutRepresentativeEstablishment(int $establishmentId, array $data): void
+    {
+        try {
+            $admins = $this->userModel->getAll(['status' => 'ACTIVE']);
+            if (empty($admins)) {
+                return;
+            }
+
+            $mailer = new Mailer();
+            $representative = Auth::representative();
+            $representativeName = $representative['name'] ?? 'Representante';
+            $establishmentName = $data['nome_fantasia'] ?? $data['nome_completo'] ?? 'Novo estabelecimento';
+            $establishmentEmail = $data['email'] ?? '-';
+            $establishmentPhone = $data['telefone'] ?? '-';
+            $detailsUrl = url('estabelecimentos/' . $establishmentId);
+
+            $subject = 'Novo estabelecimento cadastrado por representante';
+            $body = sprintf(
+                '<h2>Novo estabelecimento cadastrado</h2>
+                <p>Um representante realizou um novo cadastro no sistema.</p>
+                <ul>
+                    <li><strong>Representante:</strong> %s</li>
+                    <li><strong>Estabelecimento:</strong> %s</li>
+                    <li><strong>Email:</strong> %s</li>
+                    <li><strong>Telefone:</strong> %s</li>
+                </ul>
+                <p><a href="%s">Abrir estabelecimento</a></p>',
+                htmlspecialchars($representativeName),
+                htmlspecialchars($establishmentName),
+                htmlspecialchars((string) $establishmentEmail),
+                htmlspecialchars((string) $establishmentPhone),
+                htmlspecialchars($detailsUrl)
+            );
+
+            foreach ($admins as $admin) {
+                $email = trim((string) ($admin['email'] ?? ''));
+                if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    continue;
+                }
+
+                try {
+                    $mailer->send($email, $subject, $body);
+                } catch (\Throwable $e) {
+                    write_log('Falha ao enviar e-mail de novo estabelecimento para admin ' . $email . ': ' . $e->getMessage(), 'app.log');
+                }
+            }
+        } catch (\Throwable $e) {
+            write_log('Falha no fluxo de e-mail para admins (novo estabelecimento): ' . $e->getMessage(), 'app.log');
         }
     }
     

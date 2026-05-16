@@ -892,9 +892,17 @@ class CRMController
         Auth::requireAuth();
         
         header('Content-Type: application/json');
-        
-        $notifications = $this->notificationModel->getByUserId(Auth::user()['id'], ['limit' => 20]);
-        $unreadCount = $this->notificationModel->getUnreadCount(Auth::user()['id']);
+
+        if (Auth::isAdmin()) {
+            $recipientType = 'user';
+            $recipientId = (int) (Auth::user()['id'] ?? 0);
+        } else {
+            $recipientType = 'representative';
+            $recipientId = (int) (Auth::representative()['id'] ?? 0);
+        }
+
+        $notifications = $this->notificationModel->getByRecipient($recipientType, $recipientId, ['limit' => 20]);
+        $unreadCount = $this->notificationModel->getUnreadCountByRecipient($recipientType, $recipientId);
         
         echo json_encode([
             'notifications' => $notifications,
@@ -909,7 +917,11 @@ class CRMController
         header('Content-Type: application/json');
         
         try {
-            $this->notificationModel->markAsRead($id, Auth::user()['id']);
+            if (Auth::isAdmin()) {
+                $this->notificationModel->markAsRead($id, (int) (Auth::user()['id'] ?? 0), 'user');
+            } else {
+                $this->notificationModel->markAsRead($id, (int) (Auth::representative()['id'] ?? 0), 'representative');
+            }
             echo json_encode(['success' => true]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -923,7 +935,11 @@ class CRMController
         header('Content-Type: application/json');
         
         try {
-            $this->notificationModel->markAllAsRead(Auth::user()['id']);
+            if (Auth::isAdmin()) {
+                $this->notificationModel->markAllAsRead((int) (Auth::user()['id'] ?? 0), 'user');
+            } else {
+                $this->notificationModel->markAllAsRead((int) (Auth::representative()['id'] ?? 0), 'representative');
+            }
             echo json_encode(['success' => true]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);

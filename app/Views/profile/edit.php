@@ -78,14 +78,18 @@ $type = $type ?? 'admin';
                         }
                         ?>
                         <div class="h-20 w-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                            <?php 
-                            $fullPhotoPath = null;
-                            if ($photoPath && !empty($user['photo'])) {
-                                $fullPhotoPath = dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'profiles' . DIRECTORY_SEPARATOR . $user['photo'];
-                            }
-                            ?>
-                            <?php if ($photoPath && $fullPhotoPath && file_exists($fullPhotoPath)): ?>
-                                <img src="<?= $photoPath ?>" alt="Foto do perfil" class="h-full w-full object-cover" id="photo-preview">
+                            <?php if ($photoPath): ?>
+                                <img src="<?= $photoPath ?>" alt="Foto do perfil" class="h-full w-full object-cover" id="photo-preview" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <span class="text-2xl font-bold text-gray-500 hidden" id="photo-initial">
+                                    <?php
+                                    if ($type === 'admin') {
+                                        $displayName = $user['name'] ?? 'U';
+                                    } else {
+                                        $displayName = $user['nome_completo'] ?? 'U';
+                                    }
+                                    echo strtoupper(substr($displayName, 0, 1));
+                                    ?>
+                                </span>
                             <?php else: ?>
                                 <span class="text-2xl font-bold text-gray-500" id="photo-initial">
                                     <?php

@@ -90,6 +90,7 @@ $router->post('/chamados/{id}/fechar', 'TicketController@fechar');
 // Rotas de material de apoio
 $router->get('/material', 'MaterialController@index');
 $router->get('/material/download/{id}', 'MaterialController@download');
+$router->post('/material/files/{id}/read', 'MaterialController@markAsRead');
 
 // Administração - Categorias
 $router->get('/material/categories', 'MaterialController@categories');
