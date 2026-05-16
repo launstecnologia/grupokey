@@ -15,6 +15,7 @@ use App\Models\Segment;
 use App\Models\SistPaySettings;
 use App\Models\User;
 use App\Models\Notification;
+use App\Models\DocumentType;
 use App\Core\FileUpload;
 use App\Core\Mailer;
 use App\Services\SistPayApi;
@@ -33,6 +34,7 @@ class EstablishmentController
     private $fileUpload;
     private $userModel;
     private $notificationModel;
+    private $documentTypeModel;
     
     public function __construct()
     {
@@ -48,6 +50,7 @@ class EstablishmentController
         $this->fileUpload = new FileUpload();
         $this->userModel = new User();
         $this->notificationModel = new Notification();
+        $this->documentTypeModel = new DocumentType();
     }
     
     public function index()
@@ -120,6 +123,7 @@ class EstablishmentController
             'products' => $this->productModel->getAll(),
             'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
+            'document_type_options' => $this->getDocumentTypeOptions(),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];
@@ -349,6 +353,7 @@ class EstablishmentController
             'currentPage' => 'estabelecimentos',
             'establishment' => $establishment,
             'documents' => $documents,
+            'document_type_labels' => $this->getDocumentTypeLabelMap(),
             'approvalHistory' => $approvalHistory,
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
             'custom_field_values' => $this->getSafeCustomFieldValues('establishment', (int) $id),
@@ -414,6 +419,7 @@ class EstablishmentController
             'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
             'custom_field_values' => $this->getSafeCustomFieldValues('establishment', (int) $id),
+            'document_type_options' => $this->getDocumentTypeOptions(),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];
@@ -1494,16 +1500,12 @@ class EstablishmentController
                         // Obter tipo do documento do array, com fallback seguro
                         $rawDocumentType = $documentTypes[$key] ?? '';
                         
-                        // Limpar e normalizar o tipo de documento
-                        $documentType = trim($rawDocumentType);
-                        $documentType = strtolower($documentType);
-                        
-                        // Se não tiver tipo ou estiver vazio, usar padrão
+                        // Preservar código selecionado (inclusive tipos dinâmicos em uppercase)
+                        $documentType = trim((string) $rawDocumentType);
                         if (empty($documentType)) {
                             $documentType = 'outros_documentos';
                         }
                         
-                        // Log para debug (remover em produção se necessário)
                         write_log("Tipo de documento recebido: '{$rawDocumentType}' -> normalizado: '{$documentType}'", 'app.log');
                         
                         $this->establishmentModel->addDocument(
@@ -1617,6 +1619,61 @@ class EstablishmentController
         }
 
         return $detailed;
+    }
+
+    private function getDocumentTypeOptions(): array
+    {
+        try {
+            $options = $this->documentTypeModel->getActive();
+            if (!empty($options)) {
+                return $options;
+            }
+        } catch (\Throwable $e) {
+            write_log('Falha ao carregar tipos de documento: ' . $e->getMessage(), 'app.log');
+        }
+
+        return [
+            ['code' => 'CONTRATO_SOCIAL', 'label' => 'CONTRATO SOCIAL / REQUERIMENTO DE EMPRESÁRIO / CCMEI'],
+            ['code' => 'DOCUMENTO_FOTO_FRENTE', 'label' => 'DOCUMENTO SÓCIO TITULAR FRENTE'],
+            ['code' => 'DOCUMENTO_FOTO_VERSO', 'label' => 'DOCUMENTO SÓCIO TITULAR VERSO'],
+            ['code' => 'COMPROVANTE_BANCARIO', 'label' => 'COMPROVANTE BANCÁRIO (Constando banco/agência/conta/cnpj ou razão social)'],
+            ['code' => 'FOTO_FACHADA', 'label' => 'FOTO FACHADA (Solicite uma foto boa)'],
+            ['code' => 'COMPROVANTE_ENDERECO', 'label' => 'COMPROVANTE DE ENDEREÇO COMERCIAL (Da loja)'],
+        ];
+    }
+
+    private function getDocumentTypeLabelMap(): array
+    {
+        $map = [];
+
+        try {
+            $all = $this->documentTypeModel->getAll();
+            foreach ($all as $item) {
+                $code = strtoupper(trim((string) ($item['code'] ?? '')));
+                $label = trim((string) ($item['label'] ?? ''));
+                if ($code !== '' && $label !== '') {
+                    $map[$code] = $label;
+                }
+            }
+        } catch (\Throwable $e) {
+            write_log('Falha ao montar labels de tipos de documento: ' . $e->getMessage(), 'app.log');
+        }
+
+        if (!empty($map)) {
+            return $map;
+        }
+
+        return [
+            'CONTRATO_SOCIAL' => 'CONTRATO SOCIAL / REQUERIMENTO DE EMPRESARIO / CCMEI',
+            'DOCUMENTO_FOTO_FRENTE' => 'DOCUMENTO SÓCIO TITULAR FRENTE',
+            'DOCUMENTO_FOTO_VERSO' => 'DOCUMENTO SÓCIO TITULAR VERSO',
+            'COMPROVANTE_BANCARIO' => 'COMPROVANTE BANCÁRIO',
+            'FOTO_FACHADA' => 'FOTO FACHADA',
+            'COMPROVANTE_ENDERECO' => 'COMPROVANTE DE ENDEREÇO COMERCIAL',
+            'COMPROVANTE_RESIDENCIA' => 'COMPROVANTE DE RESIDÊNCIA',
+            'OUTROS_DOCUMENTOS' => 'OUTROS DOCUMENTOS',
+            'RG_CPF_CNH' => 'RG/CPF/CNH',
+        ];
     }
 
     private function getProductFilterOptions()

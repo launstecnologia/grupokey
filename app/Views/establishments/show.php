@@ -559,20 +559,11 @@ $statusLabels = [
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <?php 
-                                    $documentTypeLabels = [
-                                        'CONTRATO_SOCIAL' => 'Contrato Social/ Requerimento de Empresario/CCMEI',
-                                        'DOCUMENTO_FOTO_FRENTE' => 'Documento com Foto Frente',
-                                        'DOCUMENTO_FOTO_VERSO' => 'Documento com Foto Verso',
-                                        'COMPROVANTE_RESIDENCIA' => 'Comprovante de Residencia',
-                                        'FOTO_FACHADA' => 'Fotos',
-                                        'OUTROS_DOCUMENTOS' => 'Outros Documentos',
-                                        'RG_CPF_CNH' => 'RG/CPF/CNH',
-                                        'COMPROVANTE_BANCARIO' => 'Comprovante Bancário'
-                                    ];
-                                    
-                                    foreach ($documents as $document): 
-                                        $tipoLabel = $documentTypeLabels[$document['document_type'] ?? ''] ?? $document['document_type'] ?? 'Desconhecido';
+                                    <?php
+                                    $documentTypeLabels = $document_type_labels ?? [];
+                                    foreach ($documents as $document):
+                                        $docTypeCode = strtoupper((string) ($document['document_type'] ?? ''));
+                                        $tipoLabel = $documentTypeLabels[$docTypeCode] ?? ($docTypeCode !== '' ? $docTypeCode : 'Desconhecido');
                                         $fileSize = isset($document['size']) ? number_format($document['size'] / 1024, 2) : '0';
                                     ?>
                                     <tr>

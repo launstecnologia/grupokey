@@ -37,8 +37,10 @@ $contact = $contact ?? [];
             </h3>
         </div>
 
-        <form method="POST" action="<?= url('agenda/' . $contact['id']) ?>" class="p-6">
+        <form method="POST" action="<?= url('agenda/' . $contact['id']) ?>" class="p-6" autocomplete="off">
             <?= csrf_field() ?>
+            <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
+            <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
             <input type="hidden" name="_method" value="PUT">
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -57,6 +59,7 @@ $contact = $contact ?? [];
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-mail</label>
                     <input type="email" name="email" value="<?= htmlspecialchars($contact['email'] ?? '') ?>"
+                           autocomplete="new-email" autocapitalize="off" spellcheck="false"
                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500"
                            placeholder="email@exemplo.com">
                 </div>

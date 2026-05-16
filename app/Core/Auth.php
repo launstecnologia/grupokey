@@ -144,6 +144,11 @@ class Auth
             return false;
         }
 
+        // Dashboard é a rota de fallback do sistema; nunca bloquear para admin autenticado.
+        if ($module === 'dashboard' && $action === 'view') {
+            return true;
+        }
+
         $permissions = $_SESSION['user_permissions'] ?? [];
         if (empty($permissions)) {
             return true;
@@ -177,6 +182,10 @@ class Auth
         }
 
         if (!self::can($map['module'], $map['action'])) {
+            // Evita loop infinito de redirecionamento no dashboard.
+            if ($map['module'] === 'dashboard') {
+                return;
+            }
             $_SESSION['error'] = 'Você não possui permissão para acessar esta funcionalidade.';
             redirect(url('dashboard'));
         }

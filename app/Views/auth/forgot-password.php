@@ -75,7 +75,7 @@
                     <?php unset($_SESSION['success']); ?>
                 <?php endif; ?>
                 
-                <form method="POST" action="<?= url('forgot-password') ?>" class="space-y-6">
+                <form method="POST" action="<?= url('forgot-password') ?>" class="space-y-6" autocomplete="on">
                     <?= csrf_field() ?>
                     
                     <div>
@@ -86,6 +86,7 @@
                         <input type="email" 
                                name="email" 
                                id="email" 
+                               autocomplete="email" autocapitalize="off" spellcheck="false"
                                class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" 
                                placeholder="seu@email.com" 
                                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"

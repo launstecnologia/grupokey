@@ -634,25 +634,8 @@ class Establishment
     public function addDocument($establishmentId, $filePath, $originalName, $documentType = 'RG_CPF_CNH', $productType = null, $description = null)
     {
         $documentId = uniqid();
-        
-        // Valores válidos do ENUM na tabela documents
-        $validDocumentTypes = [
-            'CONTRATO_SOCIAL',
-            'DOCUMENTO_FOTO_FRENTE',
-            'DOCUMENTO_FOTO_VERSO',
-            'COMPROVANTE_RESIDENCIA',
-            'FOTO_FACHADA',
-            'OUTROS_DOCUMENTOS',
-            'RG_CPF_CNH',
-            'COMPROVANTE_BANCARIO',
-            'SELFIE_DOCUMENTO',
-            'COMPROVANTE_ENDERECO',
-            'CARTAO_CNPJ',
-            'PRINT_INSTAGRAM',
-            'FOTO_TITULAR_LOJA'
-        ];
-        
-        // Mapear tipos de documento para os valores aceitos pela tabela
+
+        // Mapear aliases legados para os valores padrão da base
         $mappedDocumentTypes = [
             'contrato_social_requerimento' => 'CONTRATO_SOCIAL',
             'documento_foto_frente' => 'DOCUMENTO_FOTO_FRENTE',
@@ -673,35 +656,16 @@ class Establishment
             'contrato_social' => 'CONTRATO_SOCIAL',
             'foto_fachada' => 'FOTO_FACHADA'
         ];
-        
-        // Normalizar o tipo de documento - garantir que seja string
-        if (!is_string($documentType)) {
-            $documentType = '';
+
+        $documentTypeRaw = is_string($documentType) ? trim($documentType) : '';
+        $documentTypeLower = strtolower($documentTypeRaw);
+        $finalDocumentType = $mappedDocumentTypes[$documentTypeLower] ?? strtoupper($documentTypeRaw);
+
+        if ($finalDocumentType === '') {
+            $finalDocumentType = 'OUTROS_DOCUMENTOS';
         }
-        $documentType = strtolower(trim($documentType));
-        
-        // Se estiver vazio, usar padrão
-        if (empty($documentType)) {
-            $documentType = 'outros_documentos';
-        }
-        
-        // Tentar mapear primeiro
-        $finalDocumentType = $mappedDocumentTypes[$documentType] ?? null;
-        
-        // Se não foi mapeado mas já está em formato ENUM válido, usar diretamente
-        if (!$finalDocumentType && in_array(strtoupper($documentType), $validDocumentTypes)) {
-            $finalDocumentType = strtoupper($documentType);
-        }
-        
-        // Se ainda não tiver um valor válido, usar o padrão
-        if (!$finalDocumentType || !in_array($finalDocumentType, $validDocumentTypes)) {
-            $finalDocumentType = 'OUTROS_DOCUMENTOS'; // Valor padrão seguro
-        }
-        
-        // Log para debug (remover em produção se necessário)
-        write_log("addDocument - Tipo recebido: '{$documentType}' -> Mapeado para: '{$finalDocumentType}'", 'app.log');
-        
-        // Verificar valores válidos do ENUM no banco de dados
+
+        // Ler enum atual do banco para aceitar novos tipos cadastrados dinamicamente
         $enumValues = [];
         try {
             $enumCheck = $this->db->fetchAll("SHOW COLUMNS FROM documents WHERE Field = 'document_type'");
@@ -716,22 +680,22 @@ class Establishment
                     }
                 }
             }
-            
-            // Se o valor não estiver no ENUM do banco, usar um valor que existe
-            if (!empty($enumValues) && !in_array($finalDocumentType, $enumValues)) {
-                write_log("AVISO: Valor '{$finalDocumentType}' não está no ENUM do banco. Valores disponíveis: " . implode(', ', $enumValues) . ". Usando fallback.", 'app.log');
-                // Tentar usar COMPROVANTE_RESIDENCIA que geralmente existe
-                if (in_array('COMPROVANTE_RESIDENCIA', $enumValues)) {
+
+            if (!empty($enumValues) && !in_array($finalDocumentType, $enumValues, true)) {
+                write_log("AVISO: Valor '{$finalDocumentType}' não está no ENUM do banco. Valores disponíveis: " . implode(', ', $enumValues) . ".", 'app.log');
+                if (in_array('OUTROS_DOCUMENTOS', $enumValues, true)) {
+                    $finalDocumentType = 'OUTROS_DOCUMENTOS';
+                } elseif (in_array('COMPROVANTE_RESIDENCIA', $enumValues, true)) {
                     $finalDocumentType = 'COMPROVANTE_RESIDENCIA';
                 } else {
-                    // Usar o primeiro valor disponível
                     $finalDocumentType = $enumValues[0];
                 }
-                write_log("Usando valor fallback: {$finalDocumentType}", 'app.log');
             }
         } catch (\Exception $e) {
             write_log("AVISO: Não foi possível verificar ENUM do banco: " . $e->getMessage() . ". Continuando com valor mapeado.", 'app.log');
         }
+
+        write_log("addDocument - Tipo recebido: '{$documentTypeRaw}' -> salvo como: '{$finalDocumentType}'", 'app.log');
         
         $sql = "INSERT INTO documents (id, establishment_id, document_type, file_path, original_name, file_name, mime_type, size, uploaded_at) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
@@ -800,19 +764,18 @@ class Establishment
                 
                 // Tentar usar um valor que provavelmente existe no ENUM
                 if (!empty($enumValues)) {
-                    // Tentar COMPROVANTE_RESIDENCIA primeiro
-                    if (in_array('COMPROVANTE_RESIDENCIA', $enumValues)) {
+                    if (in_array('OUTROS_DOCUMENTOS', $enumValues, true)) {
+                        $finalDocumentType = 'OUTROS_DOCUMENTOS';
+                    } elseif (in_array('COMPROVANTE_RESIDENCIA', $enumValues, true)) {
                         $finalDocumentType = 'COMPROVANTE_RESIDENCIA';
-                    } elseif (in_array('RG_CPF_CNH', $enumValues)) {
+                    } elseif (in_array('RG_CPF_CNH', $enumValues, true)) {
                         $finalDocumentType = 'RG_CPF_CNH';
                     } else {
-                        // Usar o primeiro valor disponível
                         $finalDocumentType = $enumValues[0];
                     }
                     write_log("Usando valor fallback do ENUM: {$finalDocumentType}", 'app.log');
                 } else {
-                    // Último recurso: usar COMPROVANTE_RESIDENCIA
-                    $finalDocumentType = 'COMPROVANTE_RESIDENCIA';
+                    $finalDocumentType = 'OUTROS_DOCUMENTOS';
                     write_log("Usando valor padrão de emergência: {$finalDocumentType}", 'app.log');
                 }
                 

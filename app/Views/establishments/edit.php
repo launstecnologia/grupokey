@@ -8,6 +8,7 @@ $products = $products ?? [];
 $dynamicProductsCatalog = $dynamic_products_catalog ?? [];
 $customFieldDefinitions = $custom_field_definitions ?? [];
 $customFieldValues = $custom_field_values ?? [];
+$documentTypeOptions = $document_type_options ?? [];
 $representatives = $representatives ?? [];
 $segments = $segments ?? [];
 $oldInput = $_SESSION['old_input'] ?? [];
@@ -476,12 +477,11 @@ function isProductSelected($productId, $productData) {
                                 </label>
                                 <select name="document_type[]" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Selecione o tipo</option>
-                                    <option value="contrato_social_requerimento">CONTRATO SOCIAL/ REQUERIMENTO DE EMPRESÁRIO / CCMEI</option>
-                                    <option value="documento_socio_titular_frente">DOCUMENTO SÓCIO TITULAR FRENTE</option>
-                                    <option value="documento_socio_titular_verso">DOCUMENTO SÓCIO TITULAR VERSO</option>
-                                    <option value="comprovante_bancario">COMPROVANTE BANCÁRIO (Constando banco/agencia/conta/cnpj ou razão social)</option>
-                                    <option value="foto_fachada">FOTO FACHADA (Solicite uma foto boa)</option>
-                                    <option value="comprovante_endereco_comercial">COMPROVANTE DE ENDEREÇO COMERCIAL (Da loja)</option>
+                                    <?php foreach ($documentTypeOptions as $docType): ?>
+                                        <option value="<?= htmlspecialchars((string) ($docType['code'] ?? '')) ?>">
+                                            <?= htmlspecialchars((string) ($docType['label'] ?? ($docType['code'] ?? ''))) ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                             <div>

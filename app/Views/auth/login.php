@@ -135,7 +135,7 @@
                     <?php unset($_SESSION['success']); ?>
                 <?php endif; ?>
                 
-                <form class="form-container mt-8 space-y-6" method="POST" action="<?= url('login') ?>">
+                <form class="form-container mt-8 space-y-6" method="POST" action="<?= url('login') ?>" autocomplete="on">
                     <?= csrf_field() ?>
                     
                     <div>
@@ -146,6 +146,7 @@
                         <input type="email" 
                                name="email" 
                                id="email" 
+                               autocomplete="username email" autocapitalize="off" spellcheck="false"
                                class="input-field bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" 
                                placeholder="seu@email.com" 
                                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
@@ -161,6 +162,7 @@
                             <input type="password" 
                                    name="password" 
                                    id="password" 
+                                   autocomplete="current-password"
                                    placeholder="••••••••" 
                                    class="input-field bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5 pr-10" 
                                    required>

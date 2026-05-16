@@ -28,6 +28,14 @@ $router->get('/sistpay-settings', 'SistPaySettingsController@index');
 $router->post('/sistpay-settings/update', 'SistPaySettingsController@update');
 $router->post('/sistpay-settings/test', 'SistPaySettingsController@test');
 
+// Rotas de tipos de documento (apenas admin)
+$router->get('/tipos-documentos', 'DocumentTypeController@index');
+$router->get('/tipos-documentos/create', 'DocumentTypeController@create');
+$router->post('/tipos-documentos', 'DocumentTypeController@store');
+$router->get('/tipos-documentos/{id}/edit', 'DocumentTypeController@edit');
+$router->put('/tipos-documentos/{id}', 'DocumentTypeController@update');
+$router->delete('/tipos-documentos/{id}', 'DocumentTypeController@destroy');
+
 // Webhook do SistPay (público - sem autenticação)
 $router->post('/sistpay/webhook', 'SistPayWebhookController@handle');
 
