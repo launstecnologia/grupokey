@@ -103,7 +103,7 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
             </div>
 
             <!-- Dados Básicos -->
-            <div class="mb-8">
+            <div class="mb-8" id="documents-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-info-circle mr-2 text-blue-600"></i>
                     Dados Básicos
@@ -224,7 +224,7 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
             </div>
 
             <!-- Endereço -->
-            <div class="mb-8">
+            <div class="mb-8" id="observations-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
                     Endereço
@@ -948,6 +948,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const pjFields = document.getElementById('pj-fields');
     const manualProductsSection = document.getElementById('manual-products-section');
     const dynamicProductsSection = document.getElementById('dynamic-products-section');
+    const observationsSection = document.getElementById('observations-section');
+    const documentsSection = document.getElementById('documents-section');
     
     const btnBuscarCep = document.getElementById('btn-buscar-cep');
     const cepHelp = document.getElementById('cep-help');
@@ -958,6 +960,12 @@ document.addEventListener('DOMContentLoaded', function() {
             parent.insertBefore(manualProductsSection, registrationTypeSection);
             if (dynamicProductsSection) {
                 parent.insertBefore(dynamicProductsSection, registrationTypeSection);
+            }
+            if (observationsSection) {
+                parent.insertBefore(observationsSection, documentsSection || registrationTypeSection);
+            }
+            if (documentsSection) {
+                parent.insertBefore(documentsSection, registrationTypeSection);
             }
         }
     }

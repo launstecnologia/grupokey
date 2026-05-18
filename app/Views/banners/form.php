@@ -58,11 +58,15 @@ $value = function (string $key, $default = '') use ($old, $banner) {
             </div>
             <div id="image_upload_group">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Imagem do Banner</label>
-                <input type="file" name="image" accept=".jpg,.jpeg,.png,.gif,.webp" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <input type="file" id="banner-image-input" name="image" accept=".jpg,.jpeg,.png,.gif,.webp" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <div id="banner-image-preview-wrap" class="mt-3 hidden">
+                    <p class="text-xs text-gray-500 mb-2">Preview da imagem</p>
+                    <img id="banner-image-preview" src="" alt="Preview do banner" class="w-full max-h-64 object-contain bg-black rounded-md border border-gray-200">
+                </div>
             </div>
             <div id="image_url_group">
                 <label class="block text-sm font-medium text-gray-700 mb-1">URL da Imagem</label>
-                <input type="url" name="image_url" value="<?= htmlspecialchars((string) $value('image_url')) ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="https://...">
+                <input type="url" id="banner-image-url-input" name="image_url" value="<?= htmlspecialchars((string) $value('image_url')) ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="https://...">
             </div>
 
             <div>
@@ -139,6 +143,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const internalTypeGroup = document.getElementById('internal_target_type_group');
     const internalIdGroup = document.getElementById('internal_target_id_group');
     const internalType = document.getElementById('internal_target_type');
+    const imageInput = document.getElementById('banner-image-input');
+    const imageUrlInput = document.getElementById('banner-image-url-input');
+    const previewWrap = document.getElementById('banner-image-preview-wrap');
+    const previewImg = document.getElementById('banner-image-preview');
 
     function toggleImageSource() {
         const mode = imageSourceType.value;
@@ -158,6 +166,36 @@ document.addEventListener('DOMContentLoaded', function() {
     internalType.addEventListener('change', toggleLinkType);
     toggleImageSource();
     toggleLinkType();
+
+    function showPreview(src) {
+        if (!previewWrap || !previewImg || !src) return;
+        previewImg.src = src;
+        previewWrap.classList.remove('hidden');
+    }
+
+    if (imageInput) {
+        imageInput.addEventListener('change', function() {
+            const file = this.files && this.files[0];
+            if (!file) return;
+            showPreview(URL.createObjectURL(file));
+        });
+    }
+
+    if (imageUrlInput) {
+        imageUrlInput.addEventListener('input', function() {
+            const val = String(this.value || '').trim();
+            if (val !== '') {
+                showPreview(val);
+            }
+        });
+    }
+
+    <?php if ($isEdit): ?>
+    <?php $existingImageSrc = !empty($banner['image_path']) ? url('banners/' . (int) $banner['id'] . '/image') : (!empty($banner['image_url']) ? (string) $banner['image_url'] : ''); ?>
+    <?php if ($existingImageSrc !== ''): ?>
+    showPreview('<?= htmlspecialchars($existingImageSrc, ENT_QUOTES) ?>');
+    <?php endif; ?>
+    <?php endif; ?>
 
     const bannerForm = document.getElementById('banner-form');
     const submitBtn = document.getElementById('banner-submit-btn');
