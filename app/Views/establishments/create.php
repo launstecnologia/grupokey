@@ -323,7 +323,7 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
             </div>
 
             <?php if (!empty($customFieldDefinitions)): ?>
-            <div class="mb-8">
+            <div class="mb-8" id="custom-fields-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-sliders-h mr-2 text-blue-600"></i>
                     Campos Adicionais
@@ -948,19 +948,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const pjFields = document.getElementById('pj-fields');
     const manualProductsSection = document.getElementById('manual-products-section');
     const dynamicProductsSection = document.getElementById('dynamic-products-section');
+    const customFieldsSection = document.getElementById('custom-fields-section');
     const observationsSection = document.getElementById('observations-section');
     const documentsSection = document.getElementById('documents-section');
     
     const btnBuscarCep = document.getElementById('btn-buscar-cep');
     const cepHelp = document.getElementById('cep-help');
 
+    function insertAfter(node, referenceNode) {
+        if (!node || !referenceNode || !referenceNode.parentNode) return;
+        referenceNode.parentNode.insertBefore(node, referenceNode.nextSibling);
+    }
+
     if (manualProductsSection && registrationTypeSection) {
         const parent = registrationTypeSection.parentNode;
         if (parent) {
-            const anchorSection = observationsSection || documentsSection || registrationTypeSection;
-            parent.insertBefore(manualProductsSection, anchorSection);
-            if (dynamicProductsSection) {
-                parent.insertBefore(dynamicProductsSection, anchorSection);
+            if (customFieldsSection) {
+                insertAfter(manualProductsSection, customFieldsSection);
+                if (dynamicProductsSection) {
+                    insertAfter(dynamicProductsSection, manualProductsSection);
+                }
+            } else {
+                const anchorSection = observationsSection || documentsSection || registrationTypeSection;
+                parent.insertBefore(manualProductsSection, anchorSection);
+                if (dynamicProductsSection) {
+                    parent.insertBefore(dynamicProductsSection, anchorSection);
+                }
             }
             if (observationsSection && documentsSection) {
                 parent.insertBefore(observationsSection, documentsSection);
