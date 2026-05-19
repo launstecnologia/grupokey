@@ -957,15 +957,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (manualProductsSection && registrationTypeSection) {
         const parent = registrationTypeSection.parentNode;
         if (parent) {
-            parent.insertBefore(manualProductsSection, registrationTypeSection);
+            const anchorSection = observationsSection || documentsSection || registrationTypeSection;
+            parent.insertBefore(manualProductsSection, anchorSection);
             if (dynamicProductsSection) {
-                parent.insertBefore(dynamicProductsSection, registrationTypeSection);
+                parent.insertBefore(dynamicProductsSection, anchorSection);
             }
-            if (observationsSection) {
-                parent.insertBefore(observationsSection, documentsSection || registrationTypeSection);
-            }
-            if (documentsSection) {
-                parent.insertBefore(documentsSection, registrationTypeSection);
+            if (observationsSection && documentsSection) {
+                parent.insertBefore(observationsSection, documentsSection);
             }
         }
     }
