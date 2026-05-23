@@ -124,23 +124,54 @@ if (!function_exists('absolute_url')) {
     {
         $path = ltrim((string) $path, '/');
 
-        // Prioridade: APP_URL configurada no config.env
+        $build = static function ($base) use ($path) {
+            $base = rtrim((string) $base, '/');
+            return $base . ($path !== '' ? '/' . $path : '');
+        };
+
+        $isValidAbsolute = static function ($url) {
+            $url = trim((string) $url);
+            if ($url === '') {
+                return false;
+            }
+            if (!preg_match('#^https?://#i', $url)) {
+                return false;
+            }
+            $parts = parse_url($url);
+            return !empty($parts['host']);
+        };
+
+        // 1) Prioridade: APP_URL configurada no config.env
         $appUrl = trim((string) ($_ENV['APP_URL'] ?? ''));
-        if ($appUrl !== '') {
-            return rtrim($appUrl, '/') . ($path !== '' ? '/' . $path : '');
+        if ($isValidAbsolute($appUrl)) {
+            return $build($appUrl);
         }
 
-        // Fallback para URL detectada automaticamente
+        // 2) Fallback: URL detectada automaticamente (constante global)
         $baseUrl = trim((string) (defined('URL') ? URL : ''));
-        if ($baseUrl !== '') {
-            return rtrim($baseUrl, '/') . ($path !== '' ? '/' . $path : '');
+        if ($isValidAbsolute($baseUrl)) {
+            return $build($baseUrl);
         }
 
-        // Último fallback para contexto HTTP atual
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        // 3) Último fallback: contexto HTTP atual
+        $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        $forwardedProto = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+        if ($forwardedProto === 'https') {
+            $https = true;
+        }
+        $scheme = $https ? 'https' : 'http';
 
-        return rtrim($scheme . '://' . $host, '/') . ($path !== '' ? '/' . $path : '');
+        $host = trim((string) ($_SERVER['HTTP_HOST'] ?? ''));
+        if ($host === '') {
+            $host = trim((string) ($_SERVER['SERVER_NAME'] ?? ''));
+        }
+
+        // 4) Garantia final para nunca montar URL inválida como http:///...
+        if ($host === '') {
+            $host = 'localhost';
+        }
+
+        return $build($scheme . '://' . $host);
     }
 }
 

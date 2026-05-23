@@ -34,7 +34,7 @@
     <div class="mx-auto md:h-screen flex flex-col justify-center items-center px-6 pt-8">
         <!-- Logo -->
         <div class="text-2xl font-semibold flex justify-center items-center mb-8 lg:mb-10">
-            <?php $logoUrl = url('public/images/logo-white.png'); ?>
+            <?php $logoUrl = url('public/images/logo-key-login-navbar.png'); ?>
             <img src="<?= $logoUrl ?>" class="h-24 w-auto" alt="GRUPO Key Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden items-center">
                 <span class="text-white text-3xl font-bold">GRUPO</span>

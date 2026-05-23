@@ -161,7 +161,7 @@ class Mailer
     
     public function sendPasswordReset($email, $name, $resetToken)
     {
-        $resetUrl = absolute_url("reset-password?token={$resetToken}");
+        $resetUrl = absolute_url('reset-password?token=' . urlencode((string) $resetToken));
         
         $subject = "Redefinição de Senha - Sistema CRM";
         $body = $this->getPasswordResetTemplate($name, $resetUrl);
