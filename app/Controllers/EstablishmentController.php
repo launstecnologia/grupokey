@@ -141,12 +141,76 @@ class EstablishmentController
             unset($filters['page'], $filters['per_page']);
             $establishments = $this->establishmentModel->getAll($filters);
 
-            $filename = 'estabelecimentos_' . date('Y-m-d_H-i-s') . '.xls';
-            header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+            $filename = 'estabelecimentos_' . date('Y-m-d_H-i-s') . '.csv';
+            header('Content-Type: text/csv; charset=UTF-8');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Cache-Control: max-age=0');
+            header('Pragma: public');
 
-            echo $this->buildEstablishmentsSpreadsheetXml($establishments, $filters);
+            $output = fopen('php://output', 'w');
+            if ($output === false) {
+                throw new \RuntimeException('Falha ao abrir stream de exportação.');
+            }
+
+            // BOM UTF-8 para Excel reconhecer acentuação corretamente.
+            fwrite($output, "\xEF\xBB\xBF");
+
+            fputcsv($output, ['Relatório', 'Estabelecimentos'], ';');
+            fputcsv($output, ['Gerado em', date('d/m/Y H:i:s')], ';');
+            fputcsv($output, ['Filtros aplicados', $this->humanizeFilters($filters)], ';');
+            fputcsv($output, [], ';');
+            fputcsv($output, [
+                'ID',
+                'Nome Fantasia',
+                'Nome Completo',
+                'Razão Social',
+                'CPF',
+                'CNPJ',
+                'Telefone',
+                'Email',
+                'Cidade',
+                'UF',
+                'Produtos',
+                'Representante',
+                'Status',
+                'Criado em'
+            ], ';');
+
+            $statusLabels = [
+                'PENDING' => 'Pendente',
+                'ANALYSIS' => 'Em análise',
+                'APPROVED' => 'Aprovado',
+                'REPROVED' => 'Reprovado',
+                'DISABLED' => 'Desabilitado'
+            ];
+
+            foreach ($establishments as $establishment) {
+                $products = $this->resolveEstablishmentProductsForExport($establishment);
+                $status = strtoupper((string) ($establishment['status'] ?? ''));
+                $statusLabel = $statusLabels[$status] ?? $status;
+                $createdBy = !empty($establishment['created_by_representative_name'])
+                    ? (string) $establishment['created_by_representative_name']
+                    : (!empty($establishment['created_by_user_name']) ? (string) $establishment['created_by_user_name'] : 'N/A');
+
+                fputcsv($output, [
+                    (string) ($establishment['id'] ?? ''),
+                    (string) ($establishment['nome_fantasia'] ?? ''),
+                    (string) ($establishment['nome_completo'] ?? ''),
+                    (string) ($establishment['razao_social'] ?? ''),
+                    (string) ($establishment['cpf'] ?? ''),
+                    (string) ($establishment['cnpj'] ?? ''),
+                    (string) ($establishment['telefone'] ?? ''),
+                    (string) ($establishment['email'] ?? ''),
+                    (string) ($establishment['cidade'] ?? ''),
+                    (string) ($establishment['uf'] ?? ''),
+                    $products,
+                    $createdBy,
+                    $statusLabel,
+                    !empty($establishment['created_at']) ? date('d/m/Y H:i', strtotime((string) $establishment['created_at'])) : ''
+                ], ';');
+            }
+
+            fclose($output);
             exit;
         } catch (\Throwable $e) {
             $_SESSION['error'] = 'Erro ao exportar estabelecimentos: ' . $e->getMessage();
