@@ -13,6 +13,7 @@ $documentTypeProductMap = $document_type_product_map ?? [];
 $representatives = $representatives ?? [];
 $segments = $segments ?? [];
 $oldInput = $_SESSION['old_input'] ?? [];
+$isRepresentative = \App\Core\Auth::isRepresentative();
 
 // Garantir opção "OUTROS DOCUMENTOS" para anexos extras não obrigatórios por produto.
 $hasOtherDocumentType = false;
@@ -1044,6 +1045,7 @@ function isProductSelected($productId, $productData) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const isRepresentative = <?= $isRepresentative ? 'true' : 'false' ?>;
     const documentTypeOptions = <?= json_encode(array_values(array_map(function ($item) {
         return [
             'code' => (string) ($item['code'] ?? ''),
@@ -1807,6 +1809,55 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
                 
                 // A mensagem de sucesso será exibida após o redirect no layout
+            }
+        });
+    }
+
+    if (isRepresentative) {
+        const allowedNames = new Set([
+            'registration_type',
+            'cnpj',
+            'razao_social',
+            'cpf_pj',
+            'data_nascimento'
+        ]);
+
+        const isAllowedField = function(name) {
+            if (!name) return false;
+            if (allowedNames.has(name)) return true;
+            if (name === 'products[]' || name === 'dynamic_products[]') return true;
+            if (name.startsWith('dynamic_values[')) return true;
+            if (name.startsWith('previsao_faturamento_')) return true;
+            if (name.startsWith('tabela_')) return true;
+            if (name.startsWith('modelo_maquininha_')) return true;
+            if (name.startsWith('meio_pagamento_')) return true;
+            if (name.startsWith('valor_')) return true;
+            if (name.startsWith('plan_')) return true;
+            if (name === 'document_type[]' || name === 'documents[]') return true;
+            return false;
+        };
+
+        document.querySelectorAll('input, select, textarea').forEach(function(el) {
+            const name = el.getAttribute('name') || '';
+            if (isAllowedField(name)) {
+                return;
+            }
+
+            if (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'radio') {
+                const originalValue = (el.type === 'checkbox' || el.type === 'radio') ? el.checked : el.value;
+                el.addEventListener('change', function() {
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        el.checked = originalValue;
+                    } else {
+                        el.value = originalValue;
+                    }
+                });
+            } else {
+                const originalValue = el.value;
+                el.setAttribute('readonly', 'readonly');
+                el.addEventListener('input', function() {
+                    el.value = originalValue;
+                });
             }
         });
     }

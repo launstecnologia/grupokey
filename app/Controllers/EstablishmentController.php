@@ -1396,8 +1396,72 @@ class EstablishmentController
             $representative = Auth::representative();
             $data['created_by_representative_id'] = $representative ? $representative['id'] : null;
         }
+
+        // Representante só pode adicionar produto/documento e, como exceção,
+        // converter PF -> PJ preenchendo CNPJ/Razão Social (+ dados exigidos do responsável).
+        if (Auth::isRepresentative() && $id !== null) {
+            $currentEstablishment = $this->establishmentModel->findById((int) $id);
+            if (is_array($currentEstablishment) && !empty($currentEstablishment)) {
+                $data = $this->enforceRepresentativeEditRules($data, $currentEstablishment);
+            }
+        }
         
         error_log('VALIDAÇÃO PASSOU - Dados preparados: ' . json_encode($data));
+        return $data;
+    }
+
+    private function enforceRepresentativeEditRules(array $data, array $currentEstablishment): array
+    {
+        $currentRegistrationType = strtoupper((string) ($currentEstablishment['registration_type'] ?? 'PF'));
+        $requestedRegistrationType = strtoupper((string) ($data['registration_type'] ?? $currentRegistrationType));
+        $isPfToPjUpgrade = $currentRegistrationType === 'PF' && $requestedRegistrationType === 'PJ';
+
+        // Campos gerais do estabelecimento ficam bloqueados para representante.
+        $lockedFields = [
+            'nome_completo',
+            'nome_fantasia',
+            'segmento',
+            'telefone',
+            'email',
+            'cep',
+            'logradouro',
+            'numero',
+            'complemento',
+            'bairro',
+            'cidade',
+            'uf',
+            'banco',
+            'agencia',
+            'conta',
+            'tipo_conta',
+            'chave_pix',
+            'observacoes',
+            'status',
+        ];
+
+        foreach ($lockedFields as $field) {
+            if (array_key_exists($field, $currentEstablishment)) {
+                $data[$field] = $currentEstablishment[$field];
+            }
+        }
+
+        if ($isPfToPjUpgrade) {
+            // Exceção permitida: PF -> PJ.
+            $data['registration_type'] = 'PJ';
+            // CPF passa a ser o CPF do responsável informado no fluxo de PJ.
+            $data['cpf'] = $data['cpf'] ?? ($currentEstablishment['cpf'] ?? null);
+            $data['cnpj'] = $data['cnpj'] ?? null;
+            $data['razao_social'] = $data['razao_social'] ?? null;
+            $data['birth_date'] = $data['birth_date'] ?? null;
+        } else {
+            // Fora da exceção, bloqueia totalmente alteração de documento/tipo de registro.
+            $data['registration_type'] = $currentRegistrationType;
+            $data['cpf'] = $currentEstablishment['cpf'] ?? null;
+            $data['cnpj'] = $currentEstablishment['cnpj'] ?? null;
+            $data['razao_social'] = $currentEstablishment['razao_social'] ?? null;
+            $data['birth_date'] = $currentEstablishment['birth_date'] ?? null;
+        }
+
         return $data;
     }
     
