@@ -20,9 +20,9 @@ class Establishment
         try {
             $sql = "INSERT INTO establishments (registration_type, cpf, cnpj, razao_social, nome_completo, 
                     nome_fantasia, segmento, telefone, email, produto, cep, logradouro, numero, complemento, 
-                    bairro, cidade, uf, banco, agencia, conta, tipo_conta, chave_pix, observacoes, status, birth_date, created_by_user_id, created_by_representative_id, 
+                    bairro, cidade, uf, banco, agencia, conta, tipo_conta, chave_pix, observacoes, pending_product_tags, status, birth_date, created_by_user_id, created_by_representative_id, 
                     created_at, updated_at) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
             
             // Validar e corrigir valor do ENUM produto
             // O ENUM do banco pode ter valores antigos, então vamos usar NULL se não for válido
@@ -62,6 +62,7 @@ class Establishment
                 $data['tipo_conta'] ?? null,
                 $data['chave_pix'] ?? null,
                 $data['observacoes'] ?? null,
+                $data['pending_product_tags'] ?? null,
                 $data['status'] ?? 'PENDING',
                 $data['birth_date'] ?? null,
                 $data['created_by_user_id'] ?? null,
@@ -347,6 +348,7 @@ class Establishment
                     nome_completo = ?, nome_fantasia = ?, segmento = ?, telefone = ?, email = ?, produto = ?, 
                     cep = ?, logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, uf = ?,
                     banco = ?, agencia = ?, conta = ?, tipo_conta = ?, chave_pix = ?, observacoes = ?,
+                    pending_product_tags = ?,
                     status = ?, birth_date = ?, updated_at = NOW() 
                     WHERE id = ?";
             
@@ -388,6 +390,7 @@ class Establishment
                 $data['tipo_conta'] ?? null,
                 $data['chave_pix'] ?? null,
                 $data['observacoes'] ?? null,
+                $data['pending_product_tags'] ?? null,
                 $data['status'] ?? 'PENDING',
                 $data['birth_date'] ?? null,
                 $id
@@ -438,7 +441,7 @@ class Establishment
         
         try {
             // Atualizar status do estabelecimento
-            $sql = "UPDATE establishments SET status = 'APPROVED', updated_at = NOW() WHERE id = ?";
+            $sql = "UPDATE establishments SET status = 'APPROVED', pending_product_tags = NULL, updated_at = NOW() WHERE id = ?";
             $this->db->query($sql, [$id]);
             
             $userId = $_SESSION['user_id'] ?? null;

@@ -567,6 +567,8 @@ class EstablishmentController
         try {
             // Debug: Log dos dados que estão sendo enviados
             error_log('Dados para atualização: ' . json_encode($data));
+
+            $data['pending_product_tags'] = $this->resolvePendingProductTags($establishment, $data);
             
             // Teste simples primeiro - apenas atualizar dados básicos
             $result = $this->establishmentModel->update($id, $data);
@@ -1188,6 +1190,107 @@ class EstablishmentController
         return empty($products) ? 'Sem produto' : implode(', ', $products);
     }
 
+    private function normalizeManualProductName(string $productId): ?string
+    {
+        $productId = trim($productId);
+        if ($productId === '') {
+            return null;
+        }
+
+        if ($productId === 'prod-pagbank') {
+            return 'PAGSEGURO';
+        }
+
+        return strtoupper($productId);
+    }
+
+    private function getDynamicProductNamesMap(): array
+    {
+        $map = [];
+        foreach ($this->getAvailableDynamicProducts() as $dynamicProduct) {
+            $id = (int) ($dynamicProduct['id'] ?? 0);
+            if ($id <= 0) {
+                continue;
+            }
+            $name = trim((string) ($dynamicProduct['name'] ?? ''));
+            if ($name !== '') {
+                $map[$id] = $name;
+            }
+        }
+        return $map;
+    }
+
+    private function extractCurrentProductTags(array $establishment): array
+    {
+        $current = [];
+
+        if (!empty($establishment['products']['other']) && is_array($establishment['products']['other'])) {
+            foreach ($establishment['products']['other'] as $product) {
+                $type = (string) ($product['product_type'] ?? '');
+                $name = $this->normalizeManualProductName($type);
+                if ($name !== null && !in_array($name, $current, true)) {
+                    $current[] = $name;
+                }
+            }
+        }
+
+        if (!empty($establishment['dynamic_products']) && is_array($establishment['dynamic_products'])) {
+            foreach ($establishment['dynamic_products'] as $dynamicProductId => $dynamicProductData) {
+                $name = trim((string) ($dynamicProductData['name'] ?? ''));
+                if ($name !== '' && !in_array($name, $current, true)) {
+                    $current[] = $name;
+                }
+            }
+        }
+
+        return $current;
+    }
+
+    private function extractRequestedProductTags(array $data): array
+    {
+        $requested = [];
+
+        foreach ((array) ($data['products'] ?? []) as $productId) {
+            $name = $this->normalizeManualProductName((string) $productId);
+            if ($name !== null && !in_array($name, $requested, true)) {
+                $requested[] = $name;
+            }
+        }
+
+        $dynamicMap = $this->getDynamicProductNamesMap();
+        foreach ((array) ($data['dynamic_products'] ?? []) as $dynamicProductId) {
+            $dynamicProductId = (int) $dynamicProductId;
+            if ($dynamicProductId <= 0 || !isset($dynamicMap[$dynamicProductId])) {
+                continue;
+            }
+            $name = $dynamicMap[$dynamicProductId];
+            if (!in_array($name, $requested, true)) {
+                $requested[] = $name;
+            }
+        }
+
+        return $requested;
+    }
+
+    private function resolvePendingProductTags(array $establishment, array $data): ?string
+    {
+        $current = $this->extractCurrentProductTags($establishment);
+        $requested = $this->extractRequestedProductTags($data);
+
+        $newProducts = [];
+        foreach ($requested as $productName) {
+            if (!in_array($productName, $current, true)) {
+                $newProducts[] = $productName;
+            }
+        }
+
+        if (empty($newProducts)) {
+            return null;
+        }
+
+        return implode(',', $newProducts);
+    }
+
     private function humanizeFilters(array $filters): string
     {
         $labels = [
@@ -1515,7 +1618,13 @@ class EstablishmentController
             $data['registration_type'] = 'PJ';
             // CPF passa a ser o CPF do responsável informado no fluxo de PJ.
             $data['cpf'] = $data['cpf'] ?? ($currentEstablishment['cpf'] ?? null);
-            $data['cnpj'] = $data['cnpj'] ?? null;
+            // Se já existe CNPJ no cadastro, mantém travado.
+            $existingCnpj = trim((string) ($currentEstablishment['cnpj'] ?? ''));
+            if ($existingCnpj !== '') {
+                $data['cnpj'] = $existingCnpj;
+            } else {
+                $data['cnpj'] = $data['cnpj'] ?? null;
+            }
             $data['razao_social'] = $data['razao_social'] ?? null;
             $data['birth_date'] = $data['birth_date'] ?? null;
         } else {

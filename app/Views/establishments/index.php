@@ -309,9 +309,22 @@ $representatives = $representatives ?? [];
                                 }
                                 
                                 if (!empty($produtos)): ?>
+                                    <?php
+                                    $pendingProductTags = [];
+                                    if (!empty($establishment['pending_product_tags'])) {
+                                        $pendingProductTags = array_values(array_filter(array_map('trim', explode(',', (string) $establishment['pending_product_tags']))));
+                                    }
+                                    $isPending = (($establishment['status'] ?? '') === 'PENDING');
+                                    ?>
                                     <div class="flex flex-wrap gap-1">
                                         <?php foreach ($produtos as $produto): ?>
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            <?php
+                                            $isPendingNewProduct = $isPending && in_array($produto, $pendingProductTags, true);
+                                            $productTagClass = $isPendingNewProduct
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-blue-100 text-blue-800';
+                                            ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= $productTagClass ?>">
                                                 <?= htmlspecialchars($produto) ?>
                                             </span>
                                         <?php endforeach; ?>
@@ -369,7 +382,7 @@ $representatives = $representatives ?? [];
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <?php if (App\Core\Auth::isAdmin() || 
-                                        (App\Core\Auth::isRepresentative() && $establishment['created_by_representative_id'] == App\Core\Auth::representative()['id'] && $establishment['status'] !== 'APPROVED')): ?>
+                                        (App\Core\Auth::isRepresentative() && $establishment['created_by_representative_id'] == App\Core\Auth::representative()['id'])): ?>
                                     <a href="<?= url('estabelecimentos/' . $establishment['id'] . '/edit') ?>" class="text-indigo-600 hover:text-indigo-900">
                                         <i class="fas fa-edit"></i>
                                     </a>

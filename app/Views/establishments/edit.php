@@ -14,6 +14,9 @@ $representatives = $representatives ?? [];
 $segments = $segments ?? [];
 $oldInput = $_SESSION['old_input'] ?? [];
 $isRepresentative = \App\Core\Auth::isRepresentative();
+$currentRegistrationType = strtoupper((string) ($establishment['registration_type'] ?? 'PF'));
+$hasExistingCnpj = trim((string) ($establishment['cnpj'] ?? '')) !== '';
+$canRepresentativeEditCnpj = $isRepresentative && $currentRegistrationType === 'PF' && !$hasExistingCnpj;
 
 // Garantir opção "OUTROS DOCUMENTOS" para anexos extras não obrigatórios por produto.
 $hasOtherDocumentType = false;
@@ -838,7 +841,7 @@ function isProductSelected($productId, $productData) {
                     $isPagSeguro = ($product['id'] === 'prod-pagbank');
                     ?>
                     <div id="<?= $product['id'] ?>-config" class="<?= $isOtherProductSelected ? '' : 'hidden' ?> mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
-                        <h5 class="font-medium text-white mb-3"><?= htmlspecialchars($product['name']) ?></h5>
+                        <h5 class="font-medium text-white mb-3"><?= $isPagSeguro ? 'PAGSEGURO' : htmlspecialchars($product['name']) ?></h5>
                         <?php if ($isPagSeguro): ?>
                         <!-- PagSeguro - Campos adicionais como CDX/EVO -->
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1046,6 +1049,7 @@ function isProductSelected($productId, $productData) {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const isRepresentative = <?= $isRepresentative ? 'true' : 'false' ?>;
+    const canRepresentativeEditCnpj = <?= $canRepresentativeEditCnpj ? 'true' : 'false' ?>;
     const documentTypeOptions = <?= json_encode(array_values(array_map(function ($item) {
         return [
             'code' => (string) ($item['code'] ?? ''),
@@ -1816,11 +1820,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isRepresentative) {
         const allowedNames = new Set([
             'registration_type',
-            'cnpj',
             'razao_social',
             'cpf_pj',
             'data_nascimento'
         ]);
+        if (canRepresentativeEditCnpj) {
+            allowedNames.add('cnpj');
+        }
 
         const isAllowedField = function(name) {
             if (!name) return false;
