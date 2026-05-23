@@ -67,6 +67,7 @@ $router->get('/estabelecimentos/import', 'EstablishmentController@import');
 $router->post('/estabelecimentos/import', 'EstablishmentController@processImport');
 $router->get('/estabelecimentos/create', 'EstablishmentController@create');
 $router->get('/estabelecimentos', 'EstablishmentController@index');
+$router->get('/estabelecimentos/export', 'EstablishmentController@export');
 $router->post('/estabelecimentos', 'EstablishmentController@store');
 $router->get('/estabelecimentos/{id}/edit', 'EstablishmentController@edit');
 $router->get('/estabelecimentos/{id}/documentos/{documentId}/download', 'EstablishmentController@downloadDocument');

@@ -19,6 +19,10 @@ $representatives = $representatives ?? [];
             <p class="text-gray-600 mt-1">Gerencie todos os estabelecimentos cadastrados</p>
         </div>
         <div class="flex gap-3">
+            <a href="<?= url('estabelecimentos/export') . (!empty($_GET) ? '?' . http_build_query($_GET) : '') ?>" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
+                <i class="fas fa-file-excel mr-2"></i>
+                Exportar Excel
+            </a>
             <?php if (App\Core\Auth::isAdmin() || App\Core\Auth::isRepresentative()): ?>
             <a href="<?= url('estabelecimentos/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
                 <i class="fas fa-plus mr-2"></i>

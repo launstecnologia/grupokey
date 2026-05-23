@@ -14,6 +14,22 @@ $representatives = $representatives ?? [];
 $segments = $segments ?? [];
 $oldInput = $_SESSION['old_input'] ?? [];
 
+// Garantir opção "OUTROS DOCUMENTOS" para anexos extras não obrigatórios por produto.
+$hasOtherDocumentType = false;
+foreach ($documentTypeOptions as $docTypeOption) {
+    $code = strtoupper(trim((string) ($docTypeOption['code'] ?? '')));
+    if ($code === 'OUTROS_DOCUMENTOS') {
+        $hasOtherDocumentType = true;
+        break;
+    }
+}
+if (!$hasOtherDocumentType) {
+    $documentTypeOptions[] = [
+        'code' => 'OUTROS_DOCUMENTOS',
+        'label' => 'OUTROS DOCUMENTOS'
+    ];
+}
+
 if (!empty($oldInput) && is_array($oldInput)) {
     $editableFields = [
         'registration_type', 'cpf', 'cnpj', 'razao_social', 'birth_date',

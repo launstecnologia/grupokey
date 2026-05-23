@@ -131,6 +131,28 @@ class EstablishmentController
         
         view('establishments/create', $data);
     }
+
+    public function export()
+    {
+        Auth::requireAuth();
+
+        try {
+            $filters = $this->getFilters();
+            unset($filters['page'], $filters['per_page']);
+            $establishments = $this->establishmentModel->getAll($filters);
+
+            $filename = 'estabelecimentos_' . date('Y-m-d_H-i-s') . '.xls';
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Cache-Control: max-age=0');
+
+            echo $this->buildEstablishmentsSpreadsheetXml($establishments, $filters);
+            exit;
+        } catch (\Throwable $e) {
+            $_SESSION['error'] = 'Erro ao exportar estabelecimentos: ' . $e->getMessage();
+            redirect(url('estabelecimentos'));
+        }
+    }
     
     public function store()
     {
@@ -206,7 +228,7 @@ class EstablishmentController
             switch ($e->getCode()) {
                 case 23000: // Integrity constraint violation
                     if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
-                        $errorMessage .= 'Dados duplicados encontrados. Verifique se o CPF/CNPJ já não está cadastrado.';
+                        $errorMessage .= 'Dados duplicados encontrados. Verifique se há alguma restrição de unicidade ativa no banco.';
                     } elseif (strpos($e->getMessage(), 'foreign key constraint') !== false) {
                         $errorMessage .= 'Erro de referência - dados relacionados não encontrados.';
                     } else {
@@ -524,7 +546,7 @@ class EstablishmentController
             switch ($e->getCode()) {
                 case 23000: // Integrity constraint violation
                     if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
-                        $errorMessage .= 'Dados duplicados encontrados. Verifique se o CPF/CNPJ já não está cadastrado.';
+                        $errorMessage .= 'Dados duplicados encontrados. Verifique se há alguma restrição de unicidade ativa no banco.';
                     } elseif (strpos($e->getMessage(), 'foreign key constraint') !== false) {
                         $errorMessage .= 'Erro de referência - dados relacionados não encontrados.';
                     } else {
@@ -992,6 +1014,155 @@ class EstablishmentController
         }
         
         return $filters;
+    }
+
+    private function buildEstablishmentsSpreadsheetXml(array $establishments, array $filters): string
+    {
+        $statusLabels = [
+            'PENDING' => 'Pendente',
+            'ANALYSIS' => 'Em análise',
+            'APPROVED' => 'Aprovado',
+            'REPROVED' => 'Reprovado',
+            'DISABLED' => 'Desabilitado'
+        ];
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<?mso-application progid="Excel.Sheet"?>' . "\n";
+        $xml .= '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"' . "\n";
+        $xml .= ' xmlns:o="urn:schemas-microsoft-com:office:office"' . "\n";
+        $xml .= ' xmlns:x="urn:schemas-microsoft-com:office:excel"' . "\n";
+        $xml .= ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"' . "\n";
+        $xml .= ' xmlns:html="http://www.w3.org/TR/REC-html40">' . "\n";
+        $xml .= '<Styles>' . "\n";
+        $xml .= '<Style ss:ID="Header"><Font ss:Bold="1"/><Interior ss:Color="#D3D3D3" ss:Pattern="Solid"/></Style>' . "\n";
+        $xml .= '<Style ss:ID="Title"><Font ss:Size="14" ss:Bold="1"/></Style>' . "\n";
+        $xml .= '</Styles>' . "\n";
+        $xml .= '<Worksheet ss:Name="Estabelecimentos">' . "\n";
+        $xml .= '<Table>' . "\n";
+
+        $xml .= '<Row><Cell ss:StyleID="Title"><Data ss:Type="String">Estabelecimentos</Data></Cell></Row>' . "\n";
+        $xml .= '<Row><Cell><Data ss:Type="String">Gerado em: ' . date('d/m/Y H:i:s') . '</Data></Cell></Row>' . "\n";
+        $xml .= '<Row><Cell><Data ss:Type="String">Filtros aplicados: ' . $this->escapeXmlForSpreadsheet($this->humanizeFilters($filters)) . '</Data></Cell></Row>' . "\n";
+        $xml .= '<Row></Row>' . "\n";
+
+        $headers = [
+            'ID',
+            'Nome Fantasia',
+            'Nome Completo',
+            'Razão Social',
+            'CPF',
+            'CNPJ',
+            'Telefone',
+            'Email',
+            'Cidade',
+            'UF',
+            'Produtos',
+            'Representante',
+            'Status',
+            'Criado em'
+        ];
+        $xml .= '<Row ss:StyleID="Header">';
+        foreach ($headers as $header) {
+            $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXmlForSpreadsheet($header) . '</Data></Cell>';
+        }
+        $xml .= '</Row>' . "\n";
+
+        foreach ($establishments as $establishment) {
+            $products = $this->resolveEstablishmentProductsForExport($establishment);
+            $status = strtoupper((string)($establishment['status'] ?? ''));
+            $statusLabel = $statusLabels[$status] ?? $status;
+            $createdBy = !empty($establishment['created_by_representative_name'])
+                ? (string)$establishment['created_by_representative_name']
+                : (!empty($establishment['created_by_user_name']) ? (string)$establishment['created_by_user_name'] : 'N/A');
+
+            $row = [
+                (string)($establishment['id'] ?? ''),
+                (string)($establishment['nome_fantasia'] ?? ''),
+                (string)($establishment['nome_completo'] ?? ''),
+                (string)($establishment['razao_social'] ?? ''),
+                (string)($establishment['cpf'] ?? ''),
+                (string)($establishment['cnpj'] ?? ''),
+                (string)($establishment['telefone'] ?? ''),
+                (string)($establishment['email'] ?? ''),
+                (string)($establishment['cidade'] ?? ''),
+                (string)($establishment['uf'] ?? ''),
+                $products,
+                $createdBy,
+                $statusLabel,
+                !empty($establishment['created_at']) ? date('d/m/Y H:i', strtotime((string)$establishment['created_at'])) : ''
+            ];
+
+            $xml .= '<Row>';
+            foreach ($row as $value) {
+                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXmlForSpreadsheet((string)$value) . '</Data></Cell>';
+            }
+            $xml .= '</Row>' . "\n";
+        }
+
+        $xml .= '</Table></Worksheet></Workbook>';
+        return $xml;
+    }
+
+    private function resolveEstablishmentProductsForExport(array $establishment): string
+    {
+        $products = [];
+
+        if (!empty($establishment['produtos_adicionais'])) {
+            foreach (explode(',', (string)$establishment['produtos_adicionais']) as $prod) {
+                $prod = trim($prod);
+                if (strcasecmp($prod, 'PagSeguro') === 0) {
+                    $prod = 'PAGSEGURO';
+                }
+                if ($prod !== '' && !in_array($prod, $products, true)) {
+                    $products[] = $prod;
+                }
+            }
+        }
+
+        if (!empty($establishment['produtos_dinamicos'])) {
+            foreach (explode(',', (string)$establishment['produtos_dinamicos']) as $prod) {
+                $prod = trim($prod);
+                if ($prod !== '' && !in_array($prod, $products, true)) {
+                    $products[] = $prod;
+                }
+            }
+        }
+
+        if (empty($products) && !empty($establishment['produto'])) {
+            $legacy = strtoupper((string)$establishment['produto']) === 'PAGBANK' ? 'PAGSEGURO' : (string)$establishment['produto'];
+            $products[] = $legacy;
+        }
+
+        return empty($products) ? 'Sem produto' : implode(', ', $products);
+    }
+
+    private function humanizeFilters(array $filters): string
+    {
+        $labels = [
+            'status' => 'Status',
+            'produto' => 'Produto',
+            'cidade' => 'Cidade',
+            'representative_id' => 'Representante',
+            'cpf' => 'CPF',
+            'cnpj' => 'CNPJ',
+            'razao_social' => 'Razão Social',
+            'nome' => 'Nome'
+        ];
+
+        $parts = [];
+        foreach ($labels as $key => $label) {
+            if (!isset($filters[$key]) || $filters[$key] === '' || $filters[$key] === null) {
+                continue;
+            }
+            $parts[] = $label . ': ' . (string)$filters[$key];
+        }
+
+        return empty($parts) ? 'Nenhum (todos os registros)' : implode(' | ', $parts);
+    }
+
+    private function escapeXmlForSpreadsheet(string $value): string
+    {
+        return htmlspecialchars($value, ENT_XML1, 'UTF-8');
     }
     
     private function validateAndSanitizeInput($id = null)

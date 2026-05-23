@@ -13,6 +13,22 @@ $segments = $segments ?? [];
 $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_array($_SESSION['old_input']['custom_fields'])
     ? $_SESSION['old_input']['custom_fields']
     : [];
+
+// Garantir opção "OUTROS DOCUMENTOS" para anexos extras não obrigatórios por produto.
+$hasOtherDocumentType = false;
+foreach ($documentTypeOptions as $docTypeOption) {
+    $code = strtoupper(trim((string) ($docTypeOption['code'] ?? '')));
+    if ($code === 'OUTROS_DOCUMENTOS') {
+        $hasOtherDocumentType = true;
+        break;
+    }
+}
+if (!$hasOtherDocumentType) {
+    $documentTypeOptions[] = [
+        'code' => 'OUTROS_DOCUMENTOS',
+        'label' => 'OUTROS DOCUMENTOS'
+    ];
+}
 ?>
 
 <div class="pt-6 px-4">
