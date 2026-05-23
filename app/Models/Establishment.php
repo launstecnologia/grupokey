@@ -474,6 +474,12 @@ class Establishment
             throw $e;
         }
     }
+
+    public function setAnalysis($id)
+    {
+        $sql = "UPDATE establishments SET status = 'ANALYSIS', updated_at = NOW() WHERE id = ?";
+        return $this->db->query($sql, [$id]);
+    }
     
     public function reprove($id, $reason, $observation = null)
     {

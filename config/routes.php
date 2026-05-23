@@ -72,6 +72,7 @@ $router->get('/estabelecimentos/{id}/edit', 'EstablishmentController@edit');
 $router->get('/estabelecimentos/{id}/documentos/{documentId}/download', 'EstablishmentController@downloadDocument');
 $router->delete('/estabelecimentos/{id}/documentos/{documentId}', 'EstablishmentController@deleteDocument');
 $router->post('/estabelecimentos/{id}/migrate-sistpay', 'EstablishmentController@migrateToSistPay');
+$router->post('/estabelecimentos/{id}/set-analysis', 'EstablishmentController@setAnalysis');
 $router->post('/estabelecimentos/{id}/approve', 'EstablishmentController@approve');
 $router->post('/estabelecimentos/{id}/reprove', 'EstablishmentController@reprove');
 $router->get('/estabelecimentos/{id}', 'EstablishmentController@show');

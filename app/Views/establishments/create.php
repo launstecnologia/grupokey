@@ -928,6 +928,17 @@ $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_arr
     </div>
 </div>
 
+<!-- Modal de Loading no envio do cadastro -->
+<div id="submit-loading-modal" class="hidden fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center px-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md text-center border border-gray-200 dark:border-gray-700">
+        <div class="mx-auto mb-4 w-14 h-14 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin"></div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Enviando cadastro</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-300">
+            Aguarde, estamos subindo seu cadastro.
+        </p>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const documentTypeOptions = <?= json_encode(array_values(array_map(function ($item) {
@@ -1543,11 +1554,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!select) {
             return;
         }
-        const filtered = hasSelectedProducts
-            ? documentTypeOptions.filter(function(opt) {
-                return allowedCodes.includes(String(opt.code || '').trim().toUpperCase());
-            })
-            : documentTypeOptions;
+        // Mesmo com produto selecionado, permitir escolher qualquer tipo manualmente.
+        const filtered = documentTypeOptions;
 
         select.innerHTML = '<option value="">Selecione o tipo</option>';
         filtered.forEach(function(opt) {
@@ -1566,6 +1574,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Guarda tipos automáticos removidos manualmente, para não recriar automaticamente.
+    const removedAutoDocumentCodes = new Set();
+
+    function createDocumentItem(selectedCode = '', isAuto = false, hasSelectedProducts = false, requiredCodes = []) {
+        const firstItem = documentosContainer ? documentosContainer.querySelector('.documento-item') : null;
+        if (!firstItem) {
+            return null;
+        }
+
+        const item = firstItem.cloneNode(true);
+        const select = item.querySelector('select[name="document_type[]"]');
+        const fileInput = item.querySelector('input[type="file"]');
+        const removeBtn = item.querySelector('.remove-documento');
+
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        renderDocumentTypeOptions(select, selectedCode, requiredCodes, hasSelectedProducts);
+        if (select) {
+            select.value = selectedCode || '';
+        }
+
+        item.dataset.autoDoc = isAuto ? '1' : '0';
+        if (selectedCode) {
+            item.dataset.docCode = String(selectedCode).trim().toUpperCase();
+        } else {
+            item.dataset.docCode = '';
+        }
+
+        if (removeBtn) {
+            removeBtn.classList.remove('hidden');
+        }
+
+        return item;
+    }
+
     function syncDocumentRowsWithSelectedProducts() {
         const hasSelectedProducts = hasAnySelectedProductsForDocuments();
         if (documentUploadSection) {
@@ -1577,10 +1621,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        if (!hasSelectedProducts) {
+            // Sem produtos selecionados, liberar novamente os automáticos removidos.
+            removedAutoDocumentCodes.clear();
+        }
+
         if (!requiredCodes.length) {
             documentosContainer.querySelectorAll('select[name="document_type[]"]').forEach(function(select) {
                 renderDocumentTypeOptions(select, '', [], hasSelectedProducts);
-                select.value = '';
             });
             return;
         }
@@ -1590,35 +1638,55 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        Array.from(documentosContainer.querySelectorAll('.documento-item')).forEach(function(item, index) {
-            if (index > 0) {
-                item.remove();
+        // Atualizar listas de opções mantendo as linhas existentes.
+        Array.from(documentosContainer.querySelectorAll('.documento-item')).forEach(function(item) {
+            const select = item.querySelector('select[name="document_type[]"]');
+            const currentValue = String(select ? select.value : '').trim();
+            renderDocumentTypeOptions(select, currentValue, requiredCodes, hasSelectedProducts);
+            if (select && currentValue) {
+                select.value = currentValue;
             }
         });
 
-        const firstSelect = firstItem.querySelector('select[name="document_type[]"]');
-        renderDocumentTypeOptions(firstSelect, requiredCodes[0], requiredCodes, hasSelectedProducts);
-        if (firstSelect) {
-            firstSelect.value = requiredCodes[0];
-        }
+        // Aproveitar linhas vazias existentes para preencher documentos obrigatórios automaticamente.
+        const emptyRows = Array.from(documentosContainer.querySelectorAll('.documento-item')).filter(function(item) {
+            const select = item.querySelector('select[name="document_type[]"]');
+            return !String(select ? select.value : '').trim();
+        });
 
-        for (let i = 1; i < requiredCodes.length; i++) {
-            const clone = firstItem.cloneNode(true);
-            const select = clone.querySelector('select[name="document_type[]"]');
-            const fileInput = clone.querySelector('input[type="file"]');
-            const removeBtn = clone.querySelector('.remove-documento');
-            if (fileInput) {
-                fileInput.value = '';
+        // Garante documentos automáticos por produto, exceto os removidos manualmente.
+        const existingCodes = new Set();
+        Array.from(documentosContainer.querySelectorAll('select[name="document_type[]"]')).forEach(function(select) {
+            const code = String(select.value || '').trim().toUpperCase();
+            if (code) {
+                existingCodes.add(code);
             }
-            renderDocumentTypeOptions(select, requiredCodes[i], requiredCodes, hasSelectedProducts);
-            if (select) {
-                select.value = requiredCodes[i];
+        });
+
+        requiredCodes.forEach(function(code) {
+            const normalized = String(code || '').trim().toUpperCase();
+            if (!normalized || existingCodes.has(normalized) || removedAutoDocumentCodes.has(normalized)) {
+                return;
             }
-            if (removeBtn) {
-                removeBtn.classList.remove('hidden');
+            const reusableRow = emptyRows.shift();
+            if (reusableRow) {
+                const reusableSelect = reusableRow.querySelector('select[name="document_type[]"]');
+                if (reusableSelect) {
+                    reusableSelect.value = normalized;
+                }
+                reusableRow.dataset.autoDoc = '1';
+                reusableRow.dataset.docCode = normalized;
+                existingCodes.add(normalized);
+                return;
             }
-            documentosContainer.appendChild(clone);
-        }
+            const newItem = createDocumentItem(normalized, true, hasSelectedProducts, requiredCodes);
+            if (newItem) {
+                documentosContainer.appendChild(newItem);
+                existingCodes.add(normalized);
+            }
+        });
+
+        atualizarEventListenersDocumentos();
     }
 
     // Gerenciar campos de documentos
@@ -1628,16 +1696,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (adicionarDocumentoBtn && documentosContainer) {
         adicionarDocumentoBtn.addEventListener('click', function() {
-            if (hasAnySelectedProductsForDocuments()) {
-                return;
-            }
             const primeiroItem = document.querySelector('.documento-item');
             if (primeiroItem) {
-                const novoDocumento = primeiroItem.cloneNode(true);
-                novoDocumento.querySelector('select[name="document_type[]"]').value = '';
-                novoDocumento.querySelector('input[type="file"]').value = '';
-                novoDocumento.querySelector('.remove-documento').classList.remove('hidden');
-                documentosContainer.appendChild(novoDocumento);
+                const requiredCodes = getRequiredDocumentCodesByProducts();
+                const novoDocumento = createDocumentItem('', false, hasAnySelectedProductsForDocuments(), requiredCodes);
+                if (novoDocumento) {
+                    documentosContainer.appendChild(novoDocumento);
+                }
                 
                 // Atualizar event listeners para remover
                 atualizarEventListenersDocumentos();
@@ -1653,9 +1718,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function removeDocumentoHandler(e) {
-        const items = document.querySelectorAll('.documento-item');
-        if (items.length > 1) {
-            e.target.closest('.documento-item').remove();
+        const item = e.target.closest('.documento-item');
+        if (item) {
+            const select = item.querySelector('select[name="document_type[]"]');
+            const code = String(select ? select.value : '').trim().toUpperCase();
+            if (item.dataset.autoDoc === '1' && code) {
+                removedAutoDocumentCodes.add(code);
+            }
+            item.remove();
             atualizarEventListenersDocumentos();
         }
     }
@@ -1664,22 +1734,32 @@ document.addEventListener('DOMContentLoaded', function() {
     syncDocumentRowsWithSelectedProducts();
     
     // Validar tipo de documento apenas se arquivo foi selecionado
-    document.querySelectorAll('input[name="documents[]"]').forEach(function(fileInput) {
-        fileInput.addEventListener('change', function() {
-            const documentoItem = this.closest('.documento-item');
-            const select = documentoItem.querySelector('select[name="document_type[]"]');
-            if (this.files.length > 0) {
+    documentosContainer?.addEventListener('change', function(e) {
+        if (e.target && e.target.matches('select[name="document_type[]"]')) {
+            const item = e.target.closest('.documento-item');
+            if (item) {
+                item.dataset.docCode = String(e.target.value || '').trim().toUpperCase();
+            }
+        }
+        if (e.target && e.target.matches('input[name="documents[]"]')) {
+            const documentoItem = e.target.closest('.documento-item');
+            const select = documentoItem ? documentoItem.querySelector('select[name="document_type[]"]') : null;
+            if (!select) {
+                return;
+            }
+            if (e.target.files.length > 0) {
                 select.setAttribute('required', 'required');
             } else {
                 select.removeAttribute('required');
             }
-        });
+        }
     });
     
     // Feedback visual ao salvar estabelecimento
     const formEstabelecimento = document.querySelector('form');
     const btnSalvar = document.getElementById('btn-salvar-estabelecimento');
     const btnSalvarTexto = document.getElementById('btn-salvar-texto');
+    const loadingModal = document.getElementById('submit-loading-modal');
     
     if (formEstabelecimento && btnSalvar) {
         formEstabelecimento.addEventListener('submit', function(e) {
@@ -1688,6 +1768,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Desabilitar botão e mostrar feedback
                 btnSalvar.disabled = true;
                 btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
+                if (loadingModal) {
+                    loadingModal.classList.remove('hidden');
+                }
                 
                 // A mensagem de sucesso será exibida após o redirect no layout
             }

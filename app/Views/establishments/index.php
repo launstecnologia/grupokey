@@ -136,6 +136,7 @@ $representatives = $representatives ?? [];
                 <select name="status" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">Todos os status</option>
                     <option value="PENDING" <?= ($filters['status'] ?? '') === 'PENDING' ? 'selected' : '' ?>>Pendente</option>
+                    <option value="ANALYSIS" <?= ($filters['status'] ?? '') === 'ANALYSIS' ? 'selected' : '' ?>>Em análise</option>
                     <option value="APPROVED" <?= ($filters['status'] ?? '') === 'APPROVED' ? 'selected' : '' ?>>Aprovado</option>
                     <option value="REPROVED" <?= ($filters['status'] ?? '') === 'REPROVED' ? 'selected' : '' ?>>Reprovado</option>
                     <option value="DISABLED" <?= ($filters['status'] ?? '') === 'DISABLED' ? 'selected' : '' ?>>Desabilitado</option>
@@ -342,12 +343,14 @@ $representatives = $representatives ?? [];
                                 <?php
                                 $statusColors = [
                                     'PENDING' => 'bg-yellow-100 text-yellow-800',
+                                    'ANALYSIS' => 'bg-blue-100 text-blue-800',
                                     'APPROVED' => 'bg-green-100 text-green-800',
                                     'REPROVED' => 'bg-red-100 text-red-800',
                                     'DISABLED' => 'bg-gray-100 text-gray-800'
                                 ];
                                 $statusLabels = [
                                     'PENDING' => 'Pendente',
+                                    'ANALYSIS' => 'Em análise',
                                     'APPROVED' => 'Aprovado',
                                     'REPROVED' => 'Reprovado',
                                     'DISABLED' => 'Desabilitado'

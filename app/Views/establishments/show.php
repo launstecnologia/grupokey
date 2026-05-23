@@ -50,12 +50,14 @@ $formatCustomFieldValue = static function (string $value, string $fieldType, str
 // Status badges
 $statusColors = [
     'PENDING' => 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+    'ANALYSIS' => 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
     'APPROVED' => 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
     'REPROVED' => 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
     'DISABLED' => 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
 ];
 $statusLabels = [
     'PENDING' => 'Pendente',
+    'ANALYSIS' => 'Em análise',
     'APPROVED' => 'Aprovado',
     'REPROVED' => 'Reprovado',
     'DISABLED' => 'Desabilitado'
@@ -729,6 +731,16 @@ $statusLabels = [
                         <?php endif; ?>
                         
                         <?php if (($establishment['status'] ?? '') === 'PENDING'): ?>
+                        <form method="POST" action="<?= url('estabelecimentos/' . ($establishment['id'] ?? '') . '/set-analysis') ?>" class="w-full">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="w-full bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors">
+                                <i class="fas fa-search mr-2 text-blue-600 dark:text-blue-400"></i>
+                                Em análise
+                            </button>
+                        </form>
+                        <?php endif; ?>
+
+                        <?php if (in_array(($establishment['status'] ?? ''), ['PENDING', 'ANALYSIS'], true)): ?>
                         <form method="POST" action="<?= url('estabelecimentos/' . ($establishment['id'] ?? '') . '/approve') ?>" class="w-full">
                             <?= csrf_field() ?>
                             <button type="submit" class="w-full bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg inline-flex items-center justify-center transition-colors">

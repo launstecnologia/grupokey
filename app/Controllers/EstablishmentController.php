@@ -172,6 +172,7 @@ class EstablishmentController
             if (Auth::isRepresentative()) {
                 $this->notifyAdminsAboutRepresentativeEstablishment((int) $establishmentId, $data);
                 $this->emailAdminsAboutRepresentativeEstablishment((int) $establishmentId, $data);
+                $this->emailRepresentativeAboutOwnEstablishmentRegistration((int) $establishmentId, $data);
             }
             
             // Limpar dados antigos da sessão após sucesso
@@ -195,7 +196,7 @@ class EstablishmentController
             switch ($e->getCode()) {
                 case 23000: // Integrity constraint violation
                     if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
-                        $errorMessage .= 'Dados duplicados encontrados. Verifique se o email ou CPF/CNPJ já não estão cadastrados.';
+                        $errorMessage .= 'Dados duplicados encontrados. Verifique se o CPF/CNPJ já não está cadastrado.';
                     } elseif (strpos($e->getMessage(), 'foreign key constraint') !== false) {
                         $errorMessage .= 'Erro de referência - dados relacionados não encontrados.';
                     } else {
@@ -488,6 +489,17 @@ class EstablishmentController
             
             // Upload de novos documentos se houver
             $this->handleDocumentUpload($id);
+
+            if (Auth::isAdmin()) {
+                $this->notifyRepresentativeAboutAdminEstablishmentChange(
+                    $id,
+                    $establishment,
+                    'Dados do estabelecimento atualizados',
+                    'O administrador atualizou dados do seu estabelecimento.',
+                    'Seu estabelecimento foi atualizado pelo administrador',
+                    'O administrador realizou alterações no seu estabelecimento.'
+                );
+            }
             
             error_log('SUCESSO: Estabelecimento atualizado com sucesso');
             $_SESSION['success'] = 'Estabelecimento editado com sucesso!';
@@ -502,7 +514,7 @@ class EstablishmentController
             switch ($e->getCode()) {
                 case 23000: // Integrity constraint violation
                     if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
-                        $errorMessage .= 'Dados duplicados encontrados. Verifique se o email ou CPF/CNPJ já não estão cadastrados.';
+                        $errorMessage .= 'Dados duplicados encontrados. Verifique se o CPF/CNPJ já não está cadastrado.';
                     } elseif (strpos($e->getMessage(), 'foreign key constraint') !== false) {
                         $errorMessage .= 'Erro de referência - dados relacionados não encontrados.';
                     } else {
@@ -588,12 +600,54 @@ class EstablishmentController
         
         try {
             $this->establishmentModel->approve($id, $reason);
+            $this->notifyRepresentativeAboutAdminEstablishmentChange(
+                $id,
+                $establishment,
+                'Estabelecimento aprovado',
+                'Seu estabelecimento foi aprovado pelo administrador.',
+                'Seu estabelecimento foi aprovado',
+                'Parabéns! Seu estabelecimento foi aprovado pelo administrador.'
+            );
             $_SESSION['success'] = 'Estabelecimento aprovado com sucesso!';
             
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Erro ao aprovar estabelecimento: ' . $e->getMessage();
         }
         
+        redirect(url('estabelecimentos/' . $id));
+    }
+
+    public function setAnalysis($id)
+    {
+        Auth::requireAdmin();
+
+        $establishment = $this->establishmentModel->findById($id);
+
+        if (!$establishment) {
+            $_SESSION['error'] = 'Estabelecimento não encontrado';
+            redirect(url('estabelecimentos'));
+        }
+
+        if (($establishment['status'] ?? '') === 'APPROVED') {
+            $_SESSION['warning'] = 'Estabelecimento já está aprovado e não pode voltar para análise.';
+            redirect(url('estabelecimentos/' . $id));
+        }
+
+        try {
+            $this->establishmentModel->setAnalysis($id);
+            $this->notifyRepresentativeAboutAdminEstablishmentChange(
+                $id,
+                $establishment,
+                'Estabelecimento em análise',
+                'Seu estabelecimento foi marcado como em análise pelo administrador.',
+                'Seu estabelecimento está em análise',
+                'Seu estabelecimento foi movido para o status Em análise pelo administrador.'
+            );
+            $_SESSION['success'] = 'Estabelecimento marcado como Em análise com sucesso!';
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'Erro ao marcar estabelecimento como Em análise: ' . $e->getMessage();
+        }
+
         redirect(url('estabelecimentos/' . $id));
     }
     
@@ -688,6 +742,99 @@ class EstablishmentController
             $mailer->sendClientApprovalNotification($email, $representativeName, $establishmentName, 'reproved');
         } catch (\Throwable $e) {
             write_log('Falha ao enviar e-mail de reprovação para representante: ' . $e->getMessage(), 'app.log');
+        }
+    }
+
+    private function emailRepresentativeAboutOwnEstablishmentRegistration(int $establishmentId, array $data): void
+    {
+        try {
+            $representative = Auth::representative();
+            $email = trim((string) ($representative['email'] ?? ''));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return;
+            }
+
+            $representativeName = (string) ($representative['name'] ?? 'Representante');
+            $establishmentName = (string) ($data['nome_fantasia'] ?? $data['nome_completo'] ?? 'Estabelecimento');
+            $detailsUrl = absolute_url('estabelecimentos/' . $establishmentId);
+
+            $subject = 'Parabéns! Novo estabelecimento cadastrado';
+            $body = sprintf(
+                '<h2>Parabéns pelo novo cadastro!</h2>
+                <p>Olá, <strong>%s</strong>.</p>
+                <p>Você cadastrou um novo estabelecimento com sucesso no sistema.</p>
+                <ul>
+                    <li><strong>Estabelecimento:</strong> %s</li>
+                    <li><strong>Email informado:</strong> %s</li>
+                    <li><strong>Telefone informado:</strong> %s</li>
+                </ul>
+                <p><a href="%s">Abrir detalhes do estabelecimento</a></p>',
+                htmlspecialchars($representativeName),
+                htmlspecialchars($establishmentName),
+                htmlspecialchars((string) ($data['email'] ?? '-')),
+                htmlspecialchars((string) ($data['telefone'] ?? '-')),
+                htmlspecialchars($detailsUrl)
+            );
+
+            $mailer = new Mailer();
+            $mailer->send($email, $subject, $body);
+        } catch (\Throwable $e) {
+            write_log('Falha ao enviar e-mail de confirmação para representante (novo cadastro): ' . $e->getMessage(), 'app.log');
+        }
+    }
+
+    private function notifyRepresentativeAboutAdminEstablishmentChange(
+        int $establishmentId,
+        array $establishment,
+        string $notificationTitle,
+        string $notificationMessage,
+        string $emailSubject,
+        string $emailIntro
+    ): void {
+        try {
+            $representativeId = (int) ($establishment['created_by_representative_id'] ?? 0);
+            if ($representativeId <= 0) {
+                return;
+            }
+
+            $establishmentName = (string) ($establishment['nome_fantasia'] ?? $establishment['nome_completo'] ?? 'estabelecimento');
+            $detailsUrl = absolute_url('estabelecimentos/' . $establishmentId);
+
+            $this->notificationModel->create([
+                'recipient_type' => 'representative',
+                'representative_id' => $representativeId,
+                'type' => 'ESTABLISHMENT_UPDATED_BY_ADMIN',
+                'title' => $notificationTitle,
+                'message' => sprintf('%s Estabelecimento: "%s".', $notificationMessage, $establishmentName),
+                'related_type' => 'establishment',
+                'related_id' => $establishmentId
+            ]);
+
+            $representative = $this->representativeModel->findById($representativeId);
+            $email = trim((string) ($representative['email'] ?? ''));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return;
+            }
+
+            $representativeName = (string) ($representative['nome_completo'] ?? 'Representante');
+            $body = sprintf(
+                '<h2>Atualização no seu estabelecimento</h2>
+                <p>Olá, <strong>%s</strong>.</p>
+                <p>%s</p>
+                <ul>
+                    <li><strong>Estabelecimento:</strong> %s</li>
+                </ul>
+                <p><a href="%s">Abrir detalhes do estabelecimento</a></p>',
+                htmlspecialchars($representativeName),
+                htmlspecialchars($emailIntro),
+                htmlspecialchars($establishmentName),
+                htmlspecialchars($detailsUrl)
+            );
+
+            $mailer = new Mailer();
+            $mailer->send($email, $emailSubject, $body);
+        } catch (\Throwable $e) {
+            write_log('Falha ao notificar representante sobre alteração administrativa: ' . $e->getMessage(), 'app.log');
         }
     }
     
@@ -980,17 +1127,7 @@ class EstablishmentController
             }
         }
         
-        // Verificar se email já existe (exceto para o próprio registro)
-        if ($id) {
-            $existing = $this->establishmentModel->findByEmail($email);
-            if ($existing && $existing['id'] != $id) {
-                $errors[] = 'Email já está sendo usado por outro estabelecimento';
-            }
-        } else {
-            if ($this->establishmentModel->findByEmail($email)) {
-                $errors[] = 'Email já está sendo usado por outro estabelecimento';
-            }
-        }
+        // Regra de negócio: e-mail pode se repetir entre estabelecimentos.
 
         $customFieldDefinitions = $this->getSafeCustomFieldDefinitions('establishment');
         $customFieldValues = $this->collectCustomFieldValues('establishment', $customFieldDefinitions, $errors);

@@ -301,6 +301,7 @@ if (!function_exists('get_status_badge')) {
             
             // Status de Estabelecimentos
             'PENDING' => ['class' => 'bg-warning', 'text' => 'Pendente'],
+            'ANALYSIS' => ['class' => 'bg-info', 'text' => 'Em análise'],
             'APPROVED' => ['class' => 'bg-success', 'text' => 'Aprovado'],
             'REPROVED' => ['class' => 'bg-danger', 'text' => 'Reprovado'],
             'DISABLED' => ['class' => 'bg-secondary', 'text' => 'Desabilitado'],
