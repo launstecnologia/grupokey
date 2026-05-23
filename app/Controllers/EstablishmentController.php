@@ -172,7 +172,17 @@ class EstablishmentController
             if (Auth::isRepresentative()) {
                 $this->notifyAdminsAboutRepresentativeEstablishment((int) $establishmentId, $data);
                 $this->emailAdminsAboutRepresentativeEstablishment((int) $establishmentId, $data);
-                $this->emailRepresentativeAboutOwnEstablishmentRegistration((int) $establishmentId, $data);
+            }
+
+            // Enviar confirmação para o representante vinculado sempre que houver vínculo,
+            // mesmo quando o cadastro for feito por um admin em nome do representante.
+            $representativeIdForConfirmation = (int) ($data['created_by_representative_id'] ?? 0);
+            if ($representativeIdForConfirmation > 0) {
+                $this->emailRepresentativeAboutOwnEstablishmentRegistration(
+                    (int) $establishmentId,
+                    $data,
+                    $representativeIdForConfirmation
+                );
             }
             
             // Limpar dados antigos da sessão após sucesso
@@ -745,16 +755,27 @@ class EstablishmentController
         }
     }
 
-    private function emailRepresentativeAboutOwnEstablishmentRegistration(int $establishmentId, array $data): void
+    private function emailRepresentativeAboutOwnEstablishmentRegistration(int $establishmentId, array $data, int $representativeId): void
     {
         try {
-            $representative = Auth::representative();
-            $email = trim((string) ($representative['email'] ?? ''));
-            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if ($representativeId <= 0) {
+                write_log('Confirmação de cadastro para representante ignorada: representative_id inválido.', 'app.log');
                 return;
             }
 
-            $representativeName = (string) ($representative['name'] ?? 'Representante');
+            $representative = $this->representativeModel->findById($representativeId);
+            if (empty($representative)) {
+                write_log('Confirmação de cadastro para representante ignorada: representante não encontrado (ID ' . $representativeId . ').', 'app.log');
+                return;
+            }
+
+            $email = trim((string) ($representative['email'] ?? ''));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                write_log('Confirmação de cadastro para representante ignorada: e-mail inválido (ID ' . $representativeId . ').', 'app.log');
+                return;
+            }
+
+            $representativeName = (string) ($representative['nome_completo'] ?? 'Representante');
             $establishmentName = (string) ($data['nome_fantasia'] ?? $data['nome_completo'] ?? 'Estabelecimento');
             $detailsUrl = absolute_url('estabelecimentos/' . $establishmentId);
 
@@ -778,6 +799,7 @@ class EstablishmentController
 
             $mailer = new Mailer();
             $mailer->send($email, $subject, $body);
+            write_log('E-mail de confirmação de novo cadastro enviado ao representante ID ' . $representativeId . ' (' . $email . ').', 'app.log');
         } catch (\Throwable $e) {
             write_log('Falha ao enviar e-mail de confirmação para representante (novo cadastro): ' . $e->getMessage(), 'app.log');
         }
