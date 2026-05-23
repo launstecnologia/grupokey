@@ -142,7 +142,7 @@ class EstablishmentController
             $establishments = $this->establishmentModel->getAll($filters);
 
             $filename = 'estabelecimentos_' . date('Y-m-d_H-i-s') . '.xls';
-            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Cache-Control: max-age=0');
 
@@ -1026,25 +1026,13 @@ class EstablishmentController
             'DISABLED' => 'Desabilitado'
         ];
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<?mso-application progid="Excel.Sheet"?>' . "\n";
-        $xml .= '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"' . "\n";
-        $xml .= ' xmlns:o="urn:schemas-microsoft-com:office:office"' . "\n";
-        $xml .= ' xmlns:x="urn:schemas-microsoft-com:office:excel"' . "\n";
-        $xml .= ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"' . "\n";
-        $xml .= ' xmlns:html="http://www.w3.org/TR/REC-html40">' . "\n";
-        $xml .= '<Styles>' . "\n";
-        $xml .= '<Style ss:ID="Header"><Font ss:Bold="1"/><Interior ss:Color="#D3D3D3" ss:Pattern="Solid"/></Style>' . "\n";
-        $xml .= '<Style ss:ID="Title"><Font ss:Size="14" ss:Bold="1"/></Style>' . "\n";
-        $xml .= '</Styles>' . "\n";
-        $xml .= '<Worksheet ss:Name="Estabelecimentos">' . "\n";
-        $xml .= '<Table>' . "\n";
-
-        $xml .= '<Row><Cell ss:StyleID="Title"><Data ss:Type="String">Estabelecimentos</Data></Cell></Row>' . "\n";
-        $xml .= '<Row><Cell><Data ss:Type="String">Gerado em: ' . date('d/m/Y H:i:s') . '</Data></Cell></Row>' . "\n";
-        $xml .= '<Row><Cell><Data ss:Type="String">Filtros aplicados: ' . $this->escapeXmlForSpreadsheet($this->humanizeFilters($filters)) . '</Data></Cell></Row>' . "\n";
-        $xml .= '<Row></Row>' . "\n";
-
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Estabelecimentos</title>';
+        $html .= '<style>table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px}th,td{border:1px solid #d1d5db;padding:6px 8px;text-align:left}th{background:#e5e7eb;font-weight:700}</style>';
+        $html .= '</head><body>';
+        $html .= '<h2>Estabelecimentos</h2>';
+        $html .= '<p><strong>Gerado em:</strong> ' . date('d/m/Y H:i:s') . '</p>';
+        $html .= '<p><strong>Filtros aplicados:</strong> ' . $this->escapeXmlForSpreadsheet($this->humanizeFilters($filters)) . '</p>';
+        $html .= '<table><thead><tr>';
         $headers = [
             'ID',
             'Nome Fantasia',
@@ -1061,11 +1049,10 @@ class EstablishmentController
             'Status',
             'Criado em'
         ];
-        $xml .= '<Row ss:StyleID="Header">';
         foreach ($headers as $header) {
-            $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXmlForSpreadsheet($header) . '</Data></Cell>';
+            $html .= '<th>' . $this->escapeXmlForSpreadsheet($header) . '</th>';
         }
-        $xml .= '</Row>' . "\n";
+        $html .= '</tr></thead><tbody>';
 
         foreach ($establishments as $establishment) {
             $products = $this->resolveEstablishmentProductsForExport($establishment);
@@ -1092,15 +1079,15 @@ class EstablishmentController
                 !empty($establishment['created_at']) ? date('d/m/Y H:i', strtotime((string)$establishment['created_at'])) : ''
             ];
 
-            $xml .= '<Row>';
+            $html .= '<tr>';
             foreach ($row as $value) {
-                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXmlForSpreadsheet((string)$value) . '</Data></Cell>';
+                $html .= '<td>' . $this->escapeXmlForSpreadsheet((string)$value) . '</td>';
             }
-            $xml .= '</Row>' . "\n";
+            $html .= '</tr>';
         }
 
-        $xml .= '</Table></Worksheet></Workbook>';
-        return $xml;
+        $html .= '</tbody></table></body></html>';
+        return $html;
     }
 
     private function resolveEstablishmentProductsForExport(array $establishment): string
