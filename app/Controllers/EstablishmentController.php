@@ -479,8 +479,9 @@ class EstablishmentController
             redirect(url('dashboard'));
         }
         
-        // Não permitir edição de estabelecimentos aprovados (exceto admin)
-        if ($establishment['status'] === 'APPROVED' && !Auth::isAdmin()) {
+        // Não permitir edição de estabelecimentos aprovados para perfis sem regra específica.
+        // Representante pode editar aprovado apenas com as travas de campo aplicadas no update.
+        if ($establishment['status'] === 'APPROVED' && !Auth::isAdmin() && !Auth::isRepresentative()) {
             $_SESSION['error'] = 'Não é possível editar estabelecimentos aprovados';
             redirect(url('estabelecimentos/' . $id));
         }
