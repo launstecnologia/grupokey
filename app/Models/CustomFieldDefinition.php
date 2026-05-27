@@ -32,6 +32,7 @@ class CustomFieldDefinition
         $rows = $this->db->fetchAll($sql, $params);
         foreach ($rows as &$row) {
             $row['options'] = $this->decodeOptions($row['options_json'] ?? null);
+            $row['product_targets'] = $this->decodeOptions($row['product_targets_json'] ?? null);
         }
         return $rows;
     }
@@ -53,6 +54,7 @@ class CustomFieldDefinition
         }
 
         $row['options'] = $this->decodeOptions($row['options_json'] ?? null);
+        $row['product_targets'] = $this->decodeOptions($row['product_targets_json'] ?? null);
         return $row;
     }
 
@@ -68,6 +70,7 @@ class CustomFieldDefinition
         }
 
         $row['options'] = $this->decodeOptions($row['options_json'] ?? null);
+        $row['product_targets'] = $this->decodeOptions($row['product_targets_json'] ?? null);
         return $row;
     }
 
@@ -75,8 +78,8 @@ class CustomFieldDefinition
     {
         $this->db->query(
             "INSERT INTO custom_field_definitions
-             (entity_type, field_key, label, field_type, is_required, placeholder, help_text, options_json, sort_order, is_active, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())",
+             (entity_type, field_key, label, field_type, is_required, placeholder, help_text, options_json, product_targets_json, sort_order, is_active, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())",
             [
                 $data['entity_type'],
                 $data['field_key'],
@@ -86,6 +89,7 @@ class CustomFieldDefinition
                 $data['placeholder'] ?? null,
                 $data['help_text'] ?? null,
                 $this->encodeOptions($data['options'] ?? []),
+                $this->encodeOptions($data['product_targets'] ?? []),
                 (int) ($data['sort_order'] ?? 1),
             ]
         );
@@ -105,6 +109,7 @@ class CustomFieldDefinition
                  placeholder = ?,
                  help_text = ?,
                  options_json = ?,
+                 product_targets_json = ?,
                  sort_order = ?,
                  updated_at = NOW()
              WHERE id = ?",
@@ -117,6 +122,7 @@ class CustomFieldDefinition
                 $data['placeholder'] ?? null,
                 $data['help_text'] ?? null,
                 $this->encodeOptions($data['options'] ?? []),
+                $this->encodeOptions($data['product_targets'] ?? []),
                 (int) ($data['sort_order'] ?? 1),
                 (int) $id
             ]

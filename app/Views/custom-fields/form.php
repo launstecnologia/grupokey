@@ -17,6 +17,10 @@ $placeholderValue = $oldInput['placeholder'] ?? ($field['placeholder'] ?? '');
 $helpTextValue = $oldInput['help_text'] ?? ($field['help_text'] ?? '');
 $sortValue = $oldInput['sort_order'] ?? ($field['sort_order'] ?? 1);
 $optionsValue = $oldInput['options_text'] ?? implode("\n", (array)($field['options'] ?? []));
+$productTargetOptions = $productTargetOptions ?? [];
+$selectedProductTargets = isset($oldInput['product_targets']) && is_array($oldInput['product_targets'])
+    ? $oldInput['product_targets']
+    : (array) ($field['product_targets'] ?? []);
 ?>
 
 <div class="pt-6 px-4">
@@ -100,6 +104,24 @@ $optionsValue = $oldInput['options_text'] ?? implode("\n", (array)($field['optio
                         <span class="text-sm text-gray-700">Obrigatório</span>
                     </label>
                 </div>
+                <div id="product-targets-wrapper" class="md:col-span-2 <?= $entityValue === 'establishment' ? '' : 'hidden' ?>">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Vincular ao Produto (opcional)</label>
+                    <p class="text-xs text-gray-500 mb-3">Se selecionar, o campo só aparece no cadastro quando o produto vinculado estiver marcado.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 p-3 border border-gray-200 rounded-md bg-gray-50">
+                        <?php foreach ($productTargetOptions as $targetOption): ?>
+                            <?php
+                            $targetValue = (string) ($targetOption['value'] ?? '');
+                            $targetLabel = (string) ($targetOption['label'] ?? $targetValue);
+                            if ($targetValue === '') { continue; }
+                            $checked = in_array($targetValue, $selectedProductTargets, true);
+                            ?>
+                            <label class="inline-flex items-center text-sm text-gray-700">
+                                <input type="checkbox" name="product_targets[]" value="<?= htmlspecialchars($targetValue) ?>" <?= $checked ? 'checked' : '' ?> class="mr-2">
+                                <span><?= htmlspecialchars($targetLabel) ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Placeholder</label>
                     <input type="text" name="placeholder" value="<?= htmlspecialchars($placeholderValue) ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md">
@@ -128,6 +150,8 @@ $optionsValue = $oldInput['options_text'] ?? implode("\n", (array)($field['optio
 document.addEventListener('DOMContentLoaded', function () {
     const typeSelect = document.getElementById('field_type');
     const optionsWrapper = document.getElementById('options-wrapper');
+    const entitySelect = document.querySelector('select[name="entity_type"]');
+    const productTargetsWrapper = document.getElementById('product-targets-wrapper');
 
     function syncOptionsVisibility() {
         if (!typeSelect || !optionsWrapper) return;
@@ -139,6 +163,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     syncOptionsVisibility();
+
+    function syncProductTargetsVisibility() {
+        if (!entitySelect || !productTargetsWrapper) return;
+        const show = entitySelect.value === 'establishment';
+        productTargetsWrapper.classList.toggle('hidden', !show);
+        if (!show) {
+            productTargetsWrapper.querySelectorAll('input[name="product_targets[]"]').forEach(function(input) {
+                input.checked = false;
+            });
+        }
+    }
+
+    if (entitySelect) {
+        entitySelect.addEventListener('change', syncProductTargetsVisibility);
+    }
+
+    syncProductTargetsVisibility();
 });
 </script>
 

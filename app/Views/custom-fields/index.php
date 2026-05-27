@@ -3,6 +3,7 @@ $currentPage = 'campos-dinamicos';
 ob_start();
 
 $fieldsByEntity = $fieldsByEntity ?? ['establishment' => [], 'representative' => []];
+$productTargetLabelMap = $productTargetLabelMap ?? [];
 
 $entityLabels = [
     'establishment' => 'Estabelecimentos',
@@ -65,6 +66,7 @@ $typeLabels = [
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rótulo</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chave</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vinculado ao Produto</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Obrigatório</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                     </tr>
@@ -72,7 +74,7 @@ $typeLabels = [
                 <tbody class="bg-white divide-y divide-gray-200">
                     <?php if (empty($rows)): ?>
                         <tr>
-                            <td colspan="5" class="px-6 py-6 text-center text-gray-500">Nenhum campo dinâmico cadastrado.</td>
+                            <td colspan="6" class="px-6 py-6 text-center text-gray-500">Nenhum campo dinâmico cadastrado.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($rows as $field): ?>
@@ -83,6 +85,23 @@ $typeLabels = [
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-700"><?= htmlspecialchars($field['field_key']) ?></td>
                                 <td class="px-6 py-4 text-sm text-gray-700"><?= htmlspecialchars($typeLabels[$field['field_type']] ?? $field['field_type']) ?></td>
+                                <td class="px-6 py-4 text-sm text-gray-700">
+                                    <?php
+                                    $targets = isset($field['product_targets']) && is_array($field['product_targets']) ? $field['product_targets'] : [];
+                                    if (empty($targets)):
+                                    ?>
+                                        <span class="text-gray-500">Todos</span>
+                                    <?php else: ?>
+                                        <div class="flex flex-wrap gap-1">
+                                            <?php foreach ($targets as $target): ?>
+                                                <?php $targetLabel = $productTargetLabelMap[$target] ?? $target; ?>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                    <?= htmlspecialchars($targetLabel) ?>
+                                                </span>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="px-6 py-4 text-sm text-gray-700"><?= (int) ($field['is_required'] ?? 0) === 1 ? 'Sim' : 'Não' ?></td>
                                 <td class="px-6 py-4 text-right">
                                     <a href="<?= url('campos-dinamicos/' . $field['id'] . '/edit') ?>" class="text-blue-600 hover:text-blue-900 mr-3">

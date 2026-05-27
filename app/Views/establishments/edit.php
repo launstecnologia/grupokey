@@ -443,17 +443,19 @@ function isProductSelected($productId, $productData) {
                                 ? $oldCustomFieldValues[$fieldKey]
                                 : ($customFieldValues[$fieldKey] ?? '');
                             $inputType = in_array($fieldType, ['number', 'email', 'date', 'datetime-local'], true) ? $fieldType : 'text';
+                            $fieldTargets = (array) ($customField['product_targets'] ?? []);
+                            $fieldTargetsJson = htmlspecialchars(json_encode(array_values($fieldTargets), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
                         ?>
-                        <div class="<?= $fieldType === 'textarea' ? 'md:col-span-2' : '' ?>">
+                        <div class="<?= $fieldType === 'textarea' ? 'md:col-span-2' : '' ?> custom-field-item" data-product-targets="<?= $fieldTargetsJson ?>">
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 <?= htmlspecialchars($fieldLabel) ?><?= $fieldRequired ? ' *' : '' ?>
                             </label>
                             <?php if ($fieldType === 'textarea'): ?>
-                                <textarea name="<?= htmlspecialchars($fieldName) ?>" rows="3" <?= $fieldRequired ? 'required' : '' ?>
+                                <textarea name="<?= htmlspecialchars($fieldName) ?>" rows="3" <?= $fieldRequired ? 'required' : '' ?> data-base-required="<?= $fieldRequired ? '1' : '0' ?>"
                                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                           placeholder="<?= htmlspecialchars($fieldPlaceholder) ?>"><?= htmlspecialchars((string) $fieldValue) ?></textarea>
                             <?php elseif ($fieldType === 'select'): ?>
-                                <select name="<?= htmlspecialchars($fieldName) ?>" <?= $fieldRequired ? 'required' : '' ?>
+                                <select name="<?= htmlspecialchars($fieldName) ?>" <?= $fieldRequired ? 'required' : '' ?> data-base-required="<?= $fieldRequired ? '1' : '0' ?>"
                                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Selecione</option>
                                     <?php foreach ((array) ($customField['options'] ?? []) as $option): ?>
@@ -468,7 +470,7 @@ function isProductSelected($productId, $productData) {
                                 <input type="<?= htmlspecialchars($inputType) ?>"
                                        name="<?= htmlspecialchars($fieldName) ?>"
                                        value="<?= htmlspecialchars((string) $fieldValue) ?>"
-                                       <?= $fieldRequired ? 'required' : '' ?>
+                                       <?= $fieldRequired ? 'required' : '' ?> data-base-required="<?= $fieldRequired ? '1' : '0' ?>"
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                        placeholder="<?= htmlspecialchars($fieldPlaceholder) ?>">
                             <?php endif; ?>
@@ -1272,6 +1274,7 @@ document.addEventListener('DOMContentLoaded', function() {
             verificarCamposBancarios();
             syncPagSeguroPjRequired();
             syncDocumentRowsWithSelectedProducts();
+            syncCustomFieldsBySelectedProducts();
         });
         
         // Verificar estado inicial (se já estiver marcado)
@@ -1294,6 +1297,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 target.classList.toggle('hidden', !this.checked);
             }
             syncDocumentRowsWithSelectedProducts();
+            syncCustomFieldsBySelectedProducts();
         });
 
         if (checkbox.checked) {
@@ -1641,6 +1645,48 @@ document.addEventListener('DOMContentLoaded', function() {
         return keys;
     }
 
+    function getSelectedProductScopesForCustomFields() {
+        const scopes = [];
+        document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked').forEach(function(input) {
+            if (input.name === 'products[]' && input.value === 'prod-pagbank') {
+                scopes.push('manual:pagseguro');
+            }
+            if (input.name === 'dynamic_products[]') {
+                scopes.push('dynamic:' + String(input.value));
+            }
+        });
+        return scopes;
+    }
+
+    function syncCustomFieldsBySelectedProducts() {
+        const selectedScopes = getSelectedProductScopesForCustomFields();
+        document.querySelectorAll('.custom-field-item').forEach(function(wrapper) {
+            const raw = wrapper.getAttribute('data-product-targets') || '[]';
+            let targets = [];
+            try {
+                targets = JSON.parse(raw);
+            } catch (e) {
+                targets = [];
+            }
+
+            const hasTargets = Array.isArray(targets) && targets.length > 0;
+            const shouldShow = !hasTargets || targets.some(function(target) {
+                return selectedScopes.includes(String(target));
+            });
+
+            wrapper.classList.toggle('hidden', !shouldShow);
+
+            wrapper.querySelectorAll('input, select, textarea').forEach(function(field) {
+                const baseRequired = field.getAttribute('data-base-required') === '1';
+                if (shouldShow && baseRequired) {
+                    field.setAttribute('required', 'required');
+                } else {
+                    field.removeAttribute('required');
+                }
+            });
+        });
+    }
+
     function getRequiredDocumentCodesByProducts() {
         const selectedKeys = getSelectedProductKeysForDocuments();
         if (!selectedKeys.length) {
@@ -1785,6 +1831,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     atualizarEventListenersDocumentos();
     syncDocumentRowsWithSelectedProducts();
+    syncCustomFieldsBySelectedProducts();
     
     // Validar tipo de documento apenas se arquivo foi selecionado
     document.querySelectorAll('input[name="documents[]"]').forEach(function(fileInput) {

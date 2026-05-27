@@ -4,14 +4,17 @@ namespace App\Controllers;
 
 use App\Core\Auth;
 use App\Models\CustomFieldDefinition;
+use App\Models\DynamicProduct;
 
 class CustomFieldController
 {
     private $model;
+    private $dynamicProductModel;
 
     public function __construct()
     {
         $this->model = new CustomFieldDefinition();
+        $this->dynamicProductModel = new DynamicProduct();
     }
 
     public function index()
@@ -37,10 +40,20 @@ class CustomFieldController
             $fieldsByEntity[$entity][] = $field;
         }
 
+        $productTargetLabelMap = [];
+        foreach ($this->getProductTargetOptions() as $option) {
+            $value = (string) ($option['value'] ?? '');
+            if ($value === '') {
+                continue;
+            }
+            $productTargetLabelMap[$value] = (string) ($option['label'] ?? $value);
+        }
+
         view('custom-fields/index', [
             'title' => 'Campos Dinâmicos',
             'currentPage' => 'campos-dinamicos',
-            'fieldsByEntity' => $fieldsByEntity
+            'fieldsByEntity' => $fieldsByEntity,
+            'productTargetLabelMap' => $productTargetLabelMap,
         ]);
     }
 
@@ -51,7 +64,8 @@ class CustomFieldController
         view('custom-fields/form', [
             'title' => 'Novo Campo Dinâmico',
             'currentPage' => 'campos-dinamicos',
-            'field' => null
+            'field' => null,
+            'productTargetOptions' => $this->getProductTargetOptions(),
         ]);
     }
 
@@ -98,7 +112,8 @@ class CustomFieldController
         view('custom-fields/form', [
             'title' => 'Editar Campo Dinâmico',
             'currentPage' => 'campos-dinamicos',
-            'field' => $field
+            'field' => $field,
+            'productTargetOptions' => $this->getProductTargetOptions(),
         ]);
     }
 
@@ -164,6 +179,8 @@ class CustomFieldController
         $placeholder = sanitize_input($_POST['placeholder'] ?? '');
         $helpText = sanitize_input($_POST['help_text'] ?? '');
         $optionsText = trim($_POST['options_text'] ?? '');
+        $productTargetsRaw = $_POST['product_targets'] ?? [];
+        $productTargetsRaw = is_array($productTargetsRaw) ? $productTargetsRaw : [];
         $sortOrder = (int) ($_POST['sort_order'] ?? 1);
 
         $validEntities = ['establishment', 'representative'];
@@ -208,6 +225,18 @@ class CustomFieldController
             $sortOrder = 1;
         }
 
+        $allowedProductTargets = array_column($this->getProductTargetOptions(), 'value');
+        $productTargets = [];
+        foreach ($productTargetsRaw as $productTarget) {
+            $productTarget = trim((string) $productTarget);
+            if ($productTarget === '' || !in_array($productTarget, $allowedProductTargets, true)) {
+                continue;
+            }
+            if (!in_array($productTarget, $productTargets, true)) {
+                $productTargets[] = $productTarget;
+            }
+        }
+
         if ($fieldKey !== '' && in_array($entityType, $validEntities, true)) {
             $existing = $this->model->findByEntityAndKey($entityType, $fieldKey);
             if ($existing && ((int) $existing['id'] !== (int) $id)) {
@@ -229,8 +258,38 @@ class CustomFieldController
             'placeholder' => $placeholder,
             'help_text' => $helpText,
             'options' => $options,
+            'product_targets' => $entityType === 'establishment' ? $productTargets : [],
             'sort_order' => $sortOrder
         ];
+    }
+
+    private function getProductTargetOptions(): array
+    {
+        $options = [
+            [
+                'value' => 'manual:pagseguro',
+                'label' => 'PAGSEGURO',
+            ],
+        ];
+
+        try {
+            $dynamicProducts = $this->dynamicProductModel->getAll();
+            foreach ($dynamicProducts as $dynamicProduct) {
+                $id = (int) ($dynamicProduct['id'] ?? 0);
+                $name = trim((string) ($dynamicProduct['name'] ?? ''));
+                if ($id <= 0 || $name === '') {
+                    continue;
+                }
+                $options[] = [
+                    'value' => 'dynamic:' . $id,
+                    'label' => $name,
+                ];
+            }
+        } catch (\Throwable $e) {
+            // Mantém apenas opções padrão se não carregar produtos dinâmicos.
+        }
+
+        return $options;
     }
 
     private function slugify($value)

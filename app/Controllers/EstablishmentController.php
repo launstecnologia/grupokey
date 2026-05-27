@@ -1478,7 +1478,8 @@ class EstablishmentController
         // Regra de negócio: e-mail pode se repetir entre estabelecimentos.
 
         $customFieldDefinitions = $this->getSafeCustomFieldDefinitions('establishment');
-        $customFieldValues = $this->collectCustomFieldValues('establishment', $customFieldDefinitions, $errors);
+        $selectedProductScopes = $this->buildSelectedProductScopes($products, $dynamicProducts);
+        $customFieldValues = $this->collectCustomFieldValues('establishment', $customFieldDefinitions, $errors, $selectedProductScopes);
         
         if (!empty($errors)) {
             error_log('ERROS DE VALIDAÇÃO: ' . json_encode($errors));
@@ -1749,7 +1750,7 @@ class EstablishmentController
         }
     }
 
-    private function collectCustomFieldValues($entityType, array $definitions, array &$errors)
+    private function collectCustomFieldValues($entityType, array $definitions, array &$errors, array $selectedProductScopes = [])
     {
         $rawValues = $_POST['custom_fields'] ?? [];
         $rawValues = is_array($rawValues) ? $rawValues : [];
@@ -1764,8 +1765,17 @@ class EstablishmentController
             $label = (string) ($definition['label'] ?? $key);
             $type = (string) ($definition['field_type'] ?? 'text');
             $isRequired = (int) ($definition['is_required'] ?? 0) === 1;
+            $targets = isset($definition['product_targets']) && is_array($definition['product_targets'])
+                ? $definition['product_targets']
+                : [];
+            $isApplicableByProduct = $this->isCustomFieldApplicableBySelectedProducts($entityType, $targets, $selectedProductScopes);
             $rawValue = $rawValues[$key] ?? '';
             $value = $this->normalizeCustomFieldValue($type, $rawValue);
+
+            if (!$isApplicableByProduct) {
+                $result[$key] = '';
+                continue;
+            }
 
             if ($isRequired && $value === '') {
                 $errors[] = 'Campo adicional "' . $label . '" é obrigatório.';
@@ -1798,6 +1808,53 @@ class EstablishmentController
         }
 
         return $result;
+    }
+
+    private function buildSelectedProductScopes(array $manualProducts, array $dynamicProducts): array
+    {
+        $scopes = [];
+
+        foreach ($manualProducts as $manualProductId) {
+            if ((string) $manualProductId === 'prod-pagbank') {
+                $scopes[] = 'manual:pagseguro';
+            }
+        }
+
+        foreach ($dynamicProducts as $dynamicProductId) {
+            $id = (int) $dynamicProductId;
+            if ($id > 0) {
+                $scopes[] = 'dynamic:' . $id;
+            }
+        }
+
+        return array_values(array_unique($scopes));
+    }
+
+    private function isCustomFieldApplicableBySelectedProducts(string $entityType, array $targets, array $selectedProductScopes): bool
+    {
+        if ($entityType !== 'establishment') {
+            return true;
+        }
+
+        $cleanTargets = [];
+        foreach ($targets as $target) {
+            $target = trim((string) $target);
+            if ($target !== '') {
+                $cleanTargets[] = $target;
+            }
+        }
+
+        if (empty($cleanTargets)) {
+            return true;
+        }
+
+        foreach ($cleanTargets as $target) {
+            if (in_array($target, $selectedProductScopes, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function normalizeCustomFieldValue($type, $value)
