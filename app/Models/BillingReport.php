@@ -16,7 +16,7 @@ class BillingReport
     /**
      * Processa arquivo Excel de faturamento usando método simples
      */
-    public function processExcelFile($filePath, $userId = null, $reportTitle = null, $companyCode = null)
+    public function processExcelFile($filePath, $userId = null, $reportTitle = null, $companyCode = null, $reportLayout = 'PAGSEGURO', $productScope = null)
     {
         try {
             error_log("=== INÍCIO PROCESSAMENTO ===");
@@ -31,7 +31,7 @@ class BillingReport
             
             if ($fileExtension === 'csv') {
                 error_log("Processando como CSV");
-                return $this->processCsvFile($filePath, $userId, $reportTitle, $companyCode);
+                return $this->processCsvFile($filePath, $userId, $reportTitle, $companyCode, $reportLayout, $productScope);
             } elseif ($fileExtension === 'xlsx') {
                 error_log("Processando como XLSX");
                 // Verificar se podemos processar XLSX
@@ -40,7 +40,7 @@ class BillingReport
                     // Tentar processar como CSV se possível, ou lançar erro
                     throw new \Exception('Processamento de arquivos XLSX requer shell_exec que não está disponível no servidor. Por favor, converta o arquivo para CSV antes de fazer upload.');
                 }
-                return $this->processXlsxFileSimple($filePath, $userId, $reportTitle, $companyCode);
+                return $this->processXlsxFileSimple($filePath, $userId, $reportTitle, $companyCode, $reportLayout, $productScope);
             } else {
                 throw new \Exception('Formato de arquivo não suportado. Use CSV ou XLSX.');
             }
@@ -58,7 +58,7 @@ class BillingReport
     /**
      * Processa arquivo CSV
      */
-    private function processCsvFile($filePath, $userId, $reportTitle = null, $companyCode = null)
+    private function processCsvFile($filePath, $userId, $reportTitle = null, $companyCode = null, $reportLayout = 'PAGSEGURO', $productScope = null)
     {
         error_log("=== PROCESSANDO CSV ===");
         error_log("Arquivo CSV: " . $filePath);
@@ -124,13 +124,13 @@ class BillingReport
         
         error_log("Total de linhas processadas: " . count($rows));
         
-        return $this->processDataRows($rows, $userId, $reportTitle, $companyCode);
+        return $this->processDataRows($rows, $userId, $reportTitle, $companyCode, $reportLayout, $productScope);
     }
     
     /**
      * Processa arquivo XLSX de forma simples (sem ZipArchive)
      */
-    private function processXlsxFileSimple($filePath, $userId, $reportTitle = null, $companyCode = null)
+    private function processXlsxFileSimple($filePath, $userId, $reportTitle = null, $companyCode = null, $reportLayout = 'PAGSEGURO', $productScope = null)
     {
         error_log("=== PROCESSANDO XLSX ===");
         error_log("Arquivo XLSX: " . $filePath);
@@ -144,7 +144,7 @@ class BillingReport
         
         error_log("Arquivo convertido para CSV: " . $csvPath);
         
-        $result = $this->processCsvFile($csvPath, $userId, $reportTitle, $companyCode);
+        $result = $this->processCsvFile($csvPath, $userId, $reportTitle, $companyCode, $reportLayout, $productScope);
         
         // Limpar arquivo temporário
         if (file_exists($csvPath)) {
@@ -299,7 +299,7 @@ try {
     /**
      * Processa as linhas de dados
      */
-    private function processDataRows($rows, $userId, $reportTitle = null, $companyCode = null)
+    private function processDataRows($rows, $userId, $reportTitle = null, $companyCode = null, $reportLayout = 'PAGSEGURO', $productScope = null)
     {
         error_log("=== PROCESSANDO LINHAS DE DADOS ===");
         error_log("Total de linhas: " . count($rows));
@@ -312,7 +312,7 @@ try {
         error_log("Dados do cabeçalho: " . json_encode($headerData));
         
         // Criar registro do relatório
-        $reportId = $this->createReport($headerData, $userId);
+        $reportId = $this->createReport($headerData, $userId, $reportLayout, $productScope);
         error_log("Relatório criado com ID: " . $reportId);
         
         $processedRows = [];
@@ -335,7 +335,7 @@ try {
                 
                 error_log("Processando linha " . ($index + 1) . ": " . json_encode($row));
                 
-                $rowData = $this->extractRowData($row);
+                $rowData = $this->extractRowData($row, $reportLayout);
                 error_log("Dados extraídos: " . json_encode($rowData));
                 
                 if ($this->isValidDataRow($rowData)) {
@@ -407,8 +407,38 @@ try {
     /**
      * Extrai dados de uma linha específica
      */
-    private function extractRowData($row)
+    private function extractRowData($row, $reportLayout = 'PAGSEGURO')
     {
+        if ($reportLayout === 'OUTROS_PRODUTOS') {
+            // Estrutura nova: CNPJ | RAZÃO/FANTASIA | FATURAMENTO | CIDADE/UF
+            $cnpj = $this->cleanValue($row[0] ?? '');
+            $razaoFantasia = $this->cleanValue($row[1] ?? '');
+            $faturamento = $this->parseCurrency($row[2] ?? '');
+            $cidadeUf = $this->cleanValue($row[3] ?? '');
+
+            $cidade = null;
+            $uf = null;
+            if (!empty($cidadeUf) && strpos($cidadeUf, '/') !== false) {
+                [$cidadeRaw, $ufRaw] = array_pad(explode('/', (string) $cidadeUf, 2), 2, null);
+                $cidade = $this->cleanValue($cidadeRaw);
+                $uf = strtoupper((string) $this->cleanValue($ufRaw));
+            } else {
+                $cidade = $cidadeUf;
+            }
+
+            return [
+                'nome' => $razaoFantasia,
+                'razao_fantasia' => $razaoFantasia,
+                'cnpj_cpf' => $cnpj,
+                'conta' => null,
+                'representante' => '',
+                'cidade' => $cidade,
+                'uf' => $uf,
+                'tpv_total' => $faturamento,
+                'markup' => 0.0
+            ];
+        }
+
         // Estrutura real: Nome, CNPJ/CPF, REPRESENTANTE, TPV Total, Markup
         // Garantir que temos pelo menos 3 colunas
         if (!is_array($row) || count($row) < 3) {
@@ -433,9 +463,12 @@ try {
         
         return [
             'nome' => $nome,
+            'razao_fantasia' => null,
             'cnpj_cpf' => $cnpjCpf,
             'conta' => null, // Campo mantido para compatibilidade, mas não usado
             'representante' => $representante, // Coluna REPRESENTANTE
+            'cidade' => null,
+            'uf' => null,
             'tpv_total' => $tpvTotal,
             'markup' => $markup
         ];
@@ -567,14 +600,16 @@ try {
     /**
      * Cria registro do relatório no banco
      */
-    private function createReport($headerData, $userId)
+    private function createReport($headerData, $userId, $reportLayout = 'PAGSEGURO', $productScope = null)
     {
-        $sql = "INSERT INTO billing_reports (title, company_code, uploaded_by, uploaded_at, status) 
-                VALUES (?, ?, ?, NOW(), 'PROCESSING')";
+        $sql = "INSERT INTO billing_reports (title, company_code, report_layout, product_scope, uploaded_by, uploaded_at, status) 
+                VALUES (?, ?, ?, ?, ?, NOW(), 'PROCESSING')";
         
         $this->db->query($sql, [
             $headerData['title'] ?? 'Relatório de Faturamento',
             $headerData['company_code'] ?? null,
+            $reportLayout,
+            $productScope,
             $userId
         ]);
         
@@ -589,16 +624,19 @@ try {
         // Tentar encontrar estabelecimento pelo CPF/CNPJ
         $establishmentId = $this->findEstablishmentByDocument($rowData['cnpj_cpf']);
         
-        $sql = "INSERT INTO billing_data (report_id, establishment_id, nome, cnpj_cpf, conta, representante, tpv_total, markup, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        $sql = "INSERT INTO billing_data (report_id, establishment_id, nome, razao_fantasia, cnpj_cpf, conta, representante, cidade, uf, tpv_total, markup, created_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         
         $this->db->query($sql, [
             $reportId,
             $establishmentId,
             $rowData['nome'],
+            $rowData['razao_fantasia'] ?? null,
             $rowData['cnpj_cpf'],
             $rowData['conta'],
             $rowData['representante'],
+            $rowData['cidade'] ?? null,
+            $rowData['uf'] ?? null,
             $rowData['tpv_total'],
             $rowData['markup']
         ]);

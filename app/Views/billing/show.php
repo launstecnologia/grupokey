@@ -5,6 +5,8 @@ $currentPage = 'billing';
 $report = $report ?? [];
 $billing_data = $billing_data ?? [];
 $unlinked_data = $unlinked_data ?? [];
+$reportLayout = strtoupper((string)($report['report_layout'] ?? 'PAGSEGURO'));
+$isOtherProductsLayout = $reportLayout === 'OUTROS_PRODUTOS';
 
 // Calcular contadores
 $linkedCount = 0;
@@ -30,6 +32,9 @@ $statusLabels = [
 $status = $report['status'] ?? 'PROCESSING';
 $statusClass = $statusColors[$status] ?? 'bg-gray-100 text-gray-800';
 $statusLabel = $statusLabels[$status] ?? $status;
+$layoutLabel = $isOtherProductsLayout ? 'Outros Produtos' : 'PagSeguro';
+$establishmentColumnIndex = $isOtherProductsLayout ? 4 : 5;
+$statusColumnIndex = $isOtherProductsLayout ? 5 : 6;
 ?>
 
 <div class="pt-6 px-4">
@@ -80,6 +85,10 @@ $statusLabel = $statusLabels[$status] ?? $status;
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Empresa</dt>
                             <dd class="mt-1 text-sm text-gray-900"><?= htmlspecialchars($report['company_code'] ?? '-') ?></dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Layout</dt>
+                            <dd class="mt-1 text-sm text-gray-900"><?= $layoutLabel ?></dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Total de Registros</dt>
@@ -147,6 +156,20 @@ $statusLabel = $statusLabels[$status] ?? $status;
                     <table class="min-w-full divide-y divide-gray-200" id="billingTable">
                         <thead class="bg-gray-50">
                             <tr>
+                                <?php if ($isOtherProductsLayout): ?>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(0, 'text')">
+                                    CNPJ <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(1, 'text')">
+                                    Razão Social/Fantasia <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(2, 'number')">
+                                    Faturamento <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(3, 'text')">
+                                    Cidade/UF <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <?php else: ?>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(0, 'text')">
                                     Nome <i class="fas fa-sort ml-1"></i>
                                 </th>
@@ -162,16 +185,35 @@ $statusLabel = $statusLabels[$status] ?? $status;
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(4, 'number')">
                                     Markup <i class="fas fa-sort ml-1"></i>
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(5, 'text')">
+                                <?php endif; ?>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(<?= $establishmentColumnIndex ?>, 'text')">
                                     Estabelecimento <i class="fas fa-sort ml-1"></i>
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(<?= $statusColumnIndex ?>, 'text')">
+                                    Status <i class="fas fa-sort ml-1"></i>
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <?php foreach ($billing_data as $data): ?>
                                 <tr class="hover:bg-blue-200 transition-colors cursor-pointer" data-billing-id="<?= $data['id'] ?>">
+                                    <?php if ($isOtherProductsLayout): ?>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900"><?= htmlspecialchars($data['cnpj_cpf'] ?? '') ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900"><?= htmlspecialchars(($data['razao_fantasia'] ?? '') ?: ($data['nome'] ?? '')) ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">R$ <?= number_format($data['tpv_total'], 2, ',', '.') ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            <?= htmlspecialchars(trim((string) (($data['cidade'] ?? '') . '/' . ($data['uf'] ?? '')), '/')) ?>
+                                        </div>
+                                    </td>
+                                    <?php else: ?>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900"><?= htmlspecialchars($data['nome'] ?? '') ?></div>
                                     </td>
@@ -187,6 +229,7 @@ $statusLabel = $statusLabels[$status] ?? $status;
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">R$ <?= number_format($data['markup'], 2, ',', '.') ?></div>
                                     </td>
+                                    <?php endif; ?>
                                     <td class="px-6 py-4">
                                         <?php if ($data['establishment_id']): ?>
                                             <div class="text-sm text-gray-900">

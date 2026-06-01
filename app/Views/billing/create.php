@@ -1,5 +1,6 @@
 <?php
 $title = $title ?? 'Upload de Relatório';
+$productScopes = $productScopes ?? [];
 ?>
 
 <div class="container-fluid">
@@ -37,6 +38,25 @@ $title = $title ?? 'Upload de Relatório';
                                 Código identificador da empresa (opcional)
                             </div>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="report_layout" class="form-label">Estrutura do Relatório</label>
+                            <select class="form-control" id="report_layout" name="report_layout" required>
+                                <option value="PAGSEGURO" selected>PagSeguro (estrutura atual)</option>
+                                <option value="OUTROS_PRODUTOS">Outros produtos (sem PagSeguro)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3 hidden" id="product-scope-wrapper">
+                            <label for="product_scope" class="form-label">Produto de Faturamento</label>
+                            <select class="form-control" id="product_scope" name="product_scope">
+                                <option value="">Selecione o produto</option>
+                                <?php foreach ($productScopes as $scope): ?>
+                                <option value="<?= htmlspecialchars($scope['value']) ?>"><?= htmlspecialchars($scope['label']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="form-text">Selecione o produto (todos exceto PagSeguro).</div>
+                        </div>
                         
                         <div class="mb-3">
                             <label for="excel_file" class="form-label">Arquivo Excel</label>
@@ -69,6 +89,9 @@ $title = $title ?? 'Upload de Relatório';
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>
+                                    <th colspan="5">PagSeguro (atual)</th>
+                                </tr>
+                                <tr>
                                     <th>Nome</th>
                                     <th>CNPJ/CPF</th>
                                     <th>REPRESENTANTE</th>
@@ -83,6 +106,23 @@ $title = $title ?? 'Upload de Relatório';
                                     <td>Nome do Representante</td>
                                     <td>R$ 1.000,00</td>
                                     <td>R$ 10,00</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="bg-light text-center font-weight-bold">Outros produtos (novo)</td>
+                                </tr>
+                                <tr>
+                                    <th>CNPJ</th>
+                                    <th>RAZÃO/FANTASIA</th>
+                                    <th>FATURAMENTO</th>
+                                    <th>CIDADE/UF</th>
+                                    <th>-</th>
+                                </tr>
+                                <tr>
+                                    <td>12.345.678/0001-99</td>
+                                    <td>EMPRESA MODELO LTDA</td>
+                                    <td>R$ 150.000,00</td>
+                                    <td>Belo Horizonte/MG</td>
+                                    <td>-</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -117,6 +157,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('excel_file');
     const titleInput = document.getElementById('report_title');
     const companyCodeInput = document.getElementById('company_code');
+    const reportLayoutInput = document.getElementById('report_layout');
+    const productScopeInput = document.getElementById('product_scope');
+    const productScopeWrapper = document.getElementById('product-scope-wrapper');
     const submitBtn = document.getElementById('submitBtn');
     const processingModal = document.getElementById('processingModal');
     
@@ -192,6 +235,12 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('report_title', titleInput.value.trim());
         if (companyCodeInput && companyCodeInput.value.trim()) {
             formData.append('company_code', companyCodeInput.value.trim());
+        }
+        if (reportLayoutInput) {
+            formData.append('report_layout', reportLayoutInput.value);
+        }
+        if (productScopeInput && productScopeInput.value.trim()) {
+            formData.append('product_scope', productScopeInput.value.trim());
         }
         
         // Verificar se o arquivo está no FormData
@@ -298,5 +347,25 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return false;
     });
+    
+    function syncLayoutFields() {
+        const isOutros = reportLayoutInput && reportLayoutInput.value === 'OUTROS_PRODUTOS';
+        if (productScopeWrapper) {
+            productScopeWrapper.classList.toggle('hidden', !isOutros);
+        }
+        if (productScopeInput) {
+            if (isOutros) {
+                productScopeInput.setAttribute('required', 'required');
+            } else {
+                productScopeInput.removeAttribute('required');
+                productScopeInput.value = '';
+            }
+        }
+    }
+
+    if (reportLayoutInput) {
+        reportLayoutInput.addEventListener('change', syncLayoutFields);
+    }
+    syncLayoutFields();
 });
 </script>

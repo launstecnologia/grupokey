@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Auth;
 use App\Models\BillingReport;
+use App\Models\DynamicProduct;
 use App\Models\Establishment;
 use App\Core\FileUpload;
 
@@ -12,12 +13,14 @@ class BillingController
     private $billingReport;
     private $establishment;
     private $fileUpload;
+    private $dynamicProductModel;
     
     public function __construct()
     {
         $this->billingReport = new BillingReport();
         $this->establishment = new Establishment();
         $this->fileUpload = new FileUpload();
+        $this->dynamicProductModel = new DynamicProduct();
         
         // Verificar autenticação
         if (!Auth::check()) {
@@ -48,6 +51,30 @@ class BillingController
         }
         
         $reports = $this->billingReport->getAllReports($filters);
+        $dynamicProductsById = [];
+        foreach ($this->dynamicProductModel->getAll() as $dynamicProduct) {
+            $dynamicId = (int) ($dynamicProduct['id'] ?? 0);
+            if ($dynamicId > 0) {
+                $dynamicProductsById[$dynamicId] = trim((string) ($dynamicProduct['name'] ?? ''));
+            }
+        }
+        foreach ($reports as &$report) {
+            $layout = strtoupper((string) ($report['report_layout'] ?? 'PAGSEGURO'));
+            $scope = (string) ($report['product_scope'] ?? '');
+            $report['layout_label'] = $layout === 'OUTROS_PRODUTOS' ? 'Outros Produtos' : 'PagSeguro';
+            $report['product_scope_label'] = '-';
+            if ($scope !== '') {
+                if ($scope === 'manual:cdc') {
+                    $report['product_scope_label'] = 'CDC';
+                } elseif (strpos($scope, 'dynamic:') === 0) {
+                    $dynamicId = (int) substr($scope, 8);
+                    $report['product_scope_label'] = $dynamicProductsById[$dynamicId] ?? ('Produto Dinâmico #' . $dynamicId);
+                } else {
+                    $report['product_scope_label'] = strtoupper($scope);
+                }
+            }
+        }
+        unset($report);
         
         // Calcular estatísticas
         $allReports = $this->billingReport->getAllReports([]); // Sem filtros para estatísticas
@@ -86,8 +113,20 @@ class BillingController
      */
     public function create()
     {
+        $productScopes = [
+            ['value' => 'manual:cdc', 'label' => 'CDC'],
+        ];
+        foreach ($this->dynamicProductModel->getAll() as $dynamicProduct) {
+            $id = (int) ($dynamicProduct['id'] ?? 0);
+            $name = trim((string) ($dynamicProduct['name'] ?? ''));
+            if ($id > 0 && $name !== '') {
+                $productScopes[] = ['value' => 'dynamic:' . $id, 'label' => $name];
+            }
+        }
+
         $data = [
-            'title' => 'Upload de Relatório de Faturamento'
+            'title' => 'Upload de Relatório de Faturamento',
+            'productScopes' => $productScopes,
         ];
         
         $this->render('billing/create', $data);
@@ -289,13 +328,15 @@ class BillingController
             // Obter dados do formulário
             $reportTitle = $_POST['report_title'] ?? 'Relatório de Faturamento';
             $companyCode = $_POST['company_code'] ?? null;
+            $reportLayout = $_POST['report_layout'] ?? 'PAGSEGURO';
+            $productScope = $_POST['product_scope'] ?? null;
             
             write_log("Título do relatório: {$reportTitle}", 'excel_upload.log');
             write_log("Código da empresa: " . ($companyCode ?? 'N/A'), 'excel_upload.log');
             
             // Processar arquivo Excel
             write_log("Iniciando processamento do arquivo Excel...", 'excel_upload.log');
-            $result = $this->billingReport->processExcelFile($filePath, $userId, $reportTitle, $companyCode);
+            $result = $this->billingReport->processExcelFile($filePath, $userId, $reportTitle, $companyCode, $reportLayout, $productScope);
             
             if (!$result['success']) {
                 write_log("ERRO no processamento: {$result['error']}", 'excel_upload.log');
@@ -536,6 +577,9 @@ class BillingController
      */
     private function generateExcelFile($report, $billingData)
     {
+        $reportLayout = strtoupper((string)($report['report_layout'] ?? 'PAGSEGURO'));
+        $isOtherProductsLayout = $reportLayout === 'OUTROS_PRODUTOS';
+
         // Usar formato SpreadsheetML que é compatível com Excel
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<?mso-application progid="Excel.Sheet"?>' . "\n";
@@ -586,11 +630,18 @@ class BillingController
         
         // Cabeçalho da tabela
         $xml .= '<Row ss:StyleID="Header">' . "\n";
-        $xml .= '<Cell><Data ss:Type="String">Nome</Data></Cell>' . "\n";
-        $xml .= '<Cell><Data ss:Type="String">CNPJ/CPF</Data></Cell>' . "\n";
-        $xml .= '<Cell><Data ss:Type="String">REPRESENTANTE</Data></Cell>' . "\n";
-        $xml .= '<Cell><Data ss:Type="String">TPV Total</Data></Cell>' . "\n";
-        $xml .= '<Cell><Data ss:Type="String">Markup</Data></Cell>' . "\n";
+        if ($isOtherProductsLayout) {
+            $xml .= '<Cell><Data ss:Type="String">CNPJ</Data></Cell>' . "\n";
+            $xml .= '<Cell><Data ss:Type="String">Razão Social/Fantasia</Data></Cell>' . "\n";
+            $xml .= '<Cell><Data ss:Type="String">Faturamento</Data></Cell>' . "\n";
+            $xml .= '<Cell><Data ss:Type="String">Cidade/UF</Data></Cell>' . "\n";
+        } else {
+            $xml .= '<Cell><Data ss:Type="String">Nome</Data></Cell>' . "\n";
+            $xml .= '<Cell><Data ss:Type="String">CNPJ/CPF</Data></Cell>' . "\n";
+            $xml .= '<Cell><Data ss:Type="String">REPRESENTANTE</Data></Cell>' . "\n";
+            $xml .= '<Cell><Data ss:Type="String">TPV Total</Data></Cell>' . "\n";
+            $xml .= '<Cell><Data ss:Type="String">Markup</Data></Cell>' . "\n";
+        }
         $xml .= '<Cell><Data ss:Type="String">Estabelecimento</Data></Cell>' . "\n";
         $xml .= '<Cell><Data ss:Type="String">Status</Data></Cell>' . "\n";
         $xml .= '</Row>' . "\n";
@@ -598,11 +649,18 @@ class BillingController
         // Dados
         foreach ($billingData as $data) {
             $xml .= '<Row>' . "\n";
-            $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['nome'] ?? '') . '</Data></Cell>' . "\n";
-            $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['cnpj_cpf'] ?? '') . '</Data></Cell>' . "\n";
-            $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['representante'] ?? '') . '</Data></Cell>' . "\n";
-            $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($data['tpv_total'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
-            $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($data['markup'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
+            if ($isOtherProductsLayout) {
+                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['cnpj_cpf'] ?? '') . '</Data></Cell>' . "\n";
+                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml(($data['razao_fantasia'] ?? '') ?: ($data['nome'] ?? '')) . '</Data></Cell>' . "\n";
+                $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($data['tpv_total'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
+                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml(trim((string) (($data['cidade'] ?? '') . '/' . ($data['uf'] ?? '')), '/')) . '</Data></Cell>' . "\n";
+            } else {
+                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['nome'] ?? '') . '</Data></Cell>' . "\n";
+                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['cnpj_cpf'] ?? '') . '</Data></Cell>' . "\n";
+                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['representante'] ?? '') . '</Data></Cell>' . "\n";
+                $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($data['tpv_total'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
+                $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($data['markup'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
+            }
             $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml(($data['nome_fantasia'] ?? '') ?: ($data['razao_social'] ?? '')) . '</Data></Cell>' . "\n";
             $xml .= '<Cell><Data ss:Type="String">' . ($data['establishment_id'] ? 'Vinculado' : 'Não vinculado') . '</Data></Cell>' . "\n";
             $xml .= '</Row>' . "\n";
@@ -615,9 +673,15 @@ class BillingController
         $xml .= '<Row>' . "\n";
         $xml .= '<Cell><Data ss:Type="String">TOTAL:</Data></Cell>' . "\n";
         $xml .= '<Cell></Cell>' . "\n";
-        $xml .= '<Cell></Cell>' . "\n";
+        if (!$isOtherProductsLayout) {
+            $xml .= '<Cell></Cell>' . "\n";
+        }
         $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($report['total_tpv'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
-        $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($report['total_markup'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
+        if ($isOtherProductsLayout) {
+            $xml .= '<Cell></Cell>' . "\n";
+        } else {
+            $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($report['total_markup'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
+        }
         $xml .= '<Cell></Cell>' . "\n";
         $xml .= '<Cell></Cell>' . "\n";
         $xml .= '</Row>' . "\n";
