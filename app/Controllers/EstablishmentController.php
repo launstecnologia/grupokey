@@ -1437,6 +1437,7 @@ class EstablishmentController
             $razaoSocial = sanitize_input($_POST['razao_social'] ?? '');
             $cpfPj = sanitize_input($_POST['cpf_pj'] ?? '');
             $dataNascimento = trim($_POST['data_nascimento'] ?? '');
+            $dataNascimentoNormalizada = $this->parseDate($dataNascimento);
             if (empty($cnpj)) {
                 $errors[] = 'CNPJ é obrigatório para pessoa jurídica';
             } elseif (!$this->validateCNPJ($cnpj)) {
@@ -1452,7 +1453,7 @@ class EstablishmentController
             }
             if ($hasManualPagSeguro && empty($dataNascimento)) {
                 $errors[] = 'Data de nascimento do responsável é obrigatória para pessoa jurídica (exigido para PagSeguro)';
-            } elseif (!empty($dataNascimento) && (strtotime($dataNascimento) === false || date('Y-m-d', strtotime($dataNascimento)) !== $dataNascimento)) {
+            } elseif (!empty($dataNascimento) && $dataNascimentoNormalizada === null) {
                 $errors[] = 'Data de nascimento do responsável inválida';
             }
         }
@@ -1544,7 +1545,7 @@ class EstablishmentController
             $data['razao_social'] = $razaoSocial;
             $data['cpf'] = sanitize_input($_POST['cpf_pj'] ?? '');
             $dataNasc = trim($_POST['data_nascimento'] ?? '');
-            $data['birth_date'] = !empty($dataNasc) ? date('Y-m-d', strtotime($dataNasc)) : null;
+            $data['birth_date'] = !empty($dataNasc) ? $this->parseDate($dataNasc) : null;
         }
         
         // Dados específicos dos produtos

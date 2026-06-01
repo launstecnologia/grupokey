@@ -237,8 +237,11 @@ $representatives = $representatives ?? [];
                 </a>
             </div>
         <?php else: ?>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+            <div id="establishments-top-scroll" class="overflow-x-auto overflow-y-hidden h-4 bg-gray-100 border-b border-gray-200">
+                <div id="establishments-top-scroll-content" class="h-px"></div>
+            </div>
+            <div id="establishments-table-scroll" class="overflow-x-auto">
+                <table id="establishments-table" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estabelecimento</th>
@@ -264,6 +267,12 @@ $representatives = $representatives ?? [];
                                         <i class="fas fa-map-marker-alt mr-1"></i>
                                         <?= htmlspecialchars($establishment['cidade']) ?>/<?= htmlspecialchars($establishment['uf']) ?>
                                     </div>
+                                    <?php if (App\Core\Auth::isRepresentative()): ?>
+                                    <div class="text-sm text-gray-500">
+                                        <i class="fas fa-id-card mr-1"></i>
+                                        CNPJ: <?= htmlspecialchars(!empty($establishment['cnpj']) ? $establishment['cnpj'] : '-') ?>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -469,3 +478,40 @@ $representatives = $representatives ?? [];
 $content = ob_get_clean();
 include __DIR__ . '/../layouts/app.php';
 ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const topScroll = document.getElementById('establishments-top-scroll');
+    const topScrollContent = document.getElementById('establishments-top-scroll-content');
+    const tableScroll = document.getElementById('establishments-table-scroll');
+    const table = document.getElementById('establishments-table');
+
+    if (!topScroll || !topScrollContent || !tableScroll || !table) {
+        return;
+    }
+
+    const syncTopWidth = function() {
+        topScrollContent.style.width = table.scrollWidth + 'px';
+        const needsHorizontal = table.scrollWidth > tableScroll.clientWidth;
+        topScroll.style.display = needsHorizontal ? 'block' : 'none';
+    };
+
+    let syncing = false;
+    topScroll.addEventListener('scroll', function () {
+        if (syncing) return;
+        syncing = true;
+        tableScroll.scrollLeft = topScroll.scrollLeft;
+        syncing = false;
+    });
+
+    tableScroll.addEventListener('scroll', function () {
+        if (syncing) return;
+        syncing = true;
+        topScroll.scrollLeft = tableScroll.scrollLeft;
+        syncing = false;
+    });
+
+    syncTopWidth();
+    window.addEventListener('resize', syncTopWidth);
+});
+</script>

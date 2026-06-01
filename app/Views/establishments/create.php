@@ -231,7 +231,8 @@ if (!$hasOtherDocumentType) {
                         </div>
                         <div id="pj-pagseguro-birth-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
-                            <input type="date" name="data_nascimento" value="<?= htmlspecialchars(old('data_nascimento')) ?>" 
+                            <input type="text" name="data_nascimento" value="<?= htmlspecialchars(old('data_nascimento')) ?>" 
+                                   maxlength="10"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <small class="text-gray-500">Exigido para envio à API PagSeguro</small>
                         </div>
@@ -1480,6 +1481,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 value = '(' + value.substring(0, 2) + ') ' + value.substring(2, 7) + '-' + value.substring(7, 11);
             } else if (value.length >= 10) {
                 value = '(' + value.substring(0, 2) + ') ' + value.substring(2, 6) + '-' + value.substring(6, 10);
+            }
+            this.value = value;
+        });
+    }
+
+    // Máscara para data de nascimento (dd/mm/aaaa)
+    const dataNascimentoInput = document.querySelector('input[name="data_nascimento"]');
+    if (dataNascimentoInput) {
+        dataNascimentoInput.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 8) value = value.substring(0, 8);
+            if (value.length >= 5) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4) + '/' + value.substring(4);
+            } else if (value.length >= 3) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
             }
             this.value = value;
         });

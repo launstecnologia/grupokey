@@ -44,6 +44,18 @@ $formatCustomFieldValue = static function (string $value, string $fieldType, str
         }
     }
 
+    $isDateField = $normalizedType === 'date'
+        || strpos($normalizedKey, 'data') !== false
+        || strpos($normalizedLabel, 'data') !== false
+        || strpos($normalizedLabel, 'nascimento') !== false
+        || strpos($normalizedKey, 'nascimento') !== false;
+    if ($isDateField) {
+        $date = \DateTime::createFromFormat('Y-m-d', trim($value));
+        if ($date !== false) {
+            return $date->format('d/m/Y');
+        }
+    }
+
     return $value;
 };
 
@@ -213,6 +225,12 @@ $statusLabels = [
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['email'] ?? '-') ?></dd>
                         </div>
+                        <?php if (!empty($establishment['birth_date'])): ?>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Data de Nascimento</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars(date('d/m/Y', strtotime((string) $establishment['birth_date']))) ?></dd>
+                        </div>
+                        <?php endif; ?>
                     </dl>
                 </div>
             </div>
