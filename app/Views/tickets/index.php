@@ -230,8 +230,8 @@ $filters = $filters ?? [];
                                 </span>
                                 <?php
                                 $productMap = $productOptions ?? [];
-                                $productMap['PAGBANK'] = 'PagSeguro';
-                                $productMap['PAGSEGURO'] = 'PagSeguro';
+                                $productMap['PAGBANK'] = 'PAGSEGURO';
+                                $productMap['PAGSEGURO'] = 'PAGSEGURO';
                                 $productMap['PAGSEGURO_MP'] = 'EVO';
                                 $productMap['CDX_EVO'] = 'EVO';
                                 $productMap['BRASILCARD'] = 'CDC';

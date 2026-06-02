@@ -60,9 +60,9 @@ ob_start();
                             'GOOGLE' => 'Google',
                             'MEMBRO_KEY' => 'Outros',
                             'OUTROS' => 'Outros',
-                            'PAGBANK' => 'PagSeguro',
+                            'PAGBANK' => 'PAGSEGURO',
                             // Valores antigos para compatibilidade
-                            'PAGSEGURO' => 'PagSeguro',
+                            'PAGSEGURO' => 'PAGSEGURO',
                             'PAGSEGURO_MP' => 'EVO',
                             'BRASILCARD' => 'CDC',
                             'DIVERSOS' => 'Outros'

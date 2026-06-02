@@ -752,7 +752,6 @@
                         <?php else: ?>
                             <li><a href="<?= url('dashboard') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'dashboard' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Dashboard</span></a></li>
                             <li><a href="<?= url('estabelecimentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'clientes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Meus Clientes</span></a></li>
-                            <li><a href="<?= url('estabelecimentos/create') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'novo-cliente' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Novo Cliente</span></a></li>
                             <li><a href="<?= url('chamados') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'chamados' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Chamados</span></a></li>
                             <li><a href="<?= url('material') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'material' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Material de Apoio</span></a></li>
                         <?php endif; ?>

@@ -351,7 +351,7 @@ class TicketController
     private function getProductOptions(): array
     {
         $options = [
-            'PAGSEGURO' => 'PagSeguro',
+            'PAGSEGURO' => 'PAGSEGURO',
         ];
 
         foreach ($this->dynamicProductModel->getAll() as $product) {

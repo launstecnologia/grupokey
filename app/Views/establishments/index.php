@@ -267,12 +267,19 @@ $representatives = $representatives ?? [];
                                         <i class="fas fa-map-marker-alt mr-1"></i>
                                         <?= htmlspecialchars($establishment['cidade']) ?>/<?= htmlspecialchars($establishment['uf']) ?>
                                     </div>
-                                    <?php if (App\Core\Auth::isRepresentative()): ?>
+                                    <?php
+                                    $documentLabel = !empty($establishment['cnpj']) ? 'CNPJ' : 'CPF';
+                                    $documentValue = !empty($establishment['cnpj']) ? $establishment['cnpj'] : ($establishment['cpf'] ?? '');
+                                    if ($documentLabel === 'CNPJ' && function_exists('format_cnpj')) {
+                                        $documentValue = format_cnpj($documentValue);
+                                    } elseif ($documentLabel === 'CPF' && function_exists('format_cpf')) {
+                                        $documentValue = format_cpf($documentValue);
+                                    }
+                                    ?>
                                     <div class="text-sm text-gray-500">
                                         <i class="fas fa-id-card mr-1"></i>
-                                        CNPJ: <?= htmlspecialchars(!empty($establishment['cnpj']) ? $establishment['cnpj'] : '-') ?>
+                                        <?= $documentLabel ?>: <?= htmlspecialchars(!empty($documentValue) ? $documentValue : '-') ?>
                                     </div>
-                                    <?php endif; ?>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -345,13 +352,13 @@ $representatives = $representatives ?? [];
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <?php if (!empty($establishment['created_by_user_id'])): ?>
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                        Administrador
-                                    </span>
-                                <?php elseif (!empty($establishment['created_by_representative_name'])): ?>
+                                <?php if (!empty($establishment['created_by_representative_name'])): ?>
                                     <span class="text-sm text-gray-900">
                                         <?= htmlspecialchars($establishment['created_by_representative_name']) ?>
+                                    </span>
+                                <?php elseif (!empty($establishment['created_by_user_id'])): ?>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                        Administrador
                                     </span>
                                 <?php else: ?>
                                     <span class="text-sm text-gray-400">
