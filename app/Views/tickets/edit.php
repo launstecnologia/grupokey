@@ -70,7 +70,9 @@ ob_start();
                             <select class="form-select shadow-sm" id="produto" name="produto" required>
                                 <option value="">Selecione o produto</option>
                                 <?php
-                                $selectedProduct = strtoupper((string) ($_POST['produto'] ?? $chamado['produto']));
+                                $selectedProduct = strtoupper(trim((string) ($_POST['produto'] ?? $chamado['produto'])));
+                                $selectedProduct = preg_replace('/[^A-Z0-9]+/', '_', $selectedProduct);
+                                $selectedProduct = trim((string) $selectedProduct, '_');
                                 $legacyProductMap = [
                                     'PAGBANK' => 'PAGSEGURO',
                                     'CDX_EVO' => 'EVO',
@@ -79,7 +81,9 @@ ob_start();
                                     'DIVERSOS' => 'OUTROS',
                                     'BRASILCARD' => 'CDC',
                                 ];
-                                $selectedProduct = $legacyProductMap[$selectedProduct] ?? $selectedProduct;
+                                if (!isset(($productOptions ?? [])[$selectedProduct])) {
+                                    $selectedProduct = $legacyProductMap[$selectedProduct] ?? $selectedProduct;
+                                }
                                 ?>
                                 <?php foreach (($productOptions ?? []) as $productValue => $productLabel): ?>
                                     <option value="<?= htmlspecialchars($productValue) ?>" <?= $selectedProduct === $productValue ? 'selected' : '' ?>>

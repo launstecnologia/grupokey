@@ -3,15 +3,18 @@
 namespace App\Controllers;
 
 use App\Core\Auth;
+use App\Models\DynamicProduct;
 use App\Models\Ticket;
 
 class TicketController
 {
     private $ticketModel;
+    private $dynamicProductModel;
 
     public function __construct()
     {
         $this->ticketModel = new Ticket();
+        $this->dynamicProductModel = new DynamicProduct();
     }
 
     public function index()
@@ -312,7 +315,8 @@ class TicketController
         
         $titulo = trim($_POST['titulo'] ?? '');
         $descricao = trim($_POST['descricao'] ?? '');
-        $produto = $this->normalizeTicketProduct($_POST['produto'] ?? 'OUTROS');
+        $validProducts = array_keys($this->getProductOptions());
+        $produto = $this->normalizeTicketProduct($_POST['produto'] ?? 'OUTROS', $validProducts);
         
         if (empty($titulo)) {
             $errors[] = 'Título é obrigatório';
@@ -326,7 +330,6 @@ class TicketController
             $errors[] = 'Descrição deve ter pelo menos 10 caracteres';
         }
         
-        $validProducts = array_keys($this->getProductOptions());
         if (!in_array($produto, $validProducts, true)) {
             $errors[] = 'Produto inválido';
         }
@@ -347,18 +350,39 @@ class TicketController
 
     private function getProductOptions(): array
     {
-        return [
+        $options = [
             'PAGSEGURO' => 'PagSeguro',
-            'CDC' => 'CDC',
-            'EVO' => 'EVO',
-            'GOOGLE' => 'Google',
-            'OUTROS' => 'Outros',
         ];
+
+        foreach ($this->dynamicProductModel->getAll() as $product) {
+            $name = trim((string) ($product['name'] ?? ''));
+            $slug = trim((string) ($product['slug'] ?? ''));
+
+            if ($name === '' || $this->isManualPagSeguroProduct($name, $slug)) {
+                continue;
+            }
+
+            $value = $this->normalizeProductOptionValue($name);
+            if ($value === '' || isset($options[$value])) {
+                continue;
+            }
+
+            $options[$value] = $name;
+        }
+
+        return $options;
     }
 
-    private function normalizeTicketProduct(string $product): string
+    private function normalizeTicketProduct(string $product, array $validProducts = []): string
     {
         $product = strtoupper(trim($product));
+        $product = preg_replace('/[^A-Z0-9]+/', '_', $product);
+        $product = trim((string) $product, '_');
+
+        if (in_array($product, $validProducts, true)) {
+            return $product;
+        }
+
         $legacyMap = [
             'PAGBANK' => 'PAGSEGURO',
             'CDX_EVO' => 'EVO',
@@ -369,5 +393,21 @@ class TicketController
         ];
 
         return $legacyMap[$product] ?? $product;
+    }
+
+    private function normalizeProductOptionValue(string $product): string
+    {
+        $product = strtoupper(trim($product));
+        $product = preg_replace('/[^A-Z0-9]+/', '_', $product);
+        return trim((string) $product, '_');
+    }
+
+    private function isManualPagSeguroProduct(string $name, string $slug): bool
+    {
+        $normalizedName = $this->normalizeProductOptionValue($name);
+        $normalizedSlug = $this->normalizeProductOptionValue($slug);
+
+        return in_array($normalizedName, ['PAGSEGURO', 'PAGBANK'], true)
+            || in_array($normalizedSlug, ['PAGSEGURO', 'PAGBANK'], true);
     }
 }
