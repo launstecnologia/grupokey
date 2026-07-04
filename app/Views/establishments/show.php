@@ -600,7 +600,7 @@ $statusLabels = [
                                         </div>
                                         <div class="min-w-0 flex-1">
                                             <div class="mb-2 flex min-w-0 flex-wrap items-center gap-2">
-                                                <span class="document-type-pill inline-flex max-w-full rounded-full bg-blue-100 dark:bg-blue-900/40 px-4 py-2 text-sm font-semibold leading-5 text-blue-800 dark:text-blue-200 lg:whitespace-nowrap">
+                                                <span class="document-type-pill inline-flex rounded-full bg-blue-100 dark:bg-blue-900/40 px-4 py-2 text-sm font-semibold leading-5 text-blue-800 dark:text-blue-200">
                                                     <?= htmlspecialchars($tipoLabel) ?>
                                                 </span>
                                                 <?php if ($ext !== ''): ?>
@@ -1005,6 +1005,11 @@ document.addEventListener('keydown', function(e) {
     background-color: #1e293b !important;
     color: #60a5fa !important;
 }
+.document-type-pill {
+    max-width: none !important;
+    width: max-content;
+    white-space: nowrap;
+}
 .dark .document-type-pill {
     background-color: #1d4ed8 !important;
     color: #eff6ff !important;
@@ -1039,6 +1044,13 @@ document.addEventListener('keydown', function(e) {
 }
 .dark [data-document-action="delete"]:hover {
     background-color: #991b1b !important;
+}
+@media (max-width: 1023px) {
+    .document-type-pill {
+        max-width: 100% !important;
+        width: fit-content;
+        white-space: normal;
+    }
 }
 .copy-value-wrapper {
     display: flex;
