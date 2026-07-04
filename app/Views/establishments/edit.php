@@ -517,10 +517,10 @@ function isProductSelected($productId, $productData) {
                             $downloadUrl = url('estabelecimentos/' . ($establishment['id'] ?? '') . '/documentos/' . $documentId . '/download');
                             $isImage = strpos($mimeType, 'image/') === 0 || in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], true);
                         ?>
-                        <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <div class="edit-document-card rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)] xl:items-center">
                                 <div class="flex min-w-0 gap-4">
-                                    <div class="flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                                    <div class="edit-document-icon flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
                                         <?php if ($isImage): ?>
                                             <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" class="block h-full w-full" title="Abrir documento">
                                                 <img src="<?= htmlspecialchars($previewUrl) ?>" alt="Miniatura do documento" class="h-full w-full object-cover">
@@ -531,11 +531,11 @@ function isProductSelected($productId, $productData) {
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <div class="mb-2 flex flex-wrap items-center gap-2">
-                                            <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
+                                            <span class="edit-document-type rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
                                                 <?= htmlspecialchars($tipoLabel) ?>
                                             </span>
                                             <?php if ($ext !== ''): ?>
-                                                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                                <span class="edit-document-ext rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
                                                     <?= htmlspecialchars($ext) ?>
                                                 </span>
                                             <?php endif; ?>
@@ -543,15 +543,15 @@ function isProductSelected($productId, $productData) {
                                         <p class="break-words text-sm font-semibold text-gray-900 dark:text-white">
                                             <?= htmlspecialchars($originalName) ?>
                                         </p>
-                                        <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                        <div class="edit-document-meta mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
                                             <span><i class="far fa-calendar-alt mr-1"></i><?= htmlspecialchars($uploadedAt) ?></span>
                                             <span><i class="fas fa-weight-hanging mr-1"></i><?= htmlspecialchars($fileSize) ?></span>
                                         </div>
                                         <div class="mt-3 flex flex-wrap gap-2">
-                                            <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" class="inline-flex items-center rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-200 dark:hover:bg-indigo-900/50">
+                                            <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" class="edit-document-action-view inline-flex items-center rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-200 dark:hover:bg-indigo-900/50">
                                                 <i class="fas fa-eye mr-2"></i> Abrir
                                             </a>
-                                            <a href="<?= htmlspecialchars($downloadUrl) ?>" class="inline-flex items-center rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-200 dark:hover:bg-blue-900/50">
+                                            <a href="<?= htmlspecialchars($downloadUrl) ?>" class="edit-document-action-download inline-flex items-center rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-200 dark:hover:bg-blue-900/50">
                                                 <i class="fas fa-download mr-2"></i> Baixar
                                             </a>
                                         </div>
@@ -561,7 +561,7 @@ function isProductSelected($productId, $productData) {
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                         Substituir arquivo
                                     </label>
-                                    <label class="document-dropzone flex min-h-[104px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-4 text-center text-sm text-gray-600 transition hover:border-blue-500 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-blue-400 dark:hover:bg-blue-900/30">
+                                    <label class="edit-document-dropzone document-dropzone flex min-h-[104px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-4 text-center text-sm text-gray-600 transition hover:border-blue-500 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-blue-400 dark:hover:bg-blue-900/30">
                                         <i class="fas fa-cloud-upload-alt mb-2 text-2xl text-blue-600 dark:text-blue-400"></i>
                                         <span class="document-dropzone-text">Arraste e solte para trocar ou clique para escolher</span>
                                         <span class="document-file-name mt-1 text-xs font-medium text-gray-500 dark:text-gray-400"></span>
@@ -2136,6 +2136,53 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 .copy-field-wrapper > textarea + .copy-field-button {
     top: 1.35rem;
+}
+.dark .edit-document-card {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+}
+.dark .edit-document-icon {
+    background-color: #1e293b !important;
+    color: #60a5fa !important;
+}
+.dark .edit-document-type {
+    background-color: #1d4ed8 !important;
+    color: #eff6ff !important;
+}
+.dark .edit-document-ext {
+    background-color: #334155 !important;
+    color: #e5e7eb !important;
+}
+.dark .edit-document-meta,
+.dark .edit-document-card p {
+    color: #cbd5e1 !important;
+}
+.dark .edit-document-meta i {
+    color: #94a3b8 !important;
+}
+.dark .edit-document-action-view {
+    background-color: #312e81 !important;
+    color: #eef2ff !important;
+}
+.dark .edit-document-action-view:hover {
+    background-color: #4338ca !important;
+}
+.dark .edit-document-action-download {
+    background-color: #1e3a8a !important;
+    color: #eff6ff !important;
+}
+.dark .edit-document-action-download:hover {
+    background-color: #1d4ed8 !important;
+}
+.dark .edit-document-dropzone {
+    background-color: #111827 !important;
+    border-color: #475569 !important;
+    color: #d1d5db !important;
+}
+.dark .edit-document-dropzone:hover,
+.dark .edit-document-dropzone.border-blue-500 {
+    background-color: #1e293b !important;
+    border-color: #60a5fa !important;
 }
 </style>
 
