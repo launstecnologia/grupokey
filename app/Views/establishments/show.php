@@ -589,7 +589,7 @@ $statusLabels = [
                             <div class="document-card rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4">
                                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                     <div class="flex min-w-0 flex-1 gap-4">
-                                        <div class="flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 overflow-hidden">
+                                        <div class="document-icon-tile flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 overflow-hidden">
                                             <?php if ($isImage): ?>
                                                 <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" title="Visualizar imagem" class="block h-full w-full">
                                                     <img src="<?= htmlspecialchars($previewUrl) ?>" alt="Miniatura" class="h-full w-full object-cover">
@@ -600,11 +600,11 @@ $statusLabels = [
                                         </div>
                                         <div class="min-w-0 flex-1">
                                             <div class="mb-2 flex flex-wrap items-center gap-2">
-                                                <span class="rounded-full bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:text-blue-200">
+                                                <span class="document-type-pill rounded-full bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:text-blue-200">
                                                     <?= htmlspecialchars($tipoLabel) ?>
                                                 </span>
                                                 <?php if ($ext !== ''): ?>
-                                                    <span class="rounded-full bg-gray-200 dark:bg-gray-700 px-2.5 py-1 text-xs font-semibold uppercase text-gray-700 dark:text-gray-200">
+                                                    <span class="document-ext-pill rounded-full bg-gray-200 dark:bg-gray-700 px-2.5 py-1 text-xs font-semibold uppercase text-gray-700 dark:text-gray-200">
                                                         <?= htmlspecialchars($ext) ?>
                                                     </span>
                                                 <?php endif; ?>
@@ -612,7 +612,7 @@ $statusLabels = [
                                             <p class="m-0 break-words text-sm font-semibold leading-5 text-gray-900 dark:text-white">
                                                 <?= htmlspecialchars($originalName) ?>
                                             </p>
-                                            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                            <div class="document-meta mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
                                                 <span><i class="far fa-calendar-alt mr-1"></i><?= date('d/m/Y H:i', strtotime($document['uploaded_at'] ?? '')) ?></span>
                                                 <span><i class="fas fa-weight-hanging mr-1"></i><?= $fileSize ?> KB</span>
                                             </div>
@@ -620,17 +620,19 @@ $statusLabels = [
                                     </div>
                                     <div class="flex flex-wrap items-center gap-2 lg:flex-none lg:justify-end">
                                         <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener"
+                                           data-document-action="view"
                                            class="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
                                             <i class="fas fa-eye mr-2"></i> Visualizar
                                         </a>
                                         <a href="<?= htmlspecialchars($downloadUrl) ?>"
+                                           data-document-action="download"
                                            class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-900/50">
                                             <i class="fas fa-download mr-2"></i> Baixar
                                         </a>
                                         <?php if (\App\Core\Auth::isAdmin()): ?>
                                         <form method="POST" action="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id']) ?>" class="inline" onsubmit="return confirm('Deseja excluir este documento?');">
                                             <input type="hidden" name="_method" value="DELETE">
-                                            <button type="submit" class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/30 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/50">
+                                            <button type="submit" data-document-action="delete" class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/30 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/50">
                                                 <i class="fas fa-trash mr-2"></i> Excluir
                                             </button>
                                         </form>
@@ -903,6 +905,49 @@ document.addEventListener('keydown', function(e) {
 .dark .reproval-card {
     background-color: #000000 !important;
     border-color: #1f2937 !important;
+}
+.dark .document-card {
+    background-color: #111827 !important;
+    border-color: #334155 !important;
+}
+.dark .document-icon-tile {
+    background-color: #1e293b !important;
+    color: #60a5fa !important;
+}
+.dark .document-type-pill {
+    background-color: #1d4ed8 !important;
+    color: #eff6ff !important;
+}
+.dark .document-ext-pill {
+    background-color: #334155 !important;
+    color: #e5e7eb !important;
+}
+.dark .document-meta {
+    color: #cbd5e1 !important;
+}
+.dark .document-meta i {
+    color: #94a3b8 !important;
+}
+.dark [data-document-action="view"] {
+    background-color: #312e81 !important;
+    color: #eef2ff !important;
+}
+.dark [data-document-action="view"]:hover {
+    background-color: #4338ca !important;
+}
+.dark [data-document-action="download"] {
+    background-color: #1e3a8a !important;
+    color: #eff6ff !important;
+}
+.dark [data-document-action="download"]:hover {
+    background-color: #1d4ed8 !important;
+}
+.dark [data-document-action="delete"] {
+    background-color: #7f1d1d !important;
+    color: #fff1f2 !important;
+}
+.dark [data-document-action="delete"]:hover {
+    background-color: #991b1b !important;
 }
 .copy-value-wrapper {
     display: flex;
