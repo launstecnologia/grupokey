@@ -87,7 +87,15 @@ ob_start();
 
                         <div class="col-12 mb-4">
                             <label for="file" class="form-label fw-semibold">Substituir arquivo de download</label>
-                            <input type="file" class="form-control shadow-sm" id="file" name="file">
+                            <label for="file" class="material-dropzone" id="material-dropzone">
+                                <span class="material-dropzone-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </span>
+                                <span class="material-dropzone-title">Arraste e solte o novo arquivo aqui</span>
+                                <span class="material-dropzone-subtitle">ou clique para escolher no computador</span>
+                                <span class="material-dropzone-filename" id="material-dropzone-filename"></span>
+                            </label>
+                            <input type="file" class="visually-hidden" id="file" name="file">
                             <div class="form-text">
                                 Deixe em branco para manter o arquivo atual. Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, AVI, ZIP, RAR.
                             </div>
@@ -153,8 +161,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitIcon = document.getElementById('material-edit-file-submit-icon');
     const submitText = document.getElementById('material-edit-file-submit-text');
     const fileInput = document.getElementById('file');
+    const dropzone = document.getElementById('material-dropzone');
+    const dropzoneFilename = document.getElementById('material-dropzone-filename');
 
     if (!form) return;
+
+    function updateDropzoneFilename() {
+        const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+        if (dropzoneFilename) {
+            dropzoneFilename.textContent = file ? file.name : '';
+        }
+    }
+
+    if (dropzone && fileInput) {
+        ['dragenter', 'dragover'].forEach(function(eventName) {
+            dropzone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                dropzone.classList.add('is-dragging');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(function(eventName) {
+            dropzone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                dropzone.classList.remove('is-dragging');
+            });
+        });
+
+        dropzone.addEventListener('drop', function(e) {
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+                updateDropzoneFilename();
+            }
+        });
+
+        fileInput.addEventListener('change', updateDropzoneFilename);
+    }
 
     form.addEventListener('submit', function(e) {
         const file = fileInput && fileInput.files ? fileInput.files[0] : null;
@@ -174,6 +217,75 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
+.material-dropzone {
+    align-items: center;
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 0.75rem;
+    color: #334155;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 150px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.material-dropzone:hover,
+.material-dropzone.is-dragging {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #1d4ed8;
+}
+.material-dropzone-icon {
+    align-items: center;
+    background: #dbeafe;
+    border-radius: 999px;
+    color: #2563eb;
+    display: inline-flex;
+    font-size: 1.5rem;
+    height: 3rem;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    width: 3rem;
+}
+.material-dropzone-title {
+    font-size: 1rem;
+    font-weight: 700;
+}
+.material-dropzone-subtitle,
+.material-dropzone-filename {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+.material-dropzone-filename {
+    color: #2563eb;
+    font-weight: 700;
+    word-break: break-word;
+}
+.dark .material-dropzone {
+    background: #111827 !important;
+    border-color: #475569 !important;
+    color: #e5e7eb !important;
+}
+.dark .material-dropzone:hover,
+.dark .material-dropzone.is-dragging {
+    background: #172554 !important;
+    border-color: #60a5fa !important;
+    color: #eff6ff !important;
+}
+.dark .material-dropzone-icon {
+    background: #1e3a8a !important;
+    color: #bfdbfe !important;
+}
+.dark .material-dropzone-subtitle {
+    color: #cbd5e1 !important;
+}
+.dark .material-dropzone-filename {
+    color: #93c5fd !important;
+}
 .material-file-info-card .card-body,
 .material-file-info-card li,
 .material-file-info-card strong {
