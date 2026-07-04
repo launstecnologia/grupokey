@@ -85,10 +85,10 @@ ob_start();
                                 <span class="material-dropzone-subtitle">ou clique para escolher no computador</span>
                                 <span class="material-dropzone-filename" id="material-dropzone-filename"></span>
                             </label>
-                            <input type="file" class="visually-hidden" id="file" name="file" required>
+                            <input type="file" class="visually-hidden" id="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.m4v,.mov,.avi,.webm,.mkv,.zip,.rar" required>
                             <div class="form-text">
-                                <strong>Tipos permitidos:</strong> PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, AVI, ZIP, RAR<br>
-                                <strong>Tamanho máximo:</strong> 50MB
+                                <strong>Tipos permitidos:</strong> PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, M4V, MOV, AVI, WEBM, MKV, ZIP, RAR<br>
+                                <strong>Tamanho máximo:</strong> 200MB
                             </div>
                         </div>
 
@@ -133,7 +133,7 @@ ob_start();
                     <li><i class="fas fa-file-powerpoint text-warning me-2"></i> PowerPoint (PPT, PPTX)</li>
                     <li><i class="fas fa-file-alt text-secondary me-2"></i> Texto (TXT)</li>
                     <li><i class="fas fa-file-image text-info me-2"></i> Imagens (JPG, PNG, GIF)</li>
-                    <li><i class="fas fa-file-video text-danger me-2"></i> Vídeos (MP4, AVI)</li>
+                    <li><i class="fas fa-file-video text-danger me-2"></i> Vídeos (MP4, M4V, MOV, AVI, WEBM, MKV)</li>
                     <li><i class="fas fa-file-archive text-warning me-2"></i> Compactados (ZIP, RAR)</li>
                 </ul>
                 
@@ -201,33 +201,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const file = fileInput.files[0];
         
         if (file) {
-            // Validar tamanho (50MB)
-            if (file.size > 50 * 1024 * 1024) {
+            if (file.size > 200 * 1024 * 1024) {
                 e.preventDefault();
-                alert('Arquivo muito grande! Tamanho máximo: 50MB');
+                alert('Arquivo muito grande! Tamanho máximo: 200MB');
                 return;
             }
-            
-            // Validar tipo
-            const allowedTypes = [
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-powerpoint',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                'text/plain',
-                'image/jpeg',
-                'image/png',
-                'image/gif',
-                'video/mp4',
-                'video/avi',
-                'application/zip',
-                'application/x-rar-compressed'
-            ];
-            
-            if (!allowedTypes.includes(file.type)) {
+
+            const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'm4v', 'mov', 'avi', 'webm', 'mkv', 'zip', 'rar'];
+            const fileExtension = (file.name.split('.').pop() || '').toLowerCase();
+
+            if (!allowedExtensions.includes(fileExtension)) {
                 e.preventDefault();
                 alert('Tipo de arquivo não permitido!');
                 return;

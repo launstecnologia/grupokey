@@ -24,7 +24,7 @@ RewriteRule ^(.*)$ /index.php [QSA,L]
 </Files>
 
 # Proteger arquivos sensíveis
-<FilesMatch "^(config\.env|\.env|composer\.(json|lock)|\.htaccess)$">
+<FilesMatch "^(config\.env|\.env|\.user\.ini|composer\.(json|lock)|\.htaccess)$">
     Order Allow,Deny
     Deny from all
 </FilesMatch>
@@ -65,7 +65,7 @@ RewriteRule ^(.*)$ /index.php [QSA,L]
 # Configurações de upload de arquivos
 <IfModule mod_php.c>
     php_flag file_uploads On
-    php_value upload_max_filesize 10M
-    php_value post_max_size 12M
+    php_value upload_max_filesize 200M
+    php_value post_max_size 220M
     php_value max_file_uploads 20
 </IfModule>

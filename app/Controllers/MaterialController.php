@@ -9,6 +9,39 @@ use App\Models\Notification;
 
 class MaterialController
 {
+    private const MATERIAL_MAX_FILE_SIZE = 200 * 1024 * 1024;
+    private const MATERIAL_ALLOWED_EXTENSIONS = [
+        'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt',
+        'jpg', 'jpeg', 'png', 'gif',
+        'mp4', 'm4v', 'mov', 'avi', 'webm', 'mkv',
+        'zip', 'rar'
+    ];
+    private const MATERIAL_ALLOWED_MIME_TYPES = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'video/mp4',
+        'video/x-m4v',
+        'video/quicktime',
+        'video/avi',
+        'video/x-msvideo',
+        'video/webm',
+        'video/x-matroska',
+        'application/zip',
+        'application/x-zip-compressed',
+        'application/x-rar-compressed',
+        'application/vnd.rar',
+        'application/octet-stream'
+    ];
+
     private $materialModel;
     private $representativeModel;
     private $notificationModel;
@@ -599,40 +632,26 @@ class MaterialController
         $description = trim($_POST['description'] ?? '');
         $fileData = [];
 
-        $hasUploadedFile = isset($_FILES['file']) && ($_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK;
+        $uploadError = $_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE;
+        $hasUploadedFile = isset($_FILES['file']) && $uploadError === UPLOAD_ERR_OK;
 
-        if (!$isUpdate || $hasUploadedFile) {
+        if (!$isUpdate || $uploadError !== UPLOAD_ERR_NO_FILE) {
             if (!$hasUploadedFile) {
-                $errors[] = 'Arquivo é obrigatório';
+                $errors[] = $uploadError === UPLOAD_ERR_NO_FILE
+                    ? 'Arquivo é obrigatório'
+                    : $this->getUploadErrorMessage((int) $uploadError);
             } else {
                 $file = $_FILES['file'];
-                
-                // Validar tipo de arquivo
-                $allowedTypes = [
-                    'application/pdf',
-                    'application/msword',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'application/vnd.ms-excel',
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'application/vnd.ms-powerpoint',
-                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                    'text/plain',
-                    'image/jpeg',
-                    'image/png',
-                    'image/gif',
-                    'video/mp4',
-                    'video/avi',
-                    'application/zip',
-                    'application/x-rar-compressed'
-                ];
-                
-                if (!in_array($file['type'], $allowedTypes)) {
-                    $errors[] = 'Tipo de arquivo não permitido';
+
+                $fileExtension = strtolower((string) pathinfo($file['name'], PATHINFO_EXTENSION));
+                $mimeType = $this->detectUploadedMimeType($file);
+
+                if (!$this->isAllowedMaterialFile($fileExtension, $mimeType)) {
+                    $errors[] = 'Tipo de arquivo não permitido. Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, M4V, MOV, AVI, WEBM, MKV, ZIP e RAR.';
                 }
                 
-                // Validar tamanho (máximo 50MB)
-                if ($file['size'] > 50 * 1024 * 1024) {
-                    $errors[] = 'Arquivo muito grande (máximo 50MB)';
+                if ($file['size'] > self::MATERIAL_MAX_FILE_SIZE) {
+                    $errors[] = 'Arquivo muito grande (máximo 200MB)';
                 }
             }
         }
@@ -651,9 +670,10 @@ class MaterialController
                 mkdir($uploadDir, 0755, true);
             }
             
-            $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $fileExtension = strtolower((string) pathinfo($file['name'], PATHINFO_EXTENSION));
             $filename = uniqid() . '.' . $fileExtension;
             $filePath = $uploadDir . $filename;
+            $mimeType = $this->detectUploadedMimeType($file);
             
             if (!move_uploaded_file($file['tmp_name'], $filePath)) {
                 $_SESSION['error'] = 'Erro ao fazer upload do arquivo';
@@ -666,7 +686,7 @@ class MaterialController
                 'file_path' => $filePath,
                 'file_size' => $file['size'],
                 'file_type' => $fileExtension,
-                'mime_type' => $file['type'],
+                'mime_type' => $mimeType,
                 'uploaded_by' => Auth::user()['id'],
             ];
         }
@@ -679,6 +699,59 @@ class MaterialController
             'description' => $description,
             'is_active' => $isActive
         ], $fileData);
+    }
+
+    private function isAllowedMaterialFile(string $extension, string $mimeType): bool
+    {
+        if (!in_array($extension, self::MATERIAL_ALLOWED_EXTENSIONS, true)) {
+            return false;
+        }
+
+        if ($mimeType === '') {
+            return true;
+        }
+
+        return in_array($mimeType, self::MATERIAL_ALLOWED_MIME_TYPES, true);
+    }
+
+    private function detectUploadedMimeType(array $file): string
+    {
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        if ($tmpName !== '' && is_file($tmpName)) {
+            if (function_exists('mime_content_type')) {
+                $mimeType = \mime_content_type($tmpName);
+                if (is_string($mimeType) && $mimeType !== '') {
+                    return $mimeType;
+                }
+            }
+
+            if (function_exists('finfo_open')) {
+                $finfo = \finfo_open(FILEINFO_MIME_TYPE);
+                if ($finfo) {
+                    $mimeType = \finfo_file($finfo, $tmpName);
+                    \finfo_close($finfo);
+                    if (is_string($mimeType) && $mimeType !== '') {
+                        return $mimeType;
+                    }
+                }
+            }
+        }
+
+        return (string) ($file['type'] ?? '');
+    }
+
+    private function getUploadErrorMessage(int $errorCode): string
+    {
+        $messages = [
+            UPLOAD_ERR_INI_SIZE => 'Arquivo excede o limite permitido pelo servidor. Para vídeos, o limite configurado deve ser de até 200MB.',
+            UPLOAD_ERR_FORM_SIZE => 'Arquivo excede o tamanho máximo permitido pelo formulário.',
+            UPLOAD_ERR_PARTIAL => 'Upload incompleto. Tente enviar o arquivo novamente.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Diretório temporário de upload não encontrado no servidor.',
+            UPLOAD_ERR_CANT_WRITE => 'Não foi possível gravar o arquivo no servidor.',
+            UPLOAD_ERR_EXTENSION => 'Upload bloqueado por uma extensão do PHP.'
+        ];
+
+        return $messages[$errorCode] ?? 'Erro ao enviar arquivo (código: ' . $errorCode . ').';
     }
 
     private function notifyRepresentativesAboutNewMaterial(string $fileId, array $data): void

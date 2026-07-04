@@ -6,10 +6,10 @@
     <title><?= $title ?? 'Sistema CRM' ?></title>
     <meta property="og:title" content="<?= htmlspecialchars($title ?? 'Grupo Key') ?>">
     <meta property="og:site_name" content="Grupo Key">
-    <meta property="og:image" content="<?= absolute_url('public/images/logo.png') ?>">
+    <meta property="og:image" content="<?= absolute_url('public/images/logo-white.png') ?>">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="<?= absolute_url('public/images/logo.png') ?>">
+    <meta name="twitter:image" content="<?= absolute_url('public/images/logo-white.png') ?>">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="<?= url('public/images/favicon.png') ?>">

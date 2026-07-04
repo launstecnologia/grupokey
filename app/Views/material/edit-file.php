@@ -95,9 +95,9 @@ ob_start();
                                 <span class="material-dropzone-subtitle">ou clique para escolher no computador</span>
                                 <span class="material-dropzone-filename" id="material-dropzone-filename"></span>
                             </label>
-                            <input type="file" class="visually-hidden" id="file" name="file">
+                            <input type="file" class="visually-hidden" id="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.m4v,.mov,.avi,.webm,.mkv,.zip,.rar">
                             <div class="form-text">
-                                Deixe em branco para manter o arquivo atual. Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, AVI, ZIP, RAR.
+                                Deixe em branco para manter o arquivo atual. Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, M4V, MOV, AVI, WEBM, MKV, ZIP, RAR. Tamanho máximo: 200MB.
                             </div>
                         </div>
                     </div>
@@ -201,10 +201,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     form.addEventListener('submit', function(e) {
         const file = fileInput && fileInput.files ? fileInput.files[0] : null;
-        if (file && file.size > 50 * 1024 * 1024) {
-            e.preventDefault();
-            alert('Arquivo muito grande! Tamanho máximo: 50MB');
-            return;
+        if (file) {
+            if (file.size > 200 * 1024 * 1024) {
+                e.preventDefault();
+                alert('Arquivo muito grande! Tamanho máximo: 200MB');
+                return;
+            }
+
+            const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'm4v', 'mov', 'avi', 'webm', 'mkv', 'zip', 'rar'];
+            const fileExtension = (file.name.split('.').pop() || '').toLowerCase();
+            if (!allowedExtensions.includes(fileExtension)) {
+                e.preventDefault();
+                alert('Tipo de arquivo não permitido!');
+                return;
+            }
         }
 
         if (submitBtn && submitIcon && submitText) {
