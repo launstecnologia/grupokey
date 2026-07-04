@@ -932,6 +932,45 @@ class Establishment
         return $this->db->fetch($sql, [$documentId, $establishmentId]);
     }
 
+    public function updateDocumentFileById($documentId, $establishmentId, $filePath, $originalName)
+    {
+        if (is_array($filePath)) {
+            $filePath = $filePath['file_path'] ?? $filePath['path'] ?? '';
+        }
+
+        if (empty($filePath)) {
+            throw new \Exception('Caminho do arquivo não fornecido');
+        }
+
+        $fileName = basename($filePath);
+        $fileSize = file_exists($filePath) ? filesize($filePath) : 0;
+        $mimeType = 'application/octet-stream';
+
+        if (function_exists('mime_content_type')) {
+            $mimeType = \mime_content_type($filePath) ?: $mimeType;
+        } elseif (function_exists('finfo_open')) {
+            $finfo = \finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+                $mimeType = \finfo_file($finfo, $filePath) ?: $mimeType;
+                \finfo_close($finfo);
+            }
+        }
+
+        $sql = "UPDATE documents
+                SET file_path = ?, original_name = ?, file_name = ?, mime_type = ?, size = ?, uploaded_at = NOW()
+                WHERE id = ? AND establishment_id = ?";
+
+        return $this->db->query($sql, [
+            $filePath,
+            $originalName,
+            $fileName,
+            $mimeType,
+            $fileSize,
+            $documentId,
+            $establishmentId
+        ]);
+    }
+
     public function deleteDocumentById($documentId, $establishmentId)
     {
         $sql = "DELETE FROM documents WHERE id = ? AND establishment_id = ?";

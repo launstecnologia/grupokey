@@ -587,8 +587,8 @@ $statusLabels = [
                                 $downloadUrl = url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download');
                             ?>
                             <div class="document-card rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4">
-                                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                                    <div class="flex min-w-0 flex-1 gap-4">
+                                <div class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                                    <div class="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)] gap-4">
                                         <div class="document-icon-tile flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 overflow-hidden">
                                             <?php if ($isImage): ?>
                                                 <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" title="Visualizar imagem" class="block h-full w-full">
@@ -599,8 +599,8 @@ $statusLabels = [
                                             <?php endif; ?>
                                         </div>
                                         <div class="min-w-0 flex-1">
-                                            <div class="mb-2 flex flex-wrap items-center gap-2">
-                                                <span class="document-type-pill rounded-full bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:text-blue-200">
+                                            <div class="mb-2 flex min-w-0 flex-wrap items-center gap-2">
+                                                <span class="document-type-pill inline-flex max-w-full rounded-full bg-blue-100 dark:bg-blue-900/40 px-4 py-2 text-sm font-semibold leading-5 text-blue-800 dark:text-blue-200 lg:whitespace-nowrap">
                                                     <?= htmlspecialchars($tipoLabel) ?>
                                                 </span>
                                                 <?php if ($ext !== ''): ?>
@@ -618,7 +618,7 @@ $statusLabels = [
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex flex-wrap items-center gap-2 lg:flex-none lg:justify-end">
+                                    <div class="flex flex-wrap items-center gap-2 lg:flex-none lg:justify-end lg:whitespace-nowrap">
                                         <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener"
                                            data-document-action="view"
                                            class="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
@@ -630,12 +630,13 @@ $statusLabels = [
                                             <i class="fas fa-download mr-2"></i> Baixar
                                         </a>
                                         <?php if (\App\Core\Auth::isAdmin()): ?>
-                                        <form method="POST" action="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id']) ?>" class="inline" onsubmit="return confirm('Deseja excluir este documento?');">
-                                            <input type="hidden" name="_method" value="DELETE">
-                                            <button type="submit" data-document-action="delete" class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/30 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/50">
-                                                <i class="fas fa-trash mr-2"></i> Excluir
-                                            </button>
-                                        </form>
+                                        <button type="button"
+                                                data-document-action="delete"
+                                                data-delete-document-url="<?= htmlspecialchars(url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'])) ?>"
+                                                data-delete-document-name="<?= htmlspecialchars($originalName) ?>"
+                                                class="js-delete-document-button inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/30 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/50">
+                                            <i class="fas fa-trash mr-2"></i> Excluir
+                                        </button>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -800,6 +801,45 @@ $statusLabels = [
     </div>
 </div>
 
+<?php if (Auth::isAdmin()): ?>
+<!-- Modal de exclusão de documento -->
+<div id="deleteDocumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Excluir documento</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            Confirme sua senha de administrador para excluir <strong id="deleteDocumentName" class="font-semibold text-gray-900 dark:text-white"></strong>.
+        </p>
+        <form id="deleteDocumentForm" method="POST" action="">
+            <?= csrf_field() ?>
+            <input type="hidden" name="_method" value="DELETE">
+            <div class="mb-4">
+                <label for="delete_document_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Senha do administrador <span class="text-red-500">*</span>
+                </label>
+                <input type="password"
+                       id="delete_document_password"
+                       name="admin_password"
+                       required
+                       autocomplete="current-password"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                       placeholder="Digite sua senha">
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button"
+                        id="cancelDeleteDocument"
+                        class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Excluir
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Modal de Reprovação -->
 <div id="reproveModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
     <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
@@ -858,6 +898,56 @@ function closeReproveModal() {
     document.getElementById('reprove_observation').value = '';
 }
 
+function closeDeleteDocumentModal() {
+    const modal = document.getElementById('deleteDocumentModal');
+    const form = document.getElementById('deleteDocumentForm');
+    const password = document.getElementById('delete_document_password');
+    const name = document.getElementById('deleteDocumentName');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    if (form) {
+        form.action = '';
+    }
+    if (password) {
+        password.value = '';
+    }
+    if (name) {
+        name.textContent = '';
+    }
+}
+
+document.querySelectorAll('.js-delete-document-button').forEach(function(button) {
+    button.addEventListener('click', function() {
+        const modal = document.getElementById('deleteDocumentModal');
+        const form = document.getElementById('deleteDocumentForm');
+        const password = document.getElementById('delete_document_password');
+        const name = document.getElementById('deleteDocumentName');
+        if (!modal || !form || !password || !name) {
+            return;
+        }
+
+        form.action = button.dataset.deleteDocumentUrl || '';
+        name.textContent = button.dataset.deleteDocumentName || 'este documento';
+        modal.classList.remove('hidden');
+        password.focus();
+    });
+});
+
+const cancelDeleteDocument = document.getElementById('cancelDeleteDocument');
+if (cancelDeleteDocument) {
+    cancelDeleteDocument.addEventListener('click', closeDeleteDocumentModal);
+}
+
+const deleteDocumentModal = document.getElementById('deleteDocumentModal');
+if (deleteDocumentModal) {
+    deleteDocumentModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteDocumentModal();
+        }
+    });
+}
+
 // Fechar modal ao clicar fora
 document.getElementById('reproveModal').addEventListener('click', function(e) {
     if (e.target === this) {
@@ -869,6 +959,7 @@ document.getElementById('reproveModal').addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeReproveModal();
+        closeDeleteDocumentModal();
     }
 });
 </script>

@@ -521,6 +521,8 @@ class EstablishmentController
             'custom_field_values' => $this->getSafeCustomFieldValues('establishment', (int) $id),
             'document_type_options' => $this->getDocumentTypeOptions(),
             'document_type_product_map' => $this->documentTypeModel->getProductMapForActiveTypes(),
+            'document_type_labels' => $this->getDocumentTypeLabelMap(),
+            'documents' => $this->establishmentModel->getDocumentsByType($id),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];
@@ -1014,6 +1016,14 @@ class EstablishmentController
         $document = $this->establishmentModel->getDocumentById($documentId, $id);
         if (!$document) {
             $_SESSION['error'] = 'Documento não encontrado';
+            redirect(url('estabelecimentos/' . $id));
+        }
+
+        $adminPassword = (string) ($_POST['admin_password'] ?? '');
+        $currentUser = Auth::user();
+        $adminUser = !empty($currentUser['id']) ? $this->userModel->findById($currentUser['id']) : null;
+        if ($adminPassword === '' || empty($adminUser['password']) || !password_verify($adminPassword, $adminUser['password'])) {
+            $_SESSION['error'] = 'Senha de administrador inválida. Documento não excluído.';
             redirect(url('estabelecimentos/' . $id));
         }
 
@@ -2149,6 +2159,8 @@ class EstablishmentController
     
     private function handleDocumentUpload($establishmentId)
     {
+        $this->handleDocumentReplacementUpload($establishmentId);
+
         if (isset($_FILES['documents']) && !empty($_FILES['documents']['name'][0])) {
             // Coletar tipos de documentos do POST
             $documentTypes = $_POST['document_type'] ?? [];
@@ -2218,6 +2230,58 @@ class EstablishmentController
                         $_SESSION['warning'] = 'Erro ao fazer upload de alguns documentos: ' . $e->getMessage();
                     }
                 }
+            }
+        }
+    }
+
+    private function handleDocumentReplacementUpload($establishmentId)
+    {
+        if (empty($_FILES['replace_documents']) || empty($_FILES['replace_documents']['name']) || !is_array($_FILES['replace_documents']['name'])) {
+            return;
+        }
+
+        foreach ($_FILES['replace_documents']['name'] as $documentId => $filename) {
+            if (empty($filename) || ($_FILES['replace_documents']['error'][$documentId] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                continue;
+            }
+
+            $document = $this->establishmentModel->getDocumentById($documentId, $establishmentId);
+            if (!$document) {
+                write_log('Tentativa de substituir documento inexistente: ' . $documentId, 'app.log');
+                continue;
+            }
+
+            $file = [
+                'name' => $_FILES['replace_documents']['name'][$documentId],
+                'type' => $_FILES['replace_documents']['type'][$documentId],
+                'tmp_name' => $_FILES['replace_documents']['tmp_name'][$documentId],
+                'size' => $_FILES['replace_documents']['size'][$documentId]
+            ];
+
+            try {
+                $uploadResult = $this->fileUpload->upload($file, 'documents');
+                if (is_array($uploadResult)) {
+                    $filePath = $uploadResult['file_path'] ?? $uploadResult['path'] ?? '';
+                    $originalName = $uploadResult['original_name'] ?? $filename;
+                } else {
+                    $filePath = $uploadResult;
+                    $originalName = $filename;
+                }
+
+                $this->establishmentModel->updateDocumentFileById(
+                    $documentId,
+                    $establishmentId,
+                    $filePath,
+                    $originalName
+                );
+
+                $oldFilePath = (string) ($document['file_path'] ?? '');
+                if ($oldFilePath !== '' && $oldFilePath !== $filePath && file_exists($oldFilePath)) {
+                    @unlink($oldFilePath);
+                }
+            } catch (\Throwable $e) {
+                write_log('Erro ao substituir documento: ' . $e->getMessage(), 'app.log');
+                $_SESSION['warning'] = 'Erro ao substituir alguns documentos: ' . $e->getMessage();
             }
         }
     }

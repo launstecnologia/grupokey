@@ -10,6 +10,8 @@ $customFieldDefinitions = $custom_field_definitions ?? [];
 $customFieldValues = $custom_field_values ?? [];
 $documentTypeOptions = $document_type_options ?? [];
 $documentTypeProductMap = $document_type_product_map ?? [];
+$documents = $documents ?? [];
+$documentTypeLabels = $document_type_labels ?? [];
 $representatives = $representatives ?? [];
 $segments = $segments ?? [];
 $oldInput = $_SESSION['old_input'] ?? [];
@@ -485,6 +487,91 @@ function isProductSelected($productId, $productData) {
                             <?php if (!empty($fieldHelp)): ?>
                                 <small class="text-gray-500"><?= htmlspecialchars($fieldHelp) ?></small>
                             <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!empty($documents)): ?>
+            <!-- Documentos atuais -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <i class="fas fa-file-alt mr-2 text-blue-600 dark:text-blue-400"></i>
+                    Documentos atuais
+                </h3>
+                <div class="space-y-4">
+                    <?php foreach ($documents as $document): ?>
+                        <?php
+                            $documentId = (string) ($document['id'] ?? '');
+                            $docTypeCode = strtoupper((string) ($document['document_type'] ?? ''));
+                            $tipoLabel = $documentTypeLabels[$docTypeCode] ?? ($docTypeCode !== '' ? $docTypeCode : 'Documento');
+                            $originalName = (string) ($document['original_name'] ?? basename((string) ($document['file_path'] ?? 'documento')));
+                            $mimeType = strtolower((string) ($document['mime_type'] ?? ''));
+                            $fileName = strtolower((string) ($document['original_name'] ?? $document['file_name'] ?? ''));
+                            $ext = strtoupper((string) pathinfo($fileName, PATHINFO_EXTENSION));
+                            $fileSize = isset($document['size']) ? number_format(((float) $document['size']) / 1024, 2, ',', '.') . ' KB' : '0 KB';
+                            $uploadedAtTs = !empty($document['uploaded_at']) ? strtotime((string) $document['uploaded_at']) : false;
+                            $uploadedAt = $uploadedAtTs ? date('d/m/Y H:i', $uploadedAtTs) : 'Sem data';
+                            $previewUrl = url('estabelecimentos/' . ($establishment['id'] ?? '') . '/documentos/' . $documentId . '/download?preview=1');
+                            $downloadUrl = url('estabelecimentos/' . ($establishment['id'] ?? '') . '/documentos/' . $documentId . '/download');
+                            $isImage = strpos($mimeType, 'image/') === 0 || in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], true);
+                        ?>
+                        <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)] xl:items-center">
+                                <div class="flex min-w-0 gap-4">
+                                    <div class="flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                                        <?php if ($isImage): ?>
+                                            <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" class="block h-full w-full" title="Abrir documento">
+                                                <img src="<?= htmlspecialchars($previewUrl) ?>" alt="Miniatura do documento" class="h-full w-full object-cover">
+                                            </a>
+                                        <?php else: ?>
+                                            <i class="fas fa-file-alt text-2xl"></i>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="mb-2 flex flex-wrap items-center gap-2">
+                                            <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
+                                                <?= htmlspecialchars($tipoLabel) ?>
+                                            </span>
+                                            <?php if ($ext !== ''): ?>
+                                                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                                    <?= htmlspecialchars($ext) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <p class="break-words text-sm font-semibold text-gray-900 dark:text-white">
+                                            <?= htmlspecialchars($originalName) ?>
+                                        </p>
+                                        <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                            <span><i class="far fa-calendar-alt mr-1"></i><?= htmlspecialchars($uploadedAt) ?></span>
+                                            <span><i class="fas fa-weight-hanging mr-1"></i><?= htmlspecialchars($fileSize) ?></span>
+                                        </div>
+                                        <div class="mt-3 flex flex-wrap gap-2">
+                                            <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" class="inline-flex items-center rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-200 dark:hover:bg-indigo-900/50">
+                                                <i class="fas fa-eye mr-2"></i> Abrir
+                                            </a>
+                                            <a href="<?= htmlspecialchars($downloadUrl) ?>" class="inline-flex items-center rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-200 dark:hover:bg-blue-900/50">
+                                                <i class="fas fa-download mr-2"></i> Baixar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                                        Substituir arquivo
+                                    </label>
+                                    <label class="document-dropzone flex min-h-[104px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-4 text-center text-sm text-gray-600 transition hover:border-blue-500 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-blue-400 dark:hover:bg-blue-900/30">
+                                        <i class="fas fa-cloud-upload-alt mb-2 text-2xl text-blue-600 dark:text-blue-400"></i>
+                                        <span class="document-dropzone-text">Arraste e solte para trocar ou clique para escolher</span>
+                                        <span class="document-file-name mt-1 text-xs font-medium text-gray-500 dark:text-gray-400"></span>
+                                        <input type="file" name="replace_documents[<?= htmlspecialchars($documentId) ?>]" class="sr-only document-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                    </label>
+                                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        Ao salvar, o arquivo antigo será substituído e removido.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
