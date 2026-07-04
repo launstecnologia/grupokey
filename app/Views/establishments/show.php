@@ -571,72 +571,74 @@ $statusLabels = [
                 </div>
                 <div class="p-6">
                     <?php if (!empty($documents)): ?>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nome do Arquivo</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Data de Upload</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tamanho</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <?php
-                                    $documentTypeLabels = $document_type_labels ?? [];
-                                    foreach ($documents as $document):
-                                        $docTypeCode = strtoupper((string) ($document['document_type'] ?? ''));
-                                        $tipoLabel = $documentTypeLabels[$docTypeCode] ?? ($docTypeCode !== '' ? $docTypeCode : 'Desconhecido');
-                                        $fileSize = isset($document['size']) ? number_format($document['size'] / 1024, 2) : '0';
-                                        $mimeType = strtolower((string) ($document['mime_type'] ?? ''));
-                                        $fileName = strtolower((string) ($document['original_name'] ?? $document['file_name'] ?? ''));
-                                        $ext = pathinfo($fileName, PATHINFO_EXTENSION);
-                                        $isImage = strpos($mimeType, 'image/') === 0 || in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], true);
-                                        $previewUrl = url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download?preview=1');
-                                    ?>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($tipoLabel) ?></td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                            <div class="flex items-center gap-3">
-                                                <?php if ($isImage): ?>
-                                                    <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" title="Visualizar imagem">
-                                                        <img src="<?= htmlspecialchars($previewUrl) ?>" alt="Miniatura" class="w-12 h-12 rounded object-cover border border-gray-300 dark:border-gray-600">
-                                                    </a>
-                                                <?php else: ?>
-                                                    <i class="fas fa-file mr-1 text-blue-500 dark:text-blue-400"></i>
-                                                <?php endif; ?>
-                                                <span class="break-all"><?= htmlspecialchars($document['original_name'] ?? basename($document['file_path'] ?? '')) ?></span>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            <?= date('d/m/Y H:i', strtotime($document['uploaded_at'] ?? '')) ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"><?= $fileSize ?> KB</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex items-center gap-3">
-                                                <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener"
-                                                   class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
-                                                    <i class="fas fa-eye mr-1"></i> Visualizar
+                        <div class="space-y-3">
+                            <?php
+                            $documentTypeLabels = $document_type_labels ?? [];
+                            foreach ($documents as $document):
+                                $docTypeCode = strtoupper((string) ($document['document_type'] ?? ''));
+                                $tipoLabel = $documentTypeLabels[$docTypeCode] ?? ($docTypeCode !== '' ? $docTypeCode : 'Desconhecido');
+                                $fileSize = isset($document['size']) ? number_format($document['size'] / 1024, 2) : '0';
+                                $mimeType = strtolower((string) ($document['mime_type'] ?? ''));
+                                $originalName = (string) ($document['original_name'] ?? basename($document['file_path'] ?? ''));
+                                $fileName = strtolower((string) ($document['original_name'] ?? $document['file_name'] ?? ''));
+                                $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+                                $isImage = strpos($mimeType, 'image/') === 0 || in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], true);
+                                $previewUrl = url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download?preview=1');
+                                $downloadUrl = url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download');
+                            ?>
+                            <div class="document-card rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4">
+                                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                    <div class="flex min-w-0 flex-1 gap-4">
+                                        <div class="flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 overflow-hidden">
+                                            <?php if ($isImage): ?>
+                                                <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" title="Visualizar imagem" class="block h-full w-full">
+                                                    <img src="<?= htmlspecialchars($previewUrl) ?>" alt="Miniatura" class="h-full w-full object-cover">
                                                 </a>
-                                                <a href="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download') ?>" 
-                                                   class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
-                                                    <i class="fas fa-download mr-1"></i> Baixar
-                                                </a>
-                                                <?php if (\App\Core\Auth::isAdmin()): ?>
-                                                <form method="POST" action="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id']) ?>" class="inline" onsubmit="return confirm('Deseja excluir este documento?');">
-                                                    <input type="hidden" name="_method" value="DELETE">
-                                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
-                                                        <i class="fas fa-trash mr-1"></i> Excluir
-                                                    </button>
-                                                </form>
+                                            <?php else: ?>
+                                                <i class="fas fa-file-alt text-xl"></i>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="mb-2 flex flex-wrap items-center gap-2">
+                                                <span class="rounded-full bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:text-blue-200">
+                                                    <?= htmlspecialchars($tipoLabel) ?>
+                                                </span>
+                                                <?php if ($ext !== ''): ?>
+                                                    <span class="rounded-full bg-gray-200 dark:bg-gray-700 px-2.5 py-1 text-xs font-semibold uppercase text-gray-700 dark:text-gray-200">
+                                                        <?= htmlspecialchars($ext) ?>
+                                                    </span>
                                                 <?php endif; ?>
                                             </div>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                                            <p class="m-0 break-words text-sm font-semibold leading-5 text-gray-900 dark:text-white">
+                                                <?= htmlspecialchars($originalName) ?>
+                                            </p>
+                                            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                                <span><i class="far fa-calendar-alt mr-1"></i><?= date('d/m/Y H:i', strtotime($document['uploaded_at'] ?? '')) ?></span>
+                                                <span><i class="fas fa-weight-hanging mr-1"></i><?= $fileSize ?> KB</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2 lg:flex-none lg:justify-end">
+                                        <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener"
+                                           class="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
+                                            <i class="fas fa-eye mr-2"></i> Visualizar
+                                        </a>
+                                        <a href="<?= htmlspecialchars($downloadUrl) ?>"
+                                           class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-900/50">
+                                            <i class="fas fa-download mr-2"></i> Baixar
+                                        </a>
+                                        <?php if (\App\Core\Auth::isAdmin()): ?>
+                                        <form method="POST" action="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id']) ?>" class="inline" onsubmit="return confirm('Deseja excluir este documento?');">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/30 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/50">
+                                                <i class="fas fa-trash mr-2"></i> Excluir
+                                            </button>
+                                        </form>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
                         </div>
                     <?php else: ?>
                         <p class="text-gray-500 dark:text-gray-400 text-center py-8">Nenhum documento anexado</p>
