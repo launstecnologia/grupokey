@@ -71,6 +71,12 @@ $statusLabels = [
                             <dd class="mt-1 text-sm text-gray-900"><?= format_cpf($representative['cpf']) ?></dd>
                         </div>
                         <div>
+                            <dt class="text-sm font-medium text-gray-500">Data de Nascimento</dt>
+                            <dd class="mt-1 text-sm text-gray-900">
+                                <?= !empty($representative['birth_date']) ? htmlspecialchars(date('d/m/Y', strtotime((string) $representative['birth_date']))) : '-' ?>
+                            </dd>
+                        </div>
+                        <div>
                             <dt class="text-sm font-medium text-gray-500">Email</dt>
                             <dd class="mt-1 text-sm text-gray-900 flex items-center">
                                 <i class="fas fa-envelope mr-2 text-gray-400"></i>

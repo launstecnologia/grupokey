@@ -16,12 +16,13 @@ class User
     
     public function create($data)
     {
-        $sql = "INSERT INTO users (email, name, password, status, created_at, updated_at) 
-                VALUES (?, ?, ?, ?, NOW(), NOW())";
+        $sql = "INSERT INTO users (email, name, birth_date, password, status, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
         
         $params = [
             $data['email'],
             $data['name'],
+            $data['birth_date'] ?? null,
             password_hash($data['password'], PASSWORD_DEFAULT),
             $data['status'] ?? 'ACTIVE'
         ];
@@ -156,6 +157,11 @@ class User
         if (isset($data['email'])) {
             $fields[] = "email = ?";
             $params[] = $data['email'];
+        }
+
+        if (array_key_exists('birth_date', $data)) {
+            $fields[] = "birth_date = ?";
+            $params[] = $data['birth_date'];
         }
         
         if (isset($data['photo'])) {

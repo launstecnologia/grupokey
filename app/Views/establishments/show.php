@@ -163,7 +163,7 @@ $statusLabels = [
             <?php endif; ?>
             
             <?php if (Auth::isAdmin()): ?>
-            <a href="<?= url('estabelecimentos') ?>" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
+            <a href="<?= htmlspecialchars($_SESSION['establishments_last_list_url'] ?? url('estabelecimentos')) ?>" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Voltar
             </a>
@@ -185,7 +185,7 @@ $statusLabels = [
                 <div class="p-6">
                     <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nome Completo</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nome Completo do Sócio</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['nome_completo'] ?? '-') ?></dd>
                         </div>
                         <div>
@@ -215,6 +215,10 @@ $statusLabels = [
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Razão Social</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['razao_social'] ?? '-') ?></dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Data de Abertura</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['data_abertura'] ?? '-') ?></dd>
                         </div>
                         <?php endif; ?>
                         <div>
@@ -288,7 +292,7 @@ $statusLabels = [
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
                         <i class="fas fa-map-marker-alt mr-2 text-blue-600 dark:text-blue-400"></i>
-                        Endereço
+                        Endereço Comercial
                     </h3>
                 </div>
                 <div class="p-6">
@@ -611,6 +615,10 @@ $statusLabels = [
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"><?= $fileSize ?> KB</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex items-center gap-3">
+                                                <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener"
+                                                   class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                                                    <i class="fas fa-eye mr-1"></i> Visualizar
+                                                </a>
                                                 <a href="<?= url('estabelecimentos/' . $establishment['id'] . '/documentos/' . $document['id'] . '/download') ?>" 
                                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
                                                     <i class="fas fa-download mr-1"></i> Baixar
@@ -894,7 +902,49 @@ document.addEventListener('keydown', function(e) {
     background-color: #000000 !important;
     border-color: #1f2937 !important;
 }
+.copy-value-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.copy-value-button {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.375rem;
+    color: #2563eb;
+    background: #eff6ff;
+    flex: 0 0 auto;
+}
+.dark .copy-value-button {
+    color: #93c5fd;
+    background: #1e3a8a;
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('dl dd').forEach(function(valueEl) {
+        const text = valueEl.innerText.trim();
+        if (!text || text === '-' || valueEl.dataset.copyReady === '1') {
+            return;
+        }
+        valueEl.dataset.copyReady = '1';
+        valueEl.classList.add('copy-value-wrapper');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-value-button';
+        button.title = 'Copiar informação';
+        button.innerHTML = '<i class="fas fa-copy"></i>';
+        button.addEventListener('click', function() {
+            navigator.clipboard.writeText(text).then(function() {
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(function() { button.innerHTML = '<i class="fas fa-copy"></i>'; }, 1200);
+            });
+        });
+        valueEl.appendChild(button);
+    });
+});
+</script>
 
 <?php
 $content = ob_get_clean();

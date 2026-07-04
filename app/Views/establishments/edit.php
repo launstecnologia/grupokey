@@ -36,7 +36,7 @@ if (!$hasOtherDocumentType) {
 
 if (!empty($oldInput) && is_array($oldInput)) {
     $editableFields = [
-        'registration_type', 'cpf', 'cnpj', 'razao_social', 'birth_date',
+        'registration_type', 'cpf', 'cnpj', 'razao_social', 'data_abertura', 'birth_date',
         'nome_completo', 'nome_fantasia', 'segmento', 'telefone', 'email',
         'cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf',
         'banco', 'agencia', 'conta', 'tipo_conta', 'chave_pix',
@@ -229,9 +229,9 @@ function isProductSelected($productId, $productData) {
                     Dados Básicos
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Nome Completo -->
+                    <!-- Nome Completo do Sócio -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo do Sócio *</label>
                         <input type="text" name="nome_completo" required 
                                value="<?= htmlspecialchars($establishment['nome_completo'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -273,7 +273,7 @@ function isProductSelected($productId, $productData) {
                     <!-- Email -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" name="email" required 
+                        <input type="email" name="email" required
                                value="<?= htmlspecialchars($establishment['email'] ?? '') ?>"
                                autocomplete="new-email" autocapitalize="off" spellcheck="false"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -313,14 +313,21 @@ function isProductSelected($productId, $productData) {
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
-                            <input type="text" name="razao_social" 
+                            <input type="text" name="razao_social"
                                    value="<?= htmlspecialchars($establishment['razao_social'] ?? '') ?>"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Digite a razão social">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Data de Abertura</label>
+                            <input type="text" name="data_abertura" value="<?= htmlspecialchars((string) $oldField('data_abertura', $establishment['data_abertura'] ?? '')) ?>"
+                                   readonly
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Preenchida automaticamente pelo CNPJ">
+                        </div>
                         <div id="pj-pagseguro-cpf-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
-                            <input type="text" name="cpf_pj" id="cpf-pj" 
+                            <input type="text" name="cpf_pj" id="cpf-pj"
                                    value="<?= htmlspecialchars($establishment['cpf'] ?? '') ?>"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="000.000.000-00">
@@ -328,7 +335,7 @@ function isProductSelected($productId, $productData) {
                         </div>
                         <div id="pj-pagseguro-birth-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
-                            <input type="text" name="data_nascimento" 
+                            <input type="text" name="data_nascimento"
                                    value="<?= htmlspecialchars((string) $oldField('data_nascimento', isset($establishment['birth_date']) && $establishment['birth_date'] ? date('d/m/Y', strtotime($establishment['birth_date'])) : '')) ?>"
                                    maxlength="10"
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -342,7 +349,7 @@ function isProductSelected($productId, $productData) {
             <div class="mb-8" id="observations-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
-                    Endereço
+                    Endereço Comercial
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- CEP -->
@@ -512,7 +519,12 @@ function isProductSelected($productId, $productData) {
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     Anexar Documento
                                 </label>
-                                <input type="file" name="documents[]" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <label class="document-dropzone mt-1 flex min-h-[96px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-white px-4 py-4 text-center text-sm text-gray-600 transition hover:border-blue-500 hover:bg-blue-50">
+                                    <i class="fas fa-cloud-upload-alt mb-2 text-2xl text-blue-600"></i>
+                                    <span class="document-dropzone-text">Arraste e solte o arquivo aqui ou clique para escolher</span>
+                                    <span class="document-file-name mt-1 text-xs font-medium text-gray-500"></span>
+                                    <input type="file" name="documents[]" class="sr-only document-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                </label>
                             </div>
                         </div>
                         <button type="button" class="mt-2 text-red-600 hover:text-red-800 text-sm remove-documento hidden">
@@ -630,7 +642,7 @@ function isProductSelected($productId, $productData) {
                         write_log("Resultado: " . ($isSelected ? 'SELECIONADO' : 'NÃO SELECIONADO'), 'app.log');
                     ?>
                     <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-blue-600 hover:text-white transition-colors">
-                        <input type="checkbox" name="products[]" value="<?= $product['id'] ?>" 
+                        <input type="checkbox" name="products[]" value="<?= $product['id'] ?>"
                                class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                data-product-key="PAGSEGURO"
                                <?= $isSelected ? 'checked' : '' ?>>
@@ -657,7 +669,7 @@ function isProductSelected($productId, $productData) {
                     <?php endforeach; ?>
                 </div>
             </div>
-            
+
             <?php if (!empty($dynamicProductsCatalog)): ?>
             <div class="mb-8" id="dynamic-products-section">
                 <div class="space-y-4">
@@ -883,7 +895,7 @@ function isProductSelected($productId, $productData) {
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Meio de Pagamento da Adesão</label>
-                                <select name="meio_pagamento_<?= $product['id'] ?>" 
+                                <select name="meio_pagamento_<?= $product['id'] ?>"
                                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <?php $selectedMeioPagamento = (string) $oldField('meio_pagamento_' . $product['id'], $otherProduct['meio_pagamento'] ?? ''); ?>
                                     <option value="">Selecione o meio</option>
@@ -903,7 +915,7 @@ function isProductSelected($productId, $productData) {
                             <?php if ($isPagSeguro): ?>
                             <div>
                                 <label class="block text-sm font-medium text-gray-300 mb-1">Plano SistPay</label>
-                                <select name="plan_<?= $product['id'] ?>" 
+                                <select name="plan_<?= $product['id'] ?>"
                                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Selecione o plano</option>
                                     <?php $selectedPlan = (string) $oldField('plan_' . $product['id'], $otherProduct['plan'] ?? ''); ?>
@@ -1007,7 +1019,7 @@ function isProductSelected($productId, $productData) {
                     <!-- Conta -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Conta - dígito</label>
-                        <input type="text" name="conta" 
+                        <input type="text" name="conta"
                                value="<?= htmlspecialchars($establishment['conta'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o número da conta">
@@ -1166,13 +1178,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         syncPagSeguroPjRequired();
     }
-    
+
     registrationTypeInputs.forEach(input => {
         input.addEventListener('change', function() {
             updateRegistrationVisibility();
         });
     });
-    
+
     updateRegistrationVisibility();
     
     // Lista de produtos que NÃO devem mostrar campos bancários
@@ -1538,6 +1550,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             camposPreenchidos++;
                         }
                     }
+                    if (data.abertura) {
+                        const campo = document.querySelector('input[name="data_abertura"]');
+                        if (campo) {
+                            campo.value = data.abertura;
+                            camposPreenchidos++;
+                        }
+                    }
                     if (data.logradouro) {
                         const campo = document.querySelector('input[name="logradouro"]');
                         if (campo) {
@@ -1795,6 +1814,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fileInput) {
                 fileInput.value = '';
             }
+            clone.querySelectorAll('.document-dropzone').forEach(function(dropzone) {
+                delete dropzone.dataset.dropzoneReady;
+            });
             renderDocumentTypeOptions(select, requiredCodes[i], requiredCodes, hasSelectedProducts);
             if (select) {
                 select.value = requiredCodes[i];
@@ -1821,9 +1843,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const novoDocumento = primeiroItem.cloneNode(true);
                 novoDocumento.querySelector('select[name="document_type[]"]').value = '';
                 novoDocumento.querySelector('input[type="file"]').value = '';
+                novoDocumento.querySelectorAll('.document-dropzone').forEach(function(dropzone) {
+                    delete dropzone.dataset.dropzoneReady;
+                });
                 novoDocumento.querySelector('.remove-documento').classList.remove('hidden');
                 documentosContainer.appendChild(novoDocumento);
-                
+                refreshDocumentDropzones(novoDocumento);
+
                 // Atualizar event listeners para remover
                 atualizarEventListenersDocumentos();
             }
@@ -1848,6 +1874,46 @@ document.addEventListener('DOMContentLoaded', function() {
     atualizarEventListenersDocumentos();
     syncDocumentRowsWithSelectedProducts();
     syncCustomFieldsBySelectedProducts();
+
+    function refreshDocumentDropzones(scope) {
+        (scope || document).querySelectorAll('.document-dropzone').forEach(function(dropzone) {
+            if (dropzone.dataset.dropzoneReady === '1') {
+                return;
+            }
+            dropzone.dataset.dropzoneReady = '1';
+            const input = dropzone.querySelector('input[type="file"]');
+            const fileName = dropzone.querySelector('.document-file-name');
+            const setName = function() {
+                if (fileName) {
+                    fileName.textContent = input && input.files && input.files[0] ? input.files[0].name : '';
+                }
+            };
+            ['dragenter', 'dragover'].forEach(function(eventName) {
+                dropzone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    dropzone.classList.add('border-blue-500', 'bg-blue-50');
+                });
+            });
+            ['dragleave', 'drop'].forEach(function(eventName) {
+                dropzone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+                });
+            });
+            dropzone.addEventListener('drop', function(e) {
+                if (input && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    input.files = e.dataTransfer.files;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    setName();
+                }
+            });
+            if (input) {
+                input.addEventListener('change', setName);
+            }
+        });
+    }
+
+    refreshDocumentDropzones(document);
     
     // Validar tipo de documento apenas se arquivo foi selecionado
     document.querySelectorAll('input[name="documents[]"]').forEach(function(fileInput) {
@@ -1930,8 +1996,61 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    document.querySelectorAll('input, select, textarea').forEach(function(field) {
+        const type = (field.getAttribute('type') || '').toLowerCase();
+        const name = field.getAttribute('name') || '';
+        if (!name || ['hidden', 'password', 'file', 'checkbox', 'radio'].includes(type) || field.dataset.copyReady === '1') {
+            return;
+        }
+        field.dataset.copyReady = '1';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'copy-field-wrapper';
+        field.parentNode.insertBefore(wrapper, field);
+        wrapper.appendChild(field);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-field-button';
+        button.title = 'Copiar informação';
+        button.innerHTML = '<i class="fas fa-copy"></i>';
+        button.addEventListener('click', function() {
+            const value = field.tagName === 'SELECT'
+                ? (field.options[field.selectedIndex] ? field.options[field.selectedIndex].text : field.value)
+                : field.value;
+            navigator.clipboard.writeText(value || '').then(function() {
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(function() { button.innerHTML = '<i class="fas fa-copy"></i>'; }, 1200);
+            });
+        });
+        wrapper.appendChild(button);
+    });
 });
 </script>
+
+<style>
+.copy-field-wrapper {
+    position: relative;
+}
+.copy-field-wrapper > input,
+.copy-field-wrapper > select,
+.copy-field-wrapper > textarea {
+    padding-right: 2.75rem !important;
+}
+.copy-field-button {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    color: #2563eb;
+    background: #eff6ff;
+}
+.copy-field-wrapper > textarea + .copy-field-button {
+    top: 1.35rem;
+}
+</style>
 
 <?php
 $content = ob_get_clean();

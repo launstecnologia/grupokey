@@ -474,6 +474,9 @@ class MaterialController
         
         try {
             $this->materialModel->updateFile($id, $data);
+            if (!empty($data['file_path']) && !empty($file['file_path']) && file_exists((string) $file['file_path'])) {
+                @unlink((string) $file['file_path']);
+            }
             $_SESSION['success'] = 'Arquivo atualizado com sucesso!';
             redirect(url('material'));
         } catch (Exception $e) {
@@ -596,9 +599,10 @@ class MaterialController
         $description = trim($_POST['description'] ?? '');
         $fileData = [];
 
-        // Verificar upload de arquivo apenas na criação
-        if (!$isUpdate) {
-            if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+        $hasUploadedFile = isset($_FILES['file']) && ($_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK;
+
+        if (!$isUpdate || $hasUploadedFile) {
+            if (!$hasUploadedFile) {
                 $errors[] = 'Arquivo é obrigatório';
             } else {
                 $file = $_FILES['file'];
@@ -638,7 +642,7 @@ class MaterialController
             return [];
         }
 
-        if (!$isUpdate) {
+        if (!$isUpdate || $hasUploadedFile) {
             $file = $_FILES['file'];
 
             // Processar upload

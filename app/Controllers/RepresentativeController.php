@@ -772,6 +772,11 @@ class RepresentativeController
         } elseif (!$this->validateCPF($cpf)) {
             $errors[] = 'CPF inválido. Confira os números digitados.';
         }
+
+        $birthDate = $this->parseDate($_POST['birth_date'] ?? '');
+        if (trim((string) ($_POST['birth_date'] ?? '')) !== '' && $birthDate === null) {
+            $errors[] = 'Data de nascimento inválida.';
+        }
         
         // CEP
         $cep = sanitize_input($_POST['cep'] ?? '');
@@ -815,6 +820,7 @@ class RepresentativeController
             'email' => $email,
             'telefone' => $telefone,
             'cpf' => $cpf,
+            'birth_date' => $birthDate,
             'cep' => $cep,
             'logradouro' => $logradouro,
             'numero' => $numero,
@@ -1004,6 +1010,23 @@ class RepresentativeController
         }
         
         return true;
+    }
+
+    private function parseDate($value): ?string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+
+        foreach (['Y-m-d', 'd/m/Y'] as $format) {
+            $date = \DateTime::createFromFormat($format, $value);
+            if ($date && $date->format($format) === $value) {
+                return $date->format('Y-m-d');
+            }
+        }
+
+        return null;
     }
 
     private function friendlyRepresentativeError($message, $action = 'salvar')

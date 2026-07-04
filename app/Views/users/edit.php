@@ -100,16 +100,23 @@ ob_start();
                     <!-- Nome Completo -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
-                        <input type="text" name="name" required 
+                        <input type="text" name="name" required
                                value="<?= htmlspecialchars($_POST['name'] ?? $user['name']) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome completo">
                     </div>
-                    
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de Nascimento</label>
+                        <input type="date" name="birth_date"
+                               value="<?= htmlspecialchars($_POST['birth_date'] ?? ($user['birth_date'] ?? '')) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
                     <!-- Email -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" name="email" required 
+                        <input type="email" name="email" required
                                value="<?= htmlspecialchars($_POST['email'] ?? $user['email']) ?>"
                                autocomplete="new-email" autocapitalize="off" spellcheck="false"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -172,7 +179,7 @@ ob_start();
                     <!-- Nova Senha -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nova Senha</label>
-                        <input type="password" name="password" 
+                        <input type="password" name="password"
                                autocomplete="new-password"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite a nova senha">
@@ -267,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const permissionCheckboxes = document.querySelectorAll('input[name^="module_permissions["]');
     const selectAllPermissionsBtn = document.getElementById('selectAllPermissions');
     const clearAllPermissionsBtn = document.getElementById('clearAllPermissions');
-    
+
     if (selectAllPermissionsBtn) {
         selectAllPermissionsBtn.addEventListener('click', function() {
             permissionCheckboxes.forEach(function(checkbox) {
@@ -275,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     if (clearAllPermissionsBtn) {
         clearAllPermissionsBtn.addEventListener('click', function() {
             permissionCheckboxes.forEach(function(checkbox) {

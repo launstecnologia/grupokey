@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'Sistema CRM' ?></title>
+    <meta property="og:title" content="<?= htmlspecialchars($title ?? 'Grupo Key') ?>">
+    <meta property="og:site_name" content="Grupo Key">
+    <meta property="og:image" content="<?= absolute_url('public/images/logo.png') ?>">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="<?= absolute_url('public/images/logo.png') ?>">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="<?= url('public/images/favicon.png') ?>">

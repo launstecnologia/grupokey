@@ -239,19 +239,32 @@ class Material
     public function updateFile($id, $data)
     {
         $categoryId = $this->resolveCategoryIdFromProductKey($data['product_key'] ?? '');
-        $sql = "UPDATE material_files 
-                SET category_id = ?, subcategory_id = ?, title = ?, description = ?, is_active = ?, updated_at = NOW() 
-                WHERE id = ?";
-        
+        $fields = [
+            'category_id = ?',
+            'subcategory_id = ?',
+            'title = ?',
+            'description = ?',
+            'is_active = ?'
+        ];
         $params = [
             $categoryId,
             null,
             $data['title'],
             $data['description'] ?? null,
-            isset($data['is_active']) ? (int) $data['is_active'] : 1,
-            $id
+            isset($data['is_active']) ? (int) $data['is_active'] : 1
         ];
-        
+
+        foreach (['filename', 'original_filename', 'file_path', 'file_size', 'file_type', 'mime_type'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $fields[] = $field . ' = ?';
+                $params[] = $data[$field];
+            }
+        }
+
+        $fields[] = 'updated_at = NOW()';
+        $params[] = $id;
+
+        $sql = "UPDATE material_files SET " . implode(', ', $fields) . " WHERE id = ?";
         return $this->db->query($sql, $params);
     }
 

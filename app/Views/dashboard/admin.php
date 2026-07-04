@@ -10,6 +10,7 @@ $user_stats = $user_stats ?? ['total' => 0, 'ativos' => 0];
 $representative_stats = $representative_stats ?? ['total' => 0, 'ativos' => 0];
 $current_month_stats = $current_month_stats ?? ['total' => 0, 'cadastros_ultimo_mes' => 0];
 $billing_stats = $billing_stats ?? ['total_reports' => 0, 'total_tpv' => 0, 'total_markup' => 0, 'reports_this_month' => 0];
+$product_establishment_counts = $product_establishment_counts ?? [];
 ?>
 
 <div class="px-4" style="padding-top: 124px;">
@@ -38,6 +39,18 @@ $billing_stats = $billing_stats ?? ['total_reports' => 0, 'total_tpv' => 0, 'tot
             </a>
         </div>
     </div>
+
+    <?php if (!empty($product_establishment_counts)): ?>
+    <div class="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <?php foreach ($product_establishment_counts as $productCount): ?>
+            <div class="bg-white shadow rounded-lg p-4">
+                <div class="text-sm font-medium text-gray-500"><?= htmlspecialchars($productCount['label'] ?? 'Produto') ?></div>
+                <div class="mt-1 text-2xl font-bold text-gray-900"><?= (int) ($productCount['total'] ?? 0) ?></div>
+                <div class="text-xs text-gray-500">estabelecimentos</div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <!-- KPIs Cards -->
     <div class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

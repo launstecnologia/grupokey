@@ -125,9 +125,9 @@ if (!$hasOtherDocumentType) {
                     Dados Básicos
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Nome Completo -->
+                    <!-- Nome Completo do Sócio -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo do Sócio *</label>
                         <input type="text" name="nome_completo" value="<?= htmlspecialchars(old('nome_completo')) ?>" required 
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome completo">
@@ -222,6 +222,13 @@ if (!$hasOtherDocumentType) {
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Digite a razão social">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Data de Abertura</label>
+                            <input type="text" name="data_abertura" value="<?= htmlspecialchars(old('data_abertura')) ?>"
+                                   readonly
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Preenchida automaticamente pelo CNPJ">
+                        </div>
                         <div id="pj-pagseguro-cpf-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
                             <input type="text" name="cpf_pj" id="cpf-pj" value="<?= htmlspecialchars(old('cpf_pj', old('cpf'))) ?>" 
@@ -244,7 +251,7 @@ if (!$hasOtherDocumentType) {
             <div class="mb-8" id="observations-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
-                    Endereço
+                    Endereço Comercial
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- CEP -->
@@ -905,7 +912,12 @@ if (!$hasOtherDocumentType) {
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     Anexar Documento
                                 </label>
-                                <input type="file" name="documents[]" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <label class="document-dropzone mt-1 flex min-h-[96px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-white px-4 py-4 text-center text-sm text-gray-600 transition hover:border-blue-500 hover:bg-blue-50">
+                                    <i class="fas fa-cloud-upload-alt mb-2 text-2xl text-blue-600"></i>
+                                    <span class="document-dropzone-text">Arraste e solte o arquivo aqui ou clique para escolher</span>
+                                    <span class="document-file-name mt-1 text-xs font-medium text-gray-500"></span>
+                                    <input type="file" name="documents[]" class="sr-only document-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                </label>
                             </div>
                         </div>
                         <button type="button" class="mt-2 text-red-600 hover:text-red-800 text-sm remove-documento hidden">
@@ -1388,6 +1400,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             camposPreenchidos++;
                         }
                     }
+                    if (data.abertura) {
+                        const campo = document.querySelector('input[name="data_abertura"]');
+                        if (campo) {
+                            campo.value = data.abertura;
+                            camposPreenchidos++;
+                        }
+                    }
                     if (data.logradouro) {
                         const campo = document.querySelector('input[name="logradouro"]');
                         if (campo) {
@@ -1759,7 +1778,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const newItem = createDocumentItem(normalized, true, hasSelectedProducts, requiredCodes);
             if (newItem) {
+                newItem.querySelectorAll('.document-dropzone').forEach(function(dropzone) {
+                    delete dropzone.dataset.dropzoneReady;
+                });
                 documentosContainer.appendChild(newItem);
+                refreshDocumentDropzones(newItem);
                 existingCodes.add(normalized);
             }
         });
@@ -1779,7 +1802,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const requiredCodes = getRequiredDocumentCodesByProducts();
                 const novoDocumento = createDocumentItem('', false, hasAnySelectedProductsForDocuments(), requiredCodes);
                 if (novoDocumento) {
+                    novoDocumento.querySelectorAll('.document-dropzone').forEach(function(dropzone) {
+                        delete dropzone.dataset.dropzoneReady;
+                    });
                     documentosContainer.appendChild(novoDocumento);
+                    refreshDocumentDropzones(novoDocumento);
                 }
                 
                 // Atualizar event listeners para remover
@@ -1811,6 +1838,46 @@ document.addEventListener('DOMContentLoaded', function() {
     atualizarEventListenersDocumentos();
     syncDocumentRowsWithSelectedProducts();
     syncCustomFieldsBySelectedProducts();
+
+    function refreshDocumentDropzones(scope) {
+        (scope || document).querySelectorAll('.document-dropzone').forEach(function(dropzone) {
+            if (dropzone.dataset.dropzoneReady === '1') {
+                return;
+            }
+            dropzone.dataset.dropzoneReady = '1';
+            const input = dropzone.querySelector('input[type="file"]');
+            const fileName = dropzone.querySelector('.document-file-name');
+            const setName = function() {
+                if (fileName) {
+                    fileName.textContent = input && input.files && input.files[0] ? input.files[0].name : '';
+                }
+            };
+            ['dragenter', 'dragover'].forEach(function(eventName) {
+                dropzone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    dropzone.classList.add('border-blue-500', 'bg-blue-50');
+                });
+            });
+            ['dragleave', 'drop'].forEach(function(eventName) {
+                dropzone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+                });
+            });
+            dropzone.addEventListener('drop', function(e) {
+                if (input && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    input.files = e.dataTransfer.files;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    setName();
+                }
+            });
+            if (input) {
+                input.addEventListener('change', setName);
+            }
+        });
+    }
+
+    refreshDocumentDropzones(document);
     
     // Validar tipo de documento apenas se arquivo foi selecionado
     documentosContainer?.addEventListener('change', function(e) {

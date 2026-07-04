@@ -7,23 +7,23 @@ use App\Core\Database;
 class Establishment
 {
     private $db;
-    
+
     public function __construct()
     {
         $this->db = Database::getInstance();
     }
-    
+
     public function create($data)
     {
         $this->db->beginTransaction();
-        
+
         try {
-            $sql = "INSERT INTO establishments (registration_type, cpf, cnpj, razao_social, nome_completo, 
-                    nome_fantasia, segmento, telefone, email, produto, cep, logradouro, numero, complemento, 
-                    bairro, cidade, uf, banco, agencia, conta, tipo_conta, chave_pix, observacoes, pending_product_tags, status, birth_date, created_by_user_id, created_by_representative_id, 
-                    created_at, updated_at) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-            
+            $sql = "INSERT INTO establishments (registration_type, cpf, cnpj, razao_social, data_abertura, nome_completo,
+                    nome_fantasia, segmento, telefone, email, produto, cep, logradouro, numero, complemento,
+                    bairro, cidade, uf, banco, agencia, conta, tipo_conta, chave_pix, observacoes, pending_product_tags, status, birth_date, created_by_user_id, created_by_representative_id,
+                    created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
             // Validar e corrigir valor do ENUM produto
             // O ENUM do banco pode ter valores antigos, então vamos usar NULL se não for válido
             // Os produtos reais estão nas tabelas individuais agora
@@ -37,12 +37,13 @@ class Establishment
                     $produto = null;
                 }
             }
-            
+
             $params = [
                 $data['registration_type'],
                 $data['cpf'] ?? null,
                 $data['cnpj'] ?? null,
                 $data['razao_social'] ?? null,
+                $data['data_abertura'] ?? null,
                 $data['nome_completo'],
                 $data['nome_fantasia'],
                 $data['segmento'],
@@ -68,27 +69,27 @@ class Establishment
                 $data['created_by_user_id'] ?? null,
                 $data['created_by_representative_id'] ?? null
             ];
-            
+
             $result = $this->db->query($sql, $params);
-            
+
             if (!$result) {
                 throw new \Exception('Falha ao inserir estabelecimento no banco de dados');
             }
-            
+
             $establishmentId = $this->db->lastInsertId();
-            
+
             if (!$establishmentId) {
                 throw new \Exception('Falha ao obter ID do estabelecimento criado');
             }
-            
+
             // Inserir produtos específicos
             if (isset($data['products']) && is_array($data['products']) && !empty($data['products'])) {
                 $establishmentProduct = new EstablishmentProduct();
-                
+
                 foreach ($data['products'] as $productType) {
                     if (!empty($productType)) {
                         $productData = $data['product_data'][$productType] ?? [];
-                        
+
                         switch ($productType) {
                             case 'prod-pagseguro':
                             case 'prod-subaquirente':
@@ -113,20 +114,20 @@ class Establishment
                 $data['dynamic_products'] ?? [],
                 $data['dynamic_product_values'] ?? []
             );
-            
+
             $this->db->commit();
             return $establishmentId;
-            
+
         } catch (\Exception $e) {
             $this->db->rollback();
             throw $e;
         }
     }
-    
-    
+
+
     public function findById($id)
     {
-        $sql = "SELECT e.*, 
+        $sql = "SELECT e.*,
                        u.name as created_by_user_name,
                        r.nome_completo as created_by_representative_name,
                        ea.status as approval_status,
@@ -143,9 +144,9 @@ class Establishment
                 LEFT JOIN users ua ON ea.approved_by_id = ua.id
                 LEFT JOIN users ur ON ea.reproved_by_id = ur.id
                 WHERE e.id = ?";
-        
+
         $establishment = $this->db->fetch($sql, [$id]);
-        
+
         if ($establishment) {
             // Buscar produtos associados
             $establishmentProduct = new EstablishmentProduct();
@@ -155,14 +156,14 @@ class Establishment
             $dynamicProduct = new EstablishmentDynamicProduct();
             $establishment['dynamic_products'] = $dynamicProduct->getByEstablishment($id);
         }
-        
+
         return $establishment;
     }
-    
+
     public function getAll($filters = [])
     {
         // Buscar produtos das novas tabelas individuais usando múltiplas subqueries
-        $sql = "SELECT e.*, 
+        $sql = "SELECT e.*,
                        u.name as created_by_user_name,
                        r.nome_completo as created_by_representative_name,
                        r.id as representative_id,
@@ -184,44 +185,44 @@ class Establishment
                 LEFT JOIN representatives r ON e.created_by_representative_id = r.id
                 LEFT JOIN establishment_approvals ea ON e.id = ea.establishment_id
                 WHERE 1=1";
-        
+
         $params = [];
-        
+
         if (isset($filters['status'])) {
             $sql .= " AND e.status = ?";
             $params[] = $filters['status'];
         }
-        
+
         if (isset($filters['produto'])) {
             $sql .= $this->buildProductFilterClause($filters['produto'], $params, 'e');
         }
-        
+
         if (isset($filters['cidade'])) {
             $sql .= " AND e.cidade LIKE ?";
             $params[] = '%' . $filters['cidade'] . '%';
         }
-        
+
         if (isset($filters['cpf'])) {
             $sql .= " AND e.cpf LIKE ?";
             $params[] = '%' . $filters['cpf'] . '%';
         }
-        
+
         if (isset($filters['cnpj'])) {
             $sql .= " AND e.cnpj LIKE ?";
             $params[] = '%' . $filters['cnpj'] . '%';
         }
-        
+
         if (isset($filters['razao_social'])) {
             $sql .= " AND e.razao_social LIKE ?";
             $params[] = '%' . $filters['razao_social'] . '%';
         }
-        
+
         if (isset($filters['nome'])) {
             $sql .= " AND (e.nome_completo LIKE ? OR e.nome_fantasia LIKE ?)";
             $params[] = '%' . $filters['nome'] . '%';
             $params[] = '%' . $filters['nome'] . '%';
         }
-        
+
         if (isset($filters['created_by'])) {
             if ($filters['created_by'] === 'admin') {
                 $sql .= " AND e.created_by_user_id IS NOT NULL";
@@ -229,24 +230,24 @@ class Establishment
                 $sql .= " AND e.created_by_representative_id IS NOT NULL";
             }
         }
-        
+
         if (isset($filters['representative_id'])) {
             $sql .= " AND e.created_by_representative_id = ?";
             $params[] = $filters['representative_id'];
         }
-        
+
         if (isset($filters['date_from'])) {
             $sql .= " AND e.created_at >= ?";
             $params[] = $filters['date_from'];
         }
-        
+
         if (isset($filters['date_to'])) {
             $sql .= " AND e.created_at <= ?";
             $params[] = $filters['date_to'];
         }
-        
+
         $sql .= " GROUP BY e.id ORDER BY e.created_at DESC";
-        
+
         // Paginação
         if (isset($filters['page']) && isset($filters['per_page'])) {
             $offset = ($filters['page'] - 1) * $filters['per_page'];
@@ -254,10 +255,10 @@ class Establishment
         } elseif (isset($filters['limit'])) {
             $sql .= " LIMIT " . (int)$filters['limit'];
         }
-        
+
         return $this->db->fetchAll($sql, $params);
     }
-    
+
     /**
      * Conta o total de estabelecimentos com filtros
      */
@@ -269,44 +270,44 @@ class Establishment
                 LEFT JOIN representatives r ON e.created_by_representative_id = r.id
                 LEFT JOIN establishment_approvals ea ON e.id = ea.establishment_id
                 WHERE 1=1";
-        
+
         $params = [];
-        
+
         if (isset($filters['status'])) {
             $sql .= " AND e.status = ?";
             $params[] = $filters['status'];
         }
-        
+
         if (isset($filters['produto'])) {
             $sql .= $this->buildProductFilterClause($filters['produto'], $params, 'e');
         }
-        
+
         if (isset($filters['cidade'])) {
             $sql .= " AND e.cidade LIKE ?";
             $params[] = '%' . $filters['cidade'] . '%';
         }
-        
+
         if (isset($filters['cpf'])) {
             $sql .= " AND e.cpf LIKE ?";
             $params[] = '%' . $filters['cpf'] . '%';
         }
-        
+
         if (isset($filters['cnpj'])) {
             $sql .= " AND e.cnpj LIKE ?";
             $params[] = '%' . $filters['cnpj'] . '%';
         }
-        
+
         if (isset($filters['razao_social'])) {
             $sql .= " AND e.razao_social LIKE ?";
             $params[] = '%' . $filters['razao_social'] . '%';
         }
-        
+
         if (isset($filters['nome'])) {
             $sql .= " AND (e.nome_completo LIKE ? OR e.nome_fantasia LIKE ?)";
             $params[] = '%' . $filters['nome'] . '%';
             $params[] = '%' . $filters['nome'] . '%';
         }
-        
+
         if (isset($filters['created_by'])) {
             if ($filters['created_by'] === 'admin') {
                 $sql .= " AND e.created_by_user_id IS NOT NULL";
@@ -314,44 +315,44 @@ class Establishment
                 $sql .= " AND e.created_by_representative_id IS NOT NULL";
             }
         }
-        
+
         if (isset($filters['representative_id'])) {
             $sql .= " AND e.created_by_representative_id = ?";
             $params[] = $filters['representative_id'];
         }
-        
+
         if (isset($filters['date_from'])) {
             $sql .= " AND e.created_at >= ?";
             $params[] = $filters['date_from'];
         }
-        
+
         if (isset($filters['date_to'])) {
             $sql .= " AND e.created_at <= ?";
             $params[] = $filters['date_to'];
         }
-        
+
         $result = $this->db->fetch($sql, $params);
         return $result ? (int)$result['total'] : 0;
     }
-    
+
     public function update($id, $data)
     {
         error_log('=== MODEL UPDATE ESTABELECIMENTO ===');
         error_log('ID: ' . $id);
         error_log('Dados recebidos: ' . json_encode($data));
-        
+
         $this->db->beginTransaction();
-        
+
         try {
-            $sql = "UPDATE establishments SET 
-                    registration_type = ?, cpf = ?, cnpj = ?, razao_social = ?, 
-                    nome_completo = ?, nome_fantasia = ?, segmento = ?, telefone = ?, email = ?, produto = ?, 
+            $sql = "UPDATE establishments SET
+                    registration_type = ?, cpf = ?, cnpj = ?, razao_social = ?, data_abertura = ?,
+                    nome_completo = ?, nome_fantasia = ?, segmento = ?, telefone = ?, email = ?, produto = ?,
                     cep = ?, logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, uf = ?,
                     banco = ?, agencia = ?, conta = ?, tipo_conta = ?, chave_pix = ?, observacoes = ?,
                     pending_product_tags = ?,
-                    status = ?, birth_date = ?, updated_at = NOW() 
+                    status = ?, birth_date = ?, updated_at = NOW()
                     WHERE id = ?";
-            
+
             // Validar e corrigir valor do ENUM produto
             // O ENUM do banco pode ter valores antigos, então vamos usar NULL se não for válido
             // Os produtos reais estão nas tabelas individuais agora
@@ -365,12 +366,13 @@ class Establishment
                     $produto = null;
                 }
             }
-            
+
             $params = [
                 $data['registration_type'],
                 $data['cpf'] ?? null,
                 $data['cnpj'] ?? null,
                 $data['razao_social'] ?? null,
+                $data['data_abertura'] ?? null,
                 $data['nome_completo'],
                 $data['nome_fantasia'],
                 $data['segmento'],
@@ -395,14 +397,14 @@ class Establishment
                 $data['birth_date'] ?? null,
                 $id
             ];
-            
+
             $result = $this->db->query($sql, $params);
-            
+
             // Verificar se a atualização foi bem-sucedida
             if (!$result) {
                 throw new \Exception('Falha ao atualizar estabelecimento no banco de dados');
             }
-            
+
             // Atualizar produtos manuais (PagSeguro)
             $establishmentProduct = new EstablishmentProduct();
             $establishmentProduct->deleteAllProducts($id);
@@ -423,27 +425,27 @@ class Establishment
                 $data['dynamic_products'] ?? [],
                 $data['dynamic_product_values'] ?? []
             );
-            
+
             $this->db->commit();
             error_log('SUCESSO: Estabelecimento atualizado no banco de dados');
             return true;
-            
+
         } catch (\Exception $e) {
             error_log('ERRO no Model: ' . $e->getMessage());
             $this->db->rollback();
             throw $e;
         }
     }
-    
+
     public function approve($id, $reason = null, $observation = null)
     {
         $this->db->beginTransaction();
-        
+
         try {
             // Atualizar status do estabelecimento
             $sql = "UPDATE establishments SET status = 'APPROVED', pending_product_tags = NULL, updated_at = NOW() WHERE id = ?";
             $this->db->query($sql, [$id]);
-            
+
             $userId = $_SESSION['user_id'] ?? null;
             $existingApproval = $this->db->fetch(
                 "SELECT id FROM establishment_approvals WHERE establishment_id = ? LIMIT 1",
@@ -468,10 +470,10 @@ class Establishment
                         approved_at, approved_by_id) VALUES (?, ?, 'APPROVED', ?, ?, NOW(), ?)";
                 $this->db->query($sql, [$approvalId, $id, $reason, $observation, $userId]);
             }
-            
+
             $this->db->commit();
             return true;
-            
+
         } catch (\Exception $e) {
             $this->db->rollback();
             throw $e;
@@ -483,16 +485,16 @@ class Establishment
         $sql = "UPDATE establishments SET status = 'ANALYSIS', updated_at = NOW() WHERE id = ?";
         return $this->db->query($sql, [$id]);
     }
-    
+
     public function reprove($id, $reason, $observation = null)
     {
         $this->db->beginTransaction();
-        
+
         try {
             // Atualizar status do estabelecimento
             $sql = "UPDATE establishments SET status = 'REPROVED', updated_at = NOW() WHERE id = ?";
             $this->db->query($sql, [$id]);
-            
+
             $userId = $_SESSION['user_id'] ?? null;
             $existingApproval = $this->db->fetch(
                 "SELECT id FROM establishment_approvals WHERE establishment_id = ? LIMIT 1",
@@ -517,47 +519,47 @@ class Establishment
                         reproved_at, reproved_by_id) VALUES (?, ?, 'REPROVED', ?, ?, NOW(), ?)";
                 $this->db->query($sql, [$approvalId, $id, $reason, $observation, $userId]);
             }
-            
+
             $this->db->commit();
             return true;
-            
+
         } catch (\Exception $e) {
             $this->db->rollback();
             throw $e;
         }
     }
-    
+
     public function disable($id)
     {
         $sql = "UPDATE establishments SET status = 'DISABLED', updated_at = NOW() WHERE id = ?";
         return $this->db->query($sql, [$id]);
     }
-    
+
     public function delete($id)
     {
         $this->db->beginTransaction();
-        
+
         try {
             // Deletar produtos associados
             $establishmentProduct = new EstablishmentProduct();
             $establishmentProduct->deleteAllProducts($id);
-            
+
             // Deletar estabelecimento
             $sql = "DELETE FROM establishments WHERE id = ?";
             $this->db->query($sql, [$id]);
-            
+
             $this->db->commit();
             return true;
-            
+
         } catch (\Exception $e) {
             $this->db->rollback();
             throw $e;
         }
     }
-    
+
     public function getStats($filters = [])
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     COUNT(*) as total,
                     COUNT(CASE WHEN status = 'APPROVED' THEN 1 END) as aprovados,
                     COUNT(CASE WHEN status = 'PENDING' THEN 1 END) as pendentes,
@@ -565,60 +567,60 @@ class Establishment
                     COUNT(CASE WHEN status = 'DISABLED' THEN 1 END) as desabilitados,
                     COUNT(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 END) as cadastros_ultimo_mes
                 FROM establishments e WHERE 1=1";
-        
+
         $params = [];
-        
+
         if (isset($filters['produto'])) {
             $sql .= $this->buildProductFilterClause($filters['produto'], $params, 'e');
         }
-        
+
         if (isset($filters['representative_id'])) {
             $sql .= " AND e.created_by_representative_id = ?";
             $params[] = $filters['representative_id'];
         }
-        
+
         if (isset($filters['date_from'])) {
             $sql .= " AND e.created_at >= ?";
             $params[] = $filters['date_from'];
         }
-        
+
         if (isset($filters['date_to'])) {
             $sql .= " AND e.created_at <= ?";
             $params[] = $filters['date_to'];
         }
-        
+
         return $this->db->fetch($sql, $params);
     }
-    
+
     public function getTopCities($limit = 5)
     {
-        $sql = "SELECT cidade, uf, COUNT(*) as total 
-                FROM establishments 
-                WHERE status = 'APPROVED' 
-                GROUP BY cidade, uf 
-                ORDER BY total DESC 
+        $sql = "SELECT cidade, uf, COUNT(*) as total
+                FROM establishments
+                WHERE status = 'APPROVED'
+                GROUP BY cidade, uf
+                ORDER BY total DESC
                 LIMIT ?";
-        
+
         return $this->db->fetchAll($sql, [$limit]);
     }
-    
+
     public function getMonthlyEvolution($months = 12)
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     DATE_FORMAT(created_at, '%Y-%m') as mes,
                     produto,
                     COUNT(*) as total
-                FROM establishments 
+                FROM establishments
                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? MONTH)
                 GROUP BY DATE_FORMAT(created_at, '%Y-%m'), produto
                 ORDER BY mes ASC";
-        
+
         return $this->db->fetchAll($sql, [$months]);
     }
 
     public function getMonthlyEvolutionByRepresentative($representativeId, $months = 6)
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     DATE_FORMAT(created_at, '%Y-%m') as mes,
                     COUNT(*) as total
                 FROM establishments
@@ -629,19 +631,19 @@ class Establishment
 
         return $this->db->fetchAll($sql, [$representativeId, $months]);
     }
-    
+
     public function findByEmail($email)
     {
         $sql = "SELECT * FROM establishments WHERE email = ?";
         return $this->db->fetch($sql, [$email]);
     }
-    
+
     public function getDocuments($establishmentId)
     {
         $sql = "SELECT * FROM documents WHERE establishment_id = ? ORDER BY uploaded_at DESC";
         return $this->db->fetchAll($sql, [$establishmentId]);
     }
-    
+
     public function getApprovalHistory($establishmentId)
     {
         $sql = "SELECT ea.*, u.name as approved_by_name, ur.name as reproved_by_name
@@ -650,10 +652,10 @@ class Establishment
                 LEFT JOIN users ur ON ea.reproved_by_id = ur.id
                 WHERE ea.establishment_id = ?
                 ORDER BY COALESCE(ea.approved_at, ea.reproved_at) DESC";
-        
+
         return $this->db->fetchAll($sql, [$establishmentId]);
     }
-    
+
     public function addDocument($establishmentId, $filePath, $originalName, $documentType = 'RG_CPF_CNH', $productType = null, $description = null)
     {
         $documentId = uniqid();
@@ -719,23 +721,23 @@ class Establishment
         }
 
         write_log("addDocument - Tipo recebido: '{$documentTypeRaw}' -> salvo como: '{$finalDocumentType}'", 'app.log');
-        
-        $sql = "INSERT INTO documents (id, establishment_id, document_type, file_path, original_name, file_name, mime_type, size, uploaded_at) 
+
+        $sql = "INSERT INTO documents (id, establishment_id, document_type, file_path, original_name, file_name, mime_type, size, uploaded_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-        
+
         // Extrair informações do arquivo
         // Garantir que filePath é uma string
         if (is_array($filePath)) {
             $filePath = $filePath['file_path'] ?? $filePath['path'] ?? '';
         }
-        
+
         if (empty($filePath)) {
             throw new \Exception('Caminho do arquivo não fornecido');
         }
-        
+
         $fileName = basename($filePath);
         $fileSize = file_exists($filePath) ? filesize($filePath) : 0;
-        
+
         $mimeType = 'application/octet-stream';
         if (function_exists('mime_content_type')) {
             $mimeType = \mime_content_type($filePath) ?: $mimeType;
@@ -746,7 +748,7 @@ class Establishment
                 \finfo_close($finfo);
             }
         }
-        
+
         try {
             return $this->db->query($sql, [
                 $documentId,
@@ -760,12 +762,12 @@ class Establishment
             ]);
         } catch (\PDOException $e) {
             // Se for erro de ENUM ou NULL não permitido, usar um valor que existe no ENUM
-            if (strpos($e->getMessage(), 'document_type') !== false || 
+            if (strpos($e->getMessage(), 'document_type') !== false ||
                 strpos($e->getMessage(), 'Data truncated') !== false ||
                 strpos($e->getMessage(), 'cannot be null') !== false) {
-                
+
                 write_log("Erro de ENUM detectado. Erro original: " . $e->getMessage(), 'app.log');
-                
+
                 // Se não temos os valores do ENUM, buscar novamente
                 if (empty($enumValues)) {
                     try {
@@ -784,7 +786,7 @@ class Establishment
                         write_log("Erro ao buscar ENUM no catch: " . $enumEx->getMessage(), 'app.log');
                     }
                 }
-                
+
                 // Tentar usar um valor que provavelmente existe no ENUM
                 if (!empty($enumValues)) {
                     if (in_array('OUTROS_DOCUMENTOS', $enumValues, true)) {
@@ -801,7 +803,7 @@ class Establishment
                     $finalDocumentType = 'OUTROS_DOCUMENTOS';
                     write_log("Usando valor padrão de emergência: {$finalDocumentType}", 'app.log');
                 }
-                
+
                 return $this->db->query($sql, [
                     $documentId,
                     $establishmentId,
@@ -867,25 +869,25 @@ class Establishment
 
         return '';
     }
-    
-    
+
+
     public function updateProducts($establishmentId, $products, $productData)
     {
         $this->db->beginTransaction();
-        
+
         try {
             // Remover produtos existentes
             $sql = "DELETE FROM establishment_products WHERE establishment_id = ?";
             $this->db->query($sql, [$establishmentId]);
-            
+
             // Inserir novos produtos
             if (is_array($products)) {
                 foreach ($products as $productType) {
                     $data = $productData[$productType] ?? null;
-                    
-                    $sql = "INSERT INTO establishment_products (establishment_id, product_type, product_data) 
+
+                    $sql = "INSERT INTO establishment_products (establishment_id, product_type, product_data)
                             VALUES (?, ?, ?)";
-                    
+
                     $this->db->query($sql, [
                         $establishmentId,
                         $productType,
@@ -893,37 +895,37 @@ class Establishment
                     ]);
                 }
             }
-            
+
             // Atualizar flag de múltiplos produtos
             $hasMultipleProducts = count($products) > 1;
             $sql = "UPDATE establishments SET has_multiple_products = ?, produto = ? WHERE id = ?";
             $this->db->query($sql, [$hasMultipleProducts, $products[0] ?? null, $establishmentId]);
-            
+
             $this->db->commit();
             return true;
-            
+
         } catch (\Exception $e) {
             $this->db->rollback();
             throw $e;
         }
     }
-    
+
     public function getDocumentsByType($establishmentId, $documentType = null, $productType = null)
     {
         $sql = "SELECT * FROM documents WHERE establishment_id = ?";
-        
+
         $params = [$establishmentId];
-        
+
         if ($documentType) {
             $sql .= " AND document_type = ?";
             $params[] = $documentType;
         }
-        
+
         $sql .= " ORDER BY uploaded_at DESC";
-        
+
         return $this->db->fetchAll($sql, $params);
     }
-    
+
     public function getDocumentById($documentId, $establishmentId)
     {
         $sql = "SELECT * FROM documents WHERE id = ? AND establishment_id = ?";
@@ -935,7 +937,7 @@ class Establishment
         $sql = "DELETE FROM documents WHERE id = ? AND establishment_id = ?";
         return $this->db->query($sql, [$documentId, $establishmentId]);
     }
-    
+
     /**
      * Atualiza o sistpay_id do estabelecimento
      */
@@ -944,7 +946,7 @@ class Establishment
         $sql = "UPDATE establishments SET sistpay_id = ? WHERE id = ?";
         return $this->db->query($sql, [$sistpayId, $id]);
     }
-    
+
     /**
      * Busca estabelecimento pelo sistpay_id
      */
@@ -953,7 +955,7 @@ class Establishment
         $sql = "SELECT * FROM establishments WHERE sistpay_id = ?";
         return $this->db->fetch($sql, [$sistpayId]);
     }
-    
+
     /**
      * Busca estabelecimento pelo código (EST-{id})
      */
@@ -966,7 +968,7 @@ class Establishment
         }
         return null;
     }
-    
+
     /**
      * Atualiza o status do estabelecimento via webhook
      * Mapeia os status do SistPay para os status do sistema
@@ -984,13 +986,13 @@ class Establishment
             5 => 'REPROVED',     // Cancelado -> Reprovado
             6 => 'PENDING'       // Qualidade -> Pendente (aguardando aprovação)
         ];
-        
+
         $newStatus = $statusMap[$sistpayStatus] ?? 'PENDING';
-        
+
         $sql = "UPDATE establishments SET status = ?, updated_at = NOW() WHERE id = ?";
         return $this->db->query($sql, [$newStatus, $id]);
     }
-    
+
     /**
      * Busca estabelecimento por CPF
      */
@@ -1000,7 +1002,7 @@ class Establishment
         $sql = "SELECT * FROM establishments WHERE cpf = ? LIMIT 1";
         return $this->db->fetch($sql, [$cpf]);
     }
-    
+
     /**
      * Busca estabelecimento por CNPJ
      */

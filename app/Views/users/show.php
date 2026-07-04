@@ -83,6 +83,12 @@ $statusLabels = [
                             </dd>
                         </div>
                         <div>
+                            <dt class="text-sm font-medium text-gray-500">Data de Nascimento</dt>
+                            <dd class="mt-1 text-sm text-gray-900">
+                                <?= !empty($user['birth_date']) ? htmlspecialchars(date('d/m/Y', strtotime((string) $user['birth_date']))) : '-' ?>
+                            </dd>
+                        </div>
+                        <div>
                             <dt class="text-sm font-medium text-gray-500">Status</dt>
                             <dd class="mt-1">
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full <?= $statusClass ?>">

@@ -9,6 +9,7 @@ use App\Models\Establishment;
 use App\Models\Banner;
 use App\Models\RepresentativeModal;
 use App\Models\Ticket;
+use App\Models\DynamicProduct;
 
 class DashboardController
 {
@@ -18,6 +19,7 @@ class DashboardController
     private $bannerModel;
     private $representativeModalModel;
     private $ticketModel;
+    private $dynamicProductModel;
     
     public function __construct()
     {
@@ -27,6 +29,7 @@ class DashboardController
         $this->bannerModel = new Banner();
         $this->representativeModalModel = new RepresentativeModal();
         $this->ticketModel = new Ticket();
+        $this->dynamicProductModel = new DynamicProduct();
     }
     
     public function index()
@@ -90,6 +93,24 @@ class DashboardController
             'total' => $representativeStatsRaw['total'] ?? 0,
             'ativos' => $representativeStatsRaw['ativos'] ?? 0
         ];
+
+        $productEstablishmentCounts = [
+            [
+                'label' => 'PagSeguro',
+                'total' => (int) ($this->establishmentModel->getStats(['produto' => 'manual:pagseguro'])['total'] ?? 0)
+            ]
+        ];
+        foreach ($this->dynamicProductModel->getAll() as $dynamicProduct) {
+            $id = (int) ($dynamicProduct['id'] ?? 0);
+            $name = trim((string) ($dynamicProduct['name'] ?? ''));
+            if ($id <= 0 || $name === '') {
+                continue;
+            }
+            $productEstablishmentCounts[] = [
+                'label' => $name,
+                'total' => (int) ($this->establishmentModel->getStats(['produto' => 'dynamic:' . $id])['total'] ?? 0)
+            ];
+        }
         
         // Filtros para o período atual
         $currentMonth = date('Y-m-01');
@@ -114,6 +135,7 @@ class DashboardController
             'monthly_evolution' => $monthlyEvolution,
             'user_stats' => $userStats,
             'representative_stats' => $representativeStats,
+            'product_establishment_counts' => $productEstablishmentCounts,
             'current_month_stats' => $currentMonthStats,
             'last_month_stats' => $lastMonthStats
         ];

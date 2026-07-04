@@ -67,16 +67,23 @@ ob_start();
                     <!-- Nome Completo -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
-                        <input type="text" name="name" required 
+                        <input type="text" name="name" required
                                value="<?= htmlspecialchars($_POST['name'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome completo">
                     </div>
-                    
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de Nascimento</label>
+                        <input type="date" name="birth_date"
+                               value="<?= htmlspecialchars($_POST['birth_date'] ?? '') ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
                     <!-- Email -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" id="email_display" required 
+                        <input type="email" id="email_display" required
                                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
                                autocomplete="off" autocapitalize="off" spellcheck="false"
                                data-lpignore="true"
@@ -141,7 +148,7 @@ ob_start();
                     <!-- Senha -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Senha *</label>
-                        <input type="password" name="password" required 
+                        <input type="password" name="password" required
                                autocomplete="new-password"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite a senha">
@@ -205,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const permissionCheckboxes = document.querySelectorAll('input[name^="module_permissions["]');
     const selectAllPermissionsBtn = document.getElementById('selectAllPermissions');
     const clearAllPermissionsBtn = document.getElementById('clearAllPermissions');
-    
+
     if (selectAllPermissionsBtn) {
         selectAllPermissionsBtn.addEventListener('click', function() {
             permissionCheckboxes.forEach(function(checkbox) {
@@ -213,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     if (clearAllPermissionsBtn) {
         clearAllPermissionsBtn.addEventListener('click', function() {
             permissionCheckboxes.forEach(function(checkbox) {

@@ -149,6 +149,7 @@ class UserController
         $email = sanitize_input($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         $status = sanitize_input($_POST['status'] ?? 'ACTIVE');
+        $birthDate = $this->parseDate($_POST['birth_date'] ?? '');
         
         $errors = [];
         
@@ -163,6 +164,10 @@ class UserController
         
         if (!empty($password) && strlen($password) < 6) {
             $errors[] = 'Senha deve ter pelo menos 6 caracteres';
+        }
+
+        if (trim((string) ($_POST['birth_date'] ?? '')) !== '' && $birthDate === null) {
+            $errors[] = 'Data de nascimento inválida';
         }
         
         // Verificar se email já existe (exceto para o próprio usuário)
@@ -183,6 +188,7 @@ class UserController
             $data = [
                 'name' => $name,
                 'email' => $email,
+                'birth_date' => $birthDate,
                 'status' => $status,
                 'module_permissions' => $this->extractModulePermissions()
             ];
@@ -468,6 +474,11 @@ class UserController
         if (empty($name)) {
             $errors[] = 'Nome é obrigatório';
         }
+
+        $birthDate = $this->parseDate($_POST['birth_date'] ?? '');
+        if (trim((string) ($_POST['birth_date'] ?? '')) !== '' && $birthDate === null) {
+            $errors[] = 'Data de nascimento inválida';
+        }
         
         // Email
         $email = sanitize_input($_POST['email'] ?? '');
@@ -501,16 +512,34 @@ class UserController
         $data = [
             'name' => $name,
             'email' => $email,
+            'birth_date' => $birthDate,
             'status' => sanitize_input($_POST['status'] ?? 'ACTIVE'),
             'module_permissions' => $this->extractModulePermissions()
         ];
         
         // Adicionar senha apenas se fornecida
         if (!empty($password)) {
-            $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+            $data['password'] = $id ? password_hash($password, PASSWORD_DEFAULT) : $password;
         }
         
         return $data;
+    }
+
+    private function parseDate($value): ?string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+
+        foreach (['Y-m-d', 'd/m/Y'] as $format) {
+            $date = \DateTime::createFromFormat($format, $value);
+            if ($date && $date->format($format) === $value) {
+                return $date->format('Y-m-d');
+            }
+        }
+
+        return null;
     }
 
     private function extractModulePermissions(): array

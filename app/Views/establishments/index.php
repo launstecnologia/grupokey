@@ -357,8 +357,8 @@ $representatives = $representatives ?? [];
                                         <?= htmlspecialchars($establishment['created_by_representative_name']) ?>
                                     </span>
                                 <?php elseif (!empty($establishment['created_by_user_id'])): ?>
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                        Administrador
+                                    <span class="text-sm text-gray-900">
+                                        <?= htmlspecialchars($establishment['created_by_user_name'] ?? 'Administrador') ?>
                                     </span>
                                 <?php else: ?>
                                     <span class="text-sm text-gray-400">

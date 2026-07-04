@@ -43,7 +43,6 @@ ob_start();
             <input type="hidden" name="original_email" value="<?= htmlspecialchars($representative['email']) ?>">
             <input type="hidden" name="original_telefone" value="<?= htmlspecialchars($representative['telefone']) ?>">
             <input type="hidden" name="original_status" value="<?= htmlspecialchars($representative['status']) ?>">
-            <input type="hidden" name="cpf" value="<?= htmlspecialchars($representative['cpf']) ?>">
             
             <!-- Exibir erros de validação -->
             <?php if (isset($_SESSION['validation_errors']) && !empty($_SESSION['validation_errors'])): ?>
@@ -153,12 +152,17 @@ ob_start();
                     <!-- CPF -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
-                        <input type="text" readonly
-                               value="<?= htmlspecialchars($representative['cpf']) ?>"
+                        <input type="text" name="cpf" required
+                               value="<?= htmlspecialchars($oldInput['cpf'] ?? $representative['cpf']) ?>"
                                autocomplete="off"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="000.000.000-00">
-                        <p class="mt-1 text-xs text-gray-500">CPF não pode ser alterado</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de Nascimento</label>
+                        <input type="date" name="birth_date"
+                               value="<?= htmlspecialchars($oldInput['birth_date'] ?? ($representative['birth_date'] ?? '')) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <!-- Email -->
                     <div>

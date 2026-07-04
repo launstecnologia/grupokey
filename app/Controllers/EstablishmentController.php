@@ -56,6 +56,7 @@ class EstablishmentController
     public function index()
     {
         Auth::requireAuth();
+        $_SESSION['establishments_last_list_url'] = $_SERVER['REQUEST_URI'] ?? url('estabelecimentos');
         
         $filters = $this->getFilters();
         
@@ -977,11 +978,13 @@ class EstablishmentController
         $mimeType = (string) ($document['mime_type'] ?? 'application/octet-stream');
         $originalName = (string) ($document['original_name'] ?? basename((string) ($document['file_path'] ?? 'documento')));
         $isPreview = isset($_GET['preview']) && $_GET['preview'] === '1';
-        $isImage = stripos($mimeType, 'image/') === 0;
+        $isInlinePreviewable = stripos($mimeType, 'image/') === 0
+            || $mimeType === 'application/pdf'
+            || stripos($mimeType, 'text/') === 0;
 
         // Configurar headers para download/preview
         header('Content-Type: ' . $mimeType);
-        if ($isPreview && $isImage) {
+        if ($isPreview && $isInlinePreviewable) {
             header('Content-Disposition: inline; filename="' . basename($originalName) . '"');
         } else {
             header('Content-Disposition: attachment; filename="' . basename($originalName) . '"');
@@ -1481,6 +1484,8 @@ class EstablishmentController
         $customFieldDefinitions = $this->getSafeCustomFieldDefinitions('establishment');
         $selectedProductScopes = $this->buildSelectedProductScopes($products, $dynamicProducts);
         $customFieldValues = $this->collectCustomFieldValues('establishment', $customFieldDefinitions, $errors, $selectedProductScopes);
+        $this->validateDynamicProductRequiredFields($dynamicProducts, $errors);
+        $this->validateUploadedDocumentRows($errors);
         
         if (!empty($errors)) {
             error_log('ERROS DE VALIDAÇÃO: ' . json_encode($errors));
@@ -1543,6 +1548,7 @@ class EstablishmentController
         } else {
             $data['cnpj'] = sanitize_input($_POST['cnpj'] ?? '');
             $data['razao_social'] = $razaoSocial;
+            $data['data_abertura'] = sanitize_input($_POST['data_abertura'] ?? '');
             $data['cpf'] = sanitize_input($_POST['cpf_pj'] ?? '');
             $dataNasc = trim($_POST['data_nascimento'] ?? '');
             $data['birth_date'] = !empty($dataNasc) ? $this->parseDate($dataNasc) : null;
@@ -1729,6 +1735,53 @@ class EstablishmentController
         }
 
         return $result;
+    }
+
+    private function validateDynamicProductRequiredFields(array $dynamicProductIds, array &$errors): void
+    {
+        $rawValues = $_POST['dynamic_values'] ?? [];
+        $rawValues = is_array($rawValues) ? $rawValues : [];
+
+        foreach ($dynamicProductIds as $dynamicProductId) {
+            $product = $this->dynamicProductModel->findById((int) $dynamicProductId);
+            if (!$product) {
+                continue;
+            }
+
+            $values = $rawValues[(int) $dynamicProductId] ?? $rawValues[(string) (int) $dynamicProductId] ?? [];
+            $values = is_array($values) ? $values : [];
+            foreach (($product['fields'] ?? []) as $field) {
+                if ((int) ($field['is_required'] ?? 0) !== 1) {
+                    continue;
+                }
+
+                $fieldKey = (string) ($field['field_key'] ?? '');
+                $label = (string) ($field['label'] ?? $fieldKey);
+                $value = $values[$fieldKey] ?? '';
+                if (is_array($value) || trim((string) $value) === '') {
+                    $errors[] = 'Campo "' . $label . '" do produto "' . ($product['name'] ?? 'dinâmico') . '" é obrigatório.';
+                }
+            }
+        }
+    }
+
+    private function validateUploadedDocumentRows(array &$errors): void
+    {
+        if (empty($_FILES['documents']) || !is_array($_FILES['documents']['name'] ?? null)) {
+            return;
+        }
+
+        $documentTypes = $_POST['document_type'] ?? [];
+        $documentTypes = is_array($documentTypes) ? $documentTypes : [];
+        foreach ($_FILES['documents']['name'] as $key => $filename) {
+            if (!$this->hasUploadedFile($_FILES['documents'], (int) $key)) {
+                continue;
+            }
+
+            if (trim((string) ($documentTypes[$key] ?? '')) === '') {
+                $errors[] = 'Selecione o tipo de documento para o arquivo "' . (string) $filename . '".';
+            }
+        }
     }
 
     private function getSafeCustomFieldDefinitions($entityType)
@@ -2167,6 +2220,13 @@ class EstablishmentController
                 }
             }
         }
+    }
+
+    private function hasUploadedFile(array $files, int $key): bool
+    {
+        return isset($files['error'][$key], $files['name'][$key])
+            && $files['error'][$key] === UPLOAD_ERR_OK
+            && trim((string) $files['name'][$key]) !== '';
     }
     
     private function getAvailableProducts()

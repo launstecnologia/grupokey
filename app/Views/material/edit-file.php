@@ -45,7 +45,7 @@ ob_start();
                 <?php unset($_SESSION['validation_errors']); ?>
                 <?php endif; ?>
 
-                <form method="POST" action="<?= url('material/files/' . $file['id']) ?>" id="material-edit-file-form">
+                <form method="POST" action="<?= url('material/files/' . $file['id']) ?>" enctype="multipart/form-data" id="material-edit-file-form">
                     <input type="hidden" name="_method" value="PUT">
                     
                     <div class="row">
@@ -84,6 +84,14 @@ ob_start();
                                 <label class="form-check-label" for="is_active">Arquivo visível para os usuários no Material de Apoio</label>
                             </div>
                         </div>
+
+                        <div class="col-12 mb-4">
+                            <label for="file" class="form-label fw-semibold">Substituir arquivo de download</label>
+                            <input type="file" class="form-control shadow-sm" id="file" name="file">
+                            <div class="form-text">
+                                Deixe em branco para manter o arquivo atual. Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, AVI, ZIP, RAR.
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="d-flex justify-content-end gap-2">
@@ -102,7 +110,7 @@ ob_start();
     </div>
     
     <div class="col-lg-4">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm material-file-info-card">
             <div class="card-header bg-light">
                 <h6 class="m-0 font-weight-bold text-primary">
                     <i class="fas fa-info-circle me-2"></i>
@@ -144,10 +152,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('material-edit-file-submit-btn');
     const submitIcon = document.getElementById('material-edit-file-submit-icon');
     const submitText = document.getElementById('material-edit-file-submit-text');
+    const fileInput = document.getElementById('file');
 
     if (!form) return;
 
-    form.addEventListener('submit', function() {
+    form.addEventListener('submit', function(e) {
+        const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+        if (file && file.size > 50 * 1024 * 1024) {
+            e.preventDefault();
+            alert('Arquivo muito grande! Tamanho máximo: 50MB');
+            return;
+        }
+
         if (submitBtn && submitIcon && submitText) {
             submitBtn.disabled = true;
             submitIcon.className = 'fas fa-spinner fa-spin me-2';
@@ -156,6 +172,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<style>
+.material-file-info-card .card-body,
+.material-file-info-card li,
+.material-file-info-card strong {
+    color: #374151;
+}
+.dark .material-file-info-card .card-body,
+.dark .material-file-info-card li,
+.dark .material-file-info-card strong {
+    color: #e5e7eb !important;
+}
+.dark .material-file-info-card .card-header {
+    background-color: #111827 !important;
+}
+</style>
 
 <?php
 $content = ob_get_clean();
