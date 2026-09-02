@@ -80,7 +80,16 @@ if (!function_exists('sanitize_input')) {
         if (is_array($data)) {
             return array_map('sanitize_input', $data);
         }
-        return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+        $value = trim((string) $data);
+        // Evita gravar entidades HTML (&amp;) no banco. A tela já escapa na exibição.
+        return html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+}
+
+if (!function_exists('unescape_stored')) {
+    function unescape_stored($value)
+    {
+        return html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 }
 
@@ -539,10 +548,9 @@ if (!function_exists('old')) {
     {
         if (isset($_SESSION['old_input'][$key])) {
             $value = $_SESSION['old_input'][$key];
-            // Limpar o valor da sessão após usar (opcional, pode manter para múltiplos usos)
-            return $value;
+            return is_string($value) ? unescape_stored($value) : $value;
         }
-        return $default;
+        return is_string($default) ? unescape_stored($default) : $default;
     }
 }
 

@@ -61,11 +61,11 @@ $formatCustomFieldValue = static function (string $value, string $fieldType, str
 
 // Status badges
 $statusColors = [
-    'PENDING' => 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
-    'ANALYSIS' => 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
-    'APPROVED' => 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
-    'REPROVED' => 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
-    'DISABLED' => 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+    'PENDING' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500 dark:text-black',
+    'ANALYSIS' => 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white',
+    'APPROVED' => 'bg-green-100 text-green-800 dark:bg-green-600 dark:text-white',
+    'REPROVED' => 'bg-red-100 text-red-800 dark:bg-red-600 dark:text-white',
+    'DISABLED' => 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white'
 ];
 $statusLabels = [
     'PENDING' => 'Pendente',
@@ -197,7 +197,7 @@ $statusLabels = [
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['segmento'] ?? '-') ?></dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipo de Registro</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipo de Cadastro</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                                 <?= ($establishment['registration_type'] ?? '') === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica' ?>
                             </dd>
@@ -229,6 +229,31 @@ $statusLabels = [
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['email'] ?? '-') ?></dd>
                         </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">É filial?</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= !empty($establishment['is_filial']) ? 'Sim' : 'Não' ?></dd>
+                        </div>
+                        <?php if (!empty($establishment['adesao']) || !empty($establishment['valor_adesao']) || !empty($establishment['mdr'])): ?>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Adesão</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                                <?php
+                                $adesaoLabels = ['a_vista' => 'À Vista', 'cartao' => 'Cartão', 'criacao' => 'Criação', 'isento' => 'Isento'];
+                                echo htmlspecialchars($adesaoLabels[$establishment['adesao'] ?? ''] ?? ($establishment['adesao'] ?: '-'));
+                                ?>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Valor</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                                <?= !empty($establishment['valor_adesao']) ? htmlspecialchars(format_currency($establishment['valor_adesao'])) : '-' ?>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">MDR</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['mdr'] ?? '-') ?></dd>
+                        </div>
+                        <?php endif; ?>
                         <?php if (!empty($establishment['birth_date'])): ?>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Data de Nascimento</dt>

@@ -126,6 +126,7 @@ class EstablishmentController
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
             'document_type_options' => $this->getDocumentTypeOptions(),
             'document_type_product_map' => $this->documentTypeModel->getProductMapForActiveTypes(),
+            'pending_documents' => $this->getPendingDocuments(),
             'segments' => $this->segmentModel->getActive(),
             'sistpay_plans' => $plans
         ];
@@ -230,6 +231,7 @@ class EstablishmentController
         $data = $this->validateAndSanitizeInput();
         
         if (isset($_SESSION['validation_errors'])) {
+            $this->persistUploadedDocumentsToSession();
             redirect(url('estabelecimentos/create'));
         }
         
@@ -255,6 +257,8 @@ class EstablishmentController
             
             // Upload de documentos se houver
             $this->handleDocumentUpload($establishmentId);
+            $this->attachPendingDocuments($establishmentId);
+            $this->clearPendingDocuments();
 
             if (Auth::isRepresentative()) {
                 $this->notifyAdminsAboutRepresentativeEstablishment((int) $establishmentId, $data);
@@ -276,6 +280,7 @@ class EstablishmentController
             if (isset($_SESSION['old_input'])) {
                 unset($_SESSION['old_input']);
             }
+            $this->clearPendingDocuments();
             
             $_SESSION['success'] = 'Estabelecimento salvo com sucesso!';
             
@@ -287,6 +292,7 @@ class EstablishmentController
             
         } catch (\PDOException $e) {
             // Erro específico do banco de dados
+            $this->persistUploadedDocumentsToSession();
             $_SESSION['old_input'] = $_POST;
             $errorMessage = 'Erro no banco de dados: ';
             
@@ -327,6 +333,7 @@ class EstablishmentController
             error_log('ERRO ao cadastrar estabelecimento: ' . $e->getMessage());
             error_log('Stack trace: ' . $e->getTraceAsString());
             
+            $this->persistUploadedDocumentsToSession();
             $_SESSION['old_input'] = $_POST;
             $_SESSION['error'] = 'Erro ao cadastrar estabelecimento: ' . $e->getMessage();
             $_SESSION['debug_error'] = [
@@ -591,6 +598,8 @@ class EstablishmentController
             
             // Upload de novos documentos se houver
             $this->handleDocumentUpload($id);
+            $this->attachPendingDocuments($id);
+            $this->clearPendingDocuments();
 
             if (Auth::isAdmin()) {
                 $this->notifyRepresentativeAboutAdminEstablishmentChange(
@@ -1060,10 +1069,6 @@ class EstablishmentController
             $filters['representative_id'] = (int)$_GET['representative_id'];
         }
         
-        if (isset($_GET['cpf']) && !empty($_GET['cpf'])) {
-            $filters['cpf'] = preg_replace('/[^0-9]/', '', sanitize_input($_GET['cpf']));
-        }
-        
         if (isset($_GET['cnpj']) && !empty($_GET['cnpj'])) {
             $filters['cnpj'] = preg_replace('/[^0-9]/', '', sanitize_input($_GET['cnpj']));
         }
@@ -1311,7 +1316,6 @@ class EstablishmentController
             'produto' => 'Produto',
             'cidade' => 'Cidade',
             'representative_id' => 'Representante',
-            'cpf' => 'CPF',
             'cnpj' => 'CNPJ',
             'razao_social' => 'Razão Social',
             'nome' => 'Nome'
@@ -1357,9 +1361,9 @@ class EstablishmentController
         $cidade = sanitize_input($_POST['cidade'] ?? '');
         $uf = sanitize_input($_POST['uf'] ?? '');
         
-        // Validações
+        // Sem PagSeguro/EVO o tipo fica oculto e o cadastro é PJ.
         if (empty($registrationType) || !in_array($registrationType, ['PF', 'PJ'])) {
-            $errors[] = 'Tipo de registro é obrigatório';
+            $registrationType = 'PJ';
         }
         
         if (empty($nomeCompleto)) {
@@ -1496,9 +1500,11 @@ class EstablishmentController
         $customFieldValues = $this->collectCustomFieldValues('establishment', $customFieldDefinitions, $errors, $selectedProductScopes);
         $this->validateDynamicProductRequiredFields($dynamicProducts, $errors);
         $this->validateUploadedDocumentRows($errors);
+        $this->validateRequiredDocuments($products, $dynamicProducts, $registrationType, $id, $errors);
         
         if (!empty($errors)) {
             error_log('ERROS DE VALIDAÇÃO: ' . json_encode($errors));
+            $this->persistUploadedDocumentsToSession();
             $_SESSION['validation_errors'] = $errors;
             // Salvar dados do formulário na sessão para preservar após redirecionamento
             $_SESSION['old_input'] = $_POST;
@@ -1550,7 +1556,11 @@ class EstablishmentController
             'conta' => sanitize_input($_POST['conta'] ?? ''),
             'tipo_conta' => $this->sanitizeTipoConta($_POST['tipo_conta'] ?? ''),
             'chave_pix' => sanitize_input($_POST['chave_pix'] ?? ''),
-            'observacoes' => sanitize_input($_POST['observacoes'] ?? '')
+            'observacoes' => sanitize_input($_POST['observacoes'] ?? ''),
+            'is_filial' => !empty($_POST['is_filial']) ? 1 : 0,
+            'mdr' => sanitize_input($_POST['mdr'] ?? ''),
+            'adesao' => sanitize_input($_POST['adesao'] ?? ''),
+            'valor_adesao' => parse_currency($_POST['valor_adesao'] ?? '')
         ];
         
         if ($registrationType === 'PF') {
@@ -1575,8 +1585,8 @@ class EstablishmentController
         // Definir quem criou/atualizou
         if (Auth::isAdmin()) {
             $data['created_by_user_id'] = Auth::user()['id'];
-            if (!empty($selectedRepresentativeId)) {
-                $data['created_by_representative_id'] = $selectedRepresentativeId;
+            if (isset($_POST['representative_id'])) {
+                $data['created_by_representative_id'] = !empty($selectedRepresentativeId) ? $selectedRepresentativeId : null;
             }
         } else {
             $representative = Auth::representative();
@@ -1622,6 +1632,11 @@ class EstablishmentController
             'tipo_conta',
             'chave_pix',
             'observacoes',
+            'is_filial',
+            'mdr',
+            'adesao',
+            'valor_adesao',
+            'created_by_representative_id',
             'status',
         ];
 
@@ -1673,12 +1688,20 @@ class EstablishmentController
                     // CDX/EVO e PagSeguro têm os mesmos campos
                     // Usar prod-pagseguro como chave para campos do formulário (compatibilidade)
                     $formKey = ($productType === 'prod-subaquirente') ? 'prod-pagseguro' : $productType;
+                    $meioPagamento = sanitize_input($_POST['meio_pagamento_' . $formKey] ?? '');
+                    if ($meioPagamento === '') {
+                        $meioPagamento = sanitize_input($_POST['adesao'] ?? '');
+                    }
+                    $valorProduto = parse_currency($_POST['valor_' . $formKey] ?? '0');
+                    if (($valorProduto === 0.0 || $valorProduto === 0) && !empty($_POST['valor_adesao'])) {
+                        $valorProduto = parse_currency($_POST['valor_adesao']);
+                    }
                     $data[$productType] = [
                         'previsao_faturamento' => parse_currency($_POST['previsao_faturamento_' . $formKey] ?? '0'),
                         'tabela' => sanitize_input($_POST['tabela_' . $formKey] ?? ''),
                         'modelo_maquininha' => sanitize_input($_POST['modelo_maquininha_' . $formKey] ?? ''),
-                        'meio_pagamento' => sanitize_input($_POST['meio_pagamento_' . $formKey] ?? ''),
-                        'valor' => parse_currency($_POST['valor_' . $formKey] ?? '0'),
+                        'meio_pagamento' => $meioPagamento,
+                        'valor' => $valorProduto,
                         'plan' => !empty($_POST['plan_' . $formKey]) ? (int)$_POST['plan_' . $formKey] : null
                     ];
                     break;
@@ -1740,7 +1763,12 @@ class EstablishmentController
                     $value = '';
                 }
 
-                $result[$productId][$fieldKey] = sanitize_input((string) $value);
+                $fieldType = (string) ($field['field_type'] ?? 'text');
+                if ($fieldType === 'currency') {
+                    $result[$productId][$fieldKey] = number_format((float) parse_currency((string) $value), 2, '.', '');
+                } else {
+                    $result[$productId][$fieldKey] = sanitize_input((string) $value);
+                }
             }
         }
 
@@ -2291,6 +2319,269 @@ class EstablishmentController
         return isset($files['error'][$key], $files['name'][$key])
             && $files['error'][$key] === UPLOAD_ERR_OK
             && trim((string) $files['name'][$key]) !== '';
+    }
+
+    private function getPendingDocumentsDir(): string
+    {
+        $sessionId = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) session_id());
+        if ($sessionId === '') {
+            $sessionId = 'anon';
+        }
+        return __DIR__ . '/../../storage/uploads/tmp/pending/' . $sessionId;
+    }
+
+    private function getPendingDocuments(): array
+    {
+        $pending = $_SESSION['pending_documents'] ?? [];
+        if (!is_array($pending)) {
+            return [];
+        }
+
+        $valid = [];
+        foreach ($pending as $item) {
+            $path = (string) ($item['path'] ?? '');
+            if ($path !== '' && is_file($path)) {
+                $valid[] = $item;
+            }
+        }
+        $_SESSION['pending_documents'] = $valid;
+        return $valid;
+    }
+
+    private function persistUploadedDocumentsToSession(): void
+    {
+        $pending = $this->getPendingDocuments();
+        $removeTokens = $_POST['remove_pending_tokens'] ?? [];
+        $removeTokens = is_array($removeTokens) ? array_map('strval', $removeTokens) : [];
+        if (!empty($removeTokens)) {
+            $kept = [];
+            foreach ($pending as $item) {
+                $token = (string) ($item['token'] ?? '');
+                if (in_array($token, $removeTokens, true)) {
+                    $path = (string) ($item['path'] ?? '');
+                    if ($path !== '' && is_file($path)) {
+                        @unlink($path);
+                    }
+                    continue;
+                }
+                $kept[] = $item;
+            }
+            $pending = $kept;
+        }
+
+        $documentTypes = $_POST['document_type'] ?? [];
+        $documentTypes = is_array($documentTypes) ? $documentTypes : [];
+
+        if (empty($_FILES['documents']['name']) || !is_array($_FILES['documents']['name'])) {
+            $_SESSION['pending_documents'] = $pending;
+            return;
+        }
+
+        $dir = $this->getPendingDocumentsDir();
+        if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+            write_log('Falha ao criar pasta temporária de documentos: ' . $dir, 'app.log');
+            $_SESSION['pending_documents'] = $pending;
+            return;
+        }
+
+        foreach ($_FILES['documents']['name'] as $key => $filename) {
+            if (!$this->hasUploadedFile($_FILES['documents'], (int) $key)) {
+                continue;
+            }
+
+            $extension = strtolower((string) pathinfo((string) $filename, PATHINFO_EXTENSION));
+            $token = bin2hex(random_bytes(8));
+            $dest = $dir . '/' . $token . ($extension !== '' ? '.' . $extension : '');
+            if (!@move_uploaded_file($_FILES['documents']['tmp_name'][$key], $dest)) {
+                continue;
+            }
+
+            $type = strtoupper(trim((string) ($documentTypes[$key] ?? '')));
+            $pending = array_values(array_filter($pending, function ($item) use ($type) {
+                return $type === '' || strtoupper((string) ($item['document_type'] ?? '')) !== $type;
+            }));
+
+            $pending[] = [
+                'token' => $token,
+                'original_name' => (string) $filename,
+                'document_type' => $type,
+                'path' => $dest,
+                'size' => (int) ($_FILES['documents']['size'][$key] ?? 0),
+                'mime_type' => (string) ($_FILES['documents']['type'][$key] ?? ''),
+            ];
+        }
+
+        $_SESSION['pending_documents'] = $pending;
+    }
+
+    private function attachPendingDocuments($establishmentId): void
+    {
+        $uploadedTypes = [];
+        $documentTypes = $_POST['document_type'] ?? [];
+        $documentTypes = is_array($documentTypes) ? $documentTypes : [];
+        if (!empty($_FILES['documents']['name']) && is_array($_FILES['documents']['name'])) {
+            foreach ($_FILES['documents']['name'] as $key => $filename) {
+                if (!$this->hasUploadedFile($_FILES['documents'], (int) $key)) {
+                    continue;
+                }
+                $type = strtoupper(trim((string) ($documentTypes[$key] ?? '')));
+                if ($type !== '') {
+                    $uploadedTypes[$type] = $type;
+                }
+            }
+        }
+
+        foreach ($this->getPendingDocuments() as $item) {
+            $pendingType = strtoupper(trim((string) ($item['document_type'] ?? '')));
+            if ($pendingType !== '' && isset($uploadedTypes[$pendingType])) {
+                $path = (string) ($item['path'] ?? '');
+                if ($path !== '' && is_file($path)) {
+                    @unlink($path);
+                }
+                continue;
+            }
+            $path = (string) ($item['path'] ?? '');
+            if ($path === '' || !is_file($path)) {
+                continue;
+            }
+
+            try {
+                $file = [
+                    'name' => (string) ($item['original_name'] ?? basename($path)),
+                    'type' => (string) ($item['mime_type'] ?? 'application/octet-stream'),
+                    'tmp_name' => $path,
+                    'size' => (int) ($item['size'] ?? filesize($path)),
+                ];
+                $uploadResult = $this->fileUpload->upload($file, 'documents');
+                $filePath = is_array($uploadResult) ? ($uploadResult['file_path'] ?? $path) : $uploadResult;
+                $originalName = is_array($uploadResult)
+                    ? ($uploadResult['original_name'] ?? $file['name'])
+                    : $file['name'];
+                $documentType = trim((string) ($item['document_type'] ?? ''));
+                if ($documentType === '') {
+                    $documentType = 'OUTROS_DOCUMENTOS';
+                }
+
+                $this->establishmentModel->addDocument(
+                    $establishmentId,
+                    $filePath,
+                    $originalName,
+                    $documentType
+                );
+
+                if (is_file($path) && realpath($path) !== realpath((string) $filePath)) {
+                    @unlink($path);
+                }
+            } catch (\Throwable $e) {
+                write_log('Erro ao anexar documento temporário: ' . $e->getMessage(), 'app.log');
+                $_SESSION['warning'] = 'Erro ao anexar alguns documentos temporários: ' . $e->getMessage();
+            }
+        }
+    }
+
+    private function clearPendingDocuments(): void
+    {
+        foreach ($this->getPendingDocuments() as $item) {
+            $path = (string) ($item['path'] ?? '');
+            if ($path !== '' && is_file($path)) {
+                @unlink($path);
+            }
+        }
+        unset($_SESSION['pending_documents']);
+    }
+
+    private function getRequiredDocumentCodes(array $products, array $dynamicProducts, string $registrationType): array
+    {
+        $map = [];
+        try {
+            $map = $this->documentTypeModel->getProductMapForActiveTypes();
+        } catch (\Throwable $e) {
+            write_log('Falha ao carregar documentos obrigatórios por produto: ' . $e->getMessage(), 'app.log');
+        }
+
+        $keys = [];
+        if (in_array('prod-pagbank', $products, true)) {
+            $keys[] = 'PAGSEGURO';
+        }
+        foreach ($dynamicProducts as $dynamicProductId) {
+            $keys[] = 'DYNAMIC_' . (int) $dynamicProductId;
+        }
+
+        $codes = [];
+        foreach ($keys as $key) {
+            foreach (($map[$key] ?? []) as $code) {
+                $normalized = strtoupper(trim((string) $code));
+                if ($normalized === '') {
+                    continue;
+                }
+                if ($registrationType === 'PF' && $normalized === 'CONTRATO_SOCIAL') {
+                    continue;
+                }
+                $codes[$normalized] = $normalized;
+            }
+        }
+
+        return array_values($codes);
+    }
+
+    private function collectProvidedDocumentTypes(?int $establishmentId): array
+    {
+        $provided = [];
+        $documentTypes = $_POST['document_type'] ?? [];
+        $documentTypes = is_array($documentTypes) ? $documentTypes : [];
+
+        if (!empty($_FILES['documents']['name']) && is_array($_FILES['documents']['name'])) {
+            foreach ($_FILES['documents']['name'] as $key => $filename) {
+                if (!$this->hasUploadedFile($_FILES['documents'], (int) $key)) {
+                    continue;
+                }
+                $type = strtoupper(trim((string) ($documentTypes[$key] ?? '')));
+                if ($type !== '') {
+                    $provided[$type] = $type;
+                }
+            }
+        }
+
+        foreach ($this->getPendingDocuments() as $item) {
+            $type = strtoupper(trim((string) ($item['document_type'] ?? '')));
+            if ($type !== '') {
+                $provided[$type] = $type;
+            }
+        }
+
+        if ($establishmentId) {
+            try {
+                foreach ($this->establishmentModel->getDocumentsByType($establishmentId) as $document) {
+                    $type = strtoupper(trim((string) ($document['document_type'] ?? '')));
+                    if ($type !== '') {
+                        $provided[$type] = $type;
+                    }
+                }
+            } catch (\Throwable $e) {
+                write_log('Falha ao ler documentos existentes: ' . $e->getMessage(), 'app.log');
+            }
+        }
+
+        return array_values($provided);
+    }
+
+    private function validateRequiredDocuments(array $products, array $dynamicProducts, string $registrationType, $establishmentId, array &$errors): void
+    {
+        $requiredCodes = $this->getRequiredDocumentCodes($products, $dynamicProducts, $registrationType);
+        if (empty($requiredCodes)) {
+            return;
+        }
+
+        $provided = $this->collectProvidedDocumentTypes($establishmentId ? (int) $establishmentId : null);
+        $labels = $this->getDocumentTypeLabelMap();
+
+        foreach ($requiredCodes as $code) {
+            if (in_array($code, $provided, true)) {
+                continue;
+            }
+            $label = $labels[$code] ?? $code;
+            $errors[] = 'O documento "' . $label . '" é obrigatório e precisa ser anexado.';
+        }
     }
     
     private function getAvailableProducts()

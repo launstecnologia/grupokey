@@ -4,9 +4,9 @@ ob_start();
 
 // Definir cores de status
 $statusColors = [
-    'ACTIVE' => 'bg-green-100 text-green-800',
-    'INACTIVE' => 'bg-yellow-100 text-yellow-800',
-    'BLOCKED' => 'bg-red-100 text-red-800'
+    'ACTIVE' => 'bg-green-100 text-green-800 dark:bg-green-600 dark:text-white',
+    'INACTIVE' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500 dark:text-black',
+    'BLOCKED' => 'bg-red-100 text-red-800 dark:bg-red-600 dark:text-white'
 ];
 
 $statusLabels = [
@@ -167,7 +167,7 @@ $statusLabels = [
                                     <?php
                                     $estStatusColors = [
                                         'APPROVED' => 'bg-green-100 text-green-800',
-                                        'PENDING' => 'bg-yellow-100 text-yellow-800',
+                                        'PENDING' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500 dark:text-black',
                                         'REPROVED' => 'bg-red-100 text-red-800'
                                     ];
                                     $estStatusLabels = [

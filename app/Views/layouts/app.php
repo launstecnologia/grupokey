@@ -6,10 +6,17 @@
     <title><?= $title ?? 'Sistema CRM' ?></title>
     <meta property="og:title" content="<?= htmlspecialchars($title ?? 'Grupo Key') ?>">
     <meta property="og:site_name" content="Grupo Key">
-    <meta property="og:image" content="<?= absolute_url('public/images/logo-white.png') ?>">
+    <meta property="og:description" content="Plataforma Grupo Key">
+    <meta property="og:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>">
+    <meta property="og:image:secure_url" content="<?= absolute_url('public/images/og-grupokey.png') ?>">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Grupo Key">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="<?= absolute_url('public/images/logo-white.png') ?>">
+    <meta name="twitter:title" content="<?= htmlspecialchars($title ?? 'Grupo Key') ?>">
+    <meta name="twitter:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="<?= url('public/images/favicon.png') ?>">
@@ -58,16 +65,16 @@
         
         /* Custom badge colors */
         .badge-pending {
-            @apply bg-yellow-100 text-yellow-800;
+            @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-500 dark:text-black;
         }
         .badge-approved {
-            @apply bg-green-100 text-green-800;
+            @apply bg-green-100 text-green-800 dark:bg-green-600 dark:text-white;
         }
         .badge-reproved {
-            @apply bg-red-100 text-red-800;
+            @apply bg-red-100 text-red-800 dark:bg-red-600 dark:text-white;
         }
         .badge-disabled {
-            @apply bg-gray-600 text-gray-800;
+            @apply bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-white;
         }
         
         /* Dark mode styles */

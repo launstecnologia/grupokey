@@ -6,6 +6,13 @@ ob_start();
 $stats = $stats ?? ['total' => 0, 'aprovados' => 0, 'pendentes' => 0, 'reprovados' => 0, 'desabilitados' => 0, 'cadastros_ultimo_mes' => 0];
 $establishments = $establishments ?? [];
 $representatives = $representatives ?? [];
+$hasUserFilters = false;
+foreach (['status', 'produto', 'cidade', 'representative_id', 'cnpj', 'razao_social', 'nome', 'date_from', 'date_to'] as $filterKey) {
+    if (!empty($_GET[$filterKey])) {
+        $hasUserFilters = true;
+        break;
+    }
+}
 ?>
 
 <div class="pt-6 px-4">
@@ -179,12 +186,6 @@ $representatives = $representatives ?? [];
                 </select>
             </div>
 
-            <!-- CPF -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CPF</label>
-                <input type="text" name="cpf" value="<?= htmlspecialchars($filters['cpf'] ?? '') ?>" placeholder="Digite o CPF" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-
             <!-- CNPJ -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CNPJ</label>
@@ -217,6 +218,18 @@ $representatives = $representatives ?? [];
         </form>
     </div>
 
+    <?php if (empty($establishments) && $hasUserFilters): ?>
+        <div class="mb-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-200 px-4 py-3 rounded-lg" role="alert">
+            <div class="flex items-start">
+                <i class="fas fa-search mr-2 mt-1"></i>
+                <div>
+                    <strong class="block">Nenhum estabelecimento encontrado com os filtros informados.</strong>
+                    <span class="text-sm">Ajuste os filtros ou clique em Limpar para ver todos os cadastros.</span>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Lista de Estabelecimentos -->
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -230,13 +243,69 @@ $representatives = $representatives ?? [];
             <div class="p-12 text-center">
                 <i class="fas fa-building text-6xl text-gray-300 mb-4"></i>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum estabelecimento encontrado</h3>
-                <p class="text-gray-500 mb-6">Tente ajustar os filtros ou cadastre um novo estabelecimento.</p>
+                <p class="text-gray-500 mb-6"><?= $hasUserFilters ? 'Nenhum resultado para os filtros aplicados.' : 'Tente ajustar os filtros ou cadastre um novo estabelecimento.' ?></p>
                 <a href="<?= url('estabelecimentos/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center transition-colors">
                     <i class="fas fa-plus mr-2"></i>
                     Cadastrar Estabelecimento
                 </a>
             </div>
         <?php else: ?>
+            <?php
+            $showEstablishmentsPagination = isset($pagination) && ($pagination['total_pages'] ?? 0) > 1;
+            $paginationQueryParams = $_GET;
+            $paginationBaseUrl = url('estabelecimentos');
+            ?>
+            <?php if ($showEstablishmentsPagination): ?>
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                    Mostrando <span class="font-medium"><?= (($pagination['current_page'] - 1) * $pagination['per_page']) + 1 ?></span>
+                    até <span class="font-medium"><?= min($pagination['current_page'] * $pagination['per_page'], $pagination['total_records']) ?></span>
+                    de <span class="font-medium"><?= $pagination['total_records'] ?></span> resultados
+                </div>
+                <div class="flex space-x-2">
+                    <?php
+                    if ($pagination['current_page'] > 1):
+                        $paginationQueryParams['page'] = $pagination['current_page'] - 1;
+                        $prevUrl = $paginationBaseUrl . '?' . http_build_query($paginationQueryParams);
+                    ?>
+                    <a href="<?= $prevUrl ?>" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <i class="fas fa-chevron-left mr-1"></i>
+                        Anterior
+                    </a>
+                    <?php else: ?>
+                    <span class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-800 cursor-not-allowed">
+                        <i class="fas fa-chevron-left mr-1"></i>
+                        Anterior
+                    </span>
+                    <?php endif; ?>
+                    <?php
+                    $startPage = max(1, $pagination['current_page'] - 2);
+                    $endPage = min($pagination['total_pages'], $pagination['current_page'] + 2);
+                    for ($i = $startPage; $i <= $endPage; $i++):
+                        $paginationQueryParams['page'] = $i;
+                        $pageUrl = $paginationBaseUrl . '?' . http_build_query($paginationQueryParams);
+                    ?>
+                    <a href="<?= $pageUrl ?>" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium <?= $i == $pagination['current_page'] ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600' ?>">
+                        <?= $i ?>
+                    </a>
+                    <?php endfor; ?>
+                    <?php if ($pagination['current_page'] < $pagination['total_pages']):
+                        $paginationQueryParams['page'] = $pagination['current_page'] + 1;
+                        $nextUrl = $paginationBaseUrl . '?' . http_build_query($paginationQueryParams);
+                    ?>
+                    <a href="<?= $nextUrl ?>" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        Próxima
+                        <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                    <?php else: ?>
+                    <span class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-800 cursor-not-allowed">
+                        Próxima
+                        <i class="fas fa-chevron-right ml-1"></i>
+                    </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
             <div id="establishments-top-scroll" class="overflow-x-auto overflow-y-hidden h-4 bg-gray-100 border-b border-gray-200">
                 <div id="establishments-top-scroll-content" class="h-px"></div>
             </div>
@@ -337,8 +406,8 @@ $representatives = $representatives ?? [];
                                             <?php
                                             $isPendingNewProduct = $isPending && in_array($produto, $pendingProductTags, true);
                                             $productTagClass = $isPendingNewProduct
-                                                ? 'bg-red-100 text-red-800'
-                                                : 'bg-blue-100 text-blue-800';
+                                                ? 'bg-red-100 text-red-800 dark:bg-red-600 dark:text-white'
+                                                : 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white';
                                             ?>
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= $productTagClass ?>">
                                                 <?= htmlspecialchars($produto) ?>
@@ -369,11 +438,11 @@ $representatives = $representatives ?? [];
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <?php
                                 $statusColors = [
-                                    'PENDING' => 'bg-yellow-100 text-yellow-800',
-                                    'ANALYSIS' => 'bg-blue-100 text-blue-800',
-                                    'APPROVED' => 'bg-green-100 text-green-800',
-                                    'REPROVED' => 'bg-red-100 text-red-800',
-                                    'DISABLED' => 'bg-gray-100 text-gray-800'
+                                    'PENDING' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500 dark:text-black',
+                                    'ANALYSIS' => 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white',
+                                    'APPROVED' => 'bg-green-100 text-green-800 dark:bg-green-600 dark:text-white',
+                                    'REPROVED' => 'bg-red-100 text-red-800 dark:bg-red-600 dark:text-white',
+                                    'DISABLED' => 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white'
                                 ];
                                 $statusLabels = [
                                     'PENDING' => 'Pendente',

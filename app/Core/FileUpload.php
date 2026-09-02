@@ -24,7 +24,7 @@ class FileUpload
     
     public function upload($file, $destination = null)
     {
-        if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+        if (!isset($file['tmp_name']) || !is_file($file['tmp_name'])) {
             throw new \Exception('Arquivo inválido');
         }
         
@@ -93,8 +93,11 @@ class FileUpload
             $filePath = $this->uploadPath . '/' . $fileName;
         }
         
-        // Mover arquivo
-        if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+        if (!is_uploaded_file($file['tmp_name'])) {
+            if (!is_file($file['tmp_name']) || !@copy($file['tmp_name'], $filePath)) {
+                throw new \Exception('Erro ao salvar arquivo');
+            }
+        } elseif (!move_uploaded_file($file['tmp_name'], $filePath)) {
             throw new \Exception('Erro ao salvar arquivo');
         }
         

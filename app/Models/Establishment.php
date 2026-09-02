@@ -11,6 +11,7 @@ class Establishment
     public function __construct()
     {
         $this->db = Database::getInstance();
+        $this->ensureOptionalColumns();
     }
 
     public function create($data)
@@ -20,9 +21,9 @@ class Establishment
         try {
             $sql = "INSERT INTO establishments (registration_type, cpf, cnpj, razao_social, data_abertura, nome_completo,
                     nome_fantasia, segmento, telefone, email, produto, cep, logradouro, numero, complemento,
-                    bairro, cidade, uf, banco, agencia, conta, tipo_conta, chave_pix, observacoes, pending_product_tags, status, birth_date, created_by_user_id, created_by_representative_id,
+                    bairro, cidade, uf, banco, agencia, conta, tipo_conta, chave_pix, observacoes, is_filial, mdr, adesao, valor_adesao, pending_product_tags, status, birth_date, created_by_user_id, created_by_representative_id,
                     created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
             // Validar e corrigir valor do ENUM produto
             // O ENUM do banco pode ter valores antigos, então vamos usar NULL se não for válido
@@ -63,6 +64,10 @@ class Establishment
                 $data['tipo_conta'] ?? null,
                 $data['chave_pix'] ?? null,
                 $data['observacoes'] ?? null,
+                !empty($data['is_filial']) ? 1 : 0,
+                $data['mdr'] ?? null,
+                $data['adesao'] ?? null,
+                ($data['valor_adesao'] === '' || $data['valor_adesao'] === null) ? null : $data['valor_adesao'],
                 $data['pending_product_tags'] ?? null,
                 $data['status'] ?? 'PENDING',
                 $data['birth_date'] ?? null,
@@ -145,7 +150,7 @@ class Establishment
                 LEFT JOIN users ur ON ea.reproved_by_id = ur.id
                 WHERE e.id = ?";
 
-        $establishment = $this->db->fetch($sql, [$id]);
+        $establishment = $this->unescapeStoredRow($this->db->fetch($sql, [$id]));
 
         if ($establishment) {
             // Buscar produtos associados
@@ -208,8 +213,8 @@ class Establishment
         }
 
         if (isset($filters['cnpj'])) {
-            $sql .= " AND e.cnpj LIKE ?";
-            $params[] = '%' . $filters['cnpj'] . '%';
+            $sql .= " AND REPLACE(REPLACE(REPLACE(REPLACE(IFNULL(e.cnpj, ''), '.', ''), '/', ''), '-', ''), ' ', '') LIKE ?";
+            $params[] = '%' . preg_replace('/[^0-9]/', '', (string) $filters['cnpj']) . '%';
         }
 
         if (isset($filters['razao_social'])) {
@@ -256,7 +261,20 @@ class Establishment
             $sql .= " LIMIT " . (int)$filters['limit'];
         }
 
-        return $this->db->fetchAll($sql, $params);
+        return array_map([$this, 'unescapeStoredRow'], $this->db->fetchAll($sql, $params));
+    }
+
+    private function unescapeStoredRow($row)
+    {
+        if (!is_array($row)) {
+            return $row;
+        }
+        foreach ($row as $key => $value) {
+            if (is_string($value) && $value !== '') {
+                $row[$key] = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+        }
+        return $row;
     }
 
     /**
@@ -293,8 +311,8 @@ class Establishment
         }
 
         if (isset($filters['cnpj'])) {
-            $sql .= " AND e.cnpj LIKE ?";
-            $params[] = '%' . $filters['cnpj'] . '%';
+            $sql .= " AND REPLACE(REPLACE(REPLACE(REPLACE(IFNULL(e.cnpj, ''), '.', ''), '/', ''), '-', ''), ' ', '') LIKE ?";
+            $params[] = '%' . preg_replace('/[^0-9]/', '', (string) $filters['cnpj']) . '%';
         }
 
         if (isset($filters['razao_social'])) {
@@ -349,8 +367,9 @@ class Establishment
                     nome_completo = ?, nome_fantasia = ?, segmento = ?, telefone = ?, email = ?, produto = ?,
                     cep = ?, logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, uf = ?,
                     banco = ?, agencia = ?, conta = ?, tipo_conta = ?, chave_pix = ?, observacoes = ?,
+                    is_filial = ?, mdr = ?, adesao = ?, valor_adesao = ?,
                     pending_product_tags = ?,
-                    status = ?, birth_date = ?, updated_at = NOW()
+                    status = ?, birth_date = ?, created_by_representative_id = ?, updated_at = NOW()
                     WHERE id = ?";
 
             // Validar e corrigir valor do ENUM produto
@@ -392,9 +411,14 @@ class Establishment
                 $data['tipo_conta'] ?? null,
                 $data['chave_pix'] ?? null,
                 $data['observacoes'] ?? null,
+                !empty($data['is_filial']) ? 1 : 0,
+                $data['mdr'] ?? null,
+                $data['adesao'] ?? null,
+                ($data['valor_adesao'] === '' || $data['valor_adesao'] === null) ? null : $data['valor_adesao'],
                 $data['pending_product_tags'] ?? null,
                 $data['status'] ?? 'PENDING',
                 $data['birth_date'] ?? null,
+                $data['created_by_representative_id'] ?? null,
                 $id
             ];
 
@@ -1050,5 +1074,26 @@ class Establishment
         $cnpj = preg_replace('/[^0-9]/', '', $cnpj);
         $sql = "SELECT * FROM establishments WHERE cnpj = ? LIMIT 1";
         return $this->db->fetch($sql, [$cnpj]);
+    }
+
+    private function ensureOptionalColumns(): void
+    {
+        $definitions = [
+            'is_filial' => 'TINYINT(1) NOT NULL DEFAULT 0',
+            'mdr' => 'VARCHAR(50) NULL',
+            'adesao' => 'VARCHAR(50) NULL',
+            'valor_adesao' => 'DECIMAL(12,2) NULL',
+        ];
+
+        foreach ($definitions as $name => $definition) {
+            try {
+                $exists = $this->db->fetch("SHOW COLUMNS FROM establishments LIKE '{$name}'");
+                if (!$exists) {
+                    $this->db->query("ALTER TABLE establishments ADD COLUMN {$name} {$definition}");
+                }
+            } catch (\Throwable $e) {
+                error_log('Establishment::ensureOptionalColumns ' . $name . ': ' . $e->getMessage());
+            }
+        }
     }
 }

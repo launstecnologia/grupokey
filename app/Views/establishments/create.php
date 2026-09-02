@@ -101,50 +101,70 @@ if (!$hasOtherDocumentType) {
             <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
             <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
             
-            <!-- Tipo de Registro -->
-            <div class="mb-8" id="registration-type-section">
+            <!-- Tipo de Cadastro (somente PagSeguro/EVO) -->
+            <div class="mb-8 hidden" id="registration-type-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-id-card mr-2 text-blue-600"></i>
-                    Tipo de Registro *
+                    Tipo de Cadastro *
                 </h4>
-                <small id="registration-type-product-help" class="text-gray-500 hidden mb-3 block">Pessoa Física disponível apenas quando o produto PagSeguro estiver selecionado.</small>
+                <small id="registration-type-product-help" class="text-gray-500 mb-3 block">Pessoa Física disponível apenas quando o produto PagSeguro ou EVO estiver selecionado.</small>
                 <div class="max-w-xl">
-                    <select name="registration_type" id="registration-type-select" required
+                    <select name="registration_type" id="registration-type-select" disabled
                             class="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Selecione o tipo de registro</option>
+                        <option value="PJ" <?= old('registration_type', 'PJ') !== 'PF' ? 'selected' : '' ?>>Pessoa Jurídica</option>
                         <option value="PF" <?= old('registration_type') === 'PF' ? 'selected' : '' ?>>Pessoa Física</option>
-                        <option value="PJ" <?= old('registration_type') === 'PJ' ? 'selected' : '' ?>>Pessoa Jurídica</option>
                     </select>
                 </div>
             </div>
+            <input type="hidden" name="registration_type" id="registration-type-hidden" value="PJ">
 
-            <!-- Dados Básicos -->
+            <!-- Identificação -->
             <div class="mb-8" id="documents-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-info-circle mr-2 text-blue-600"></i>
-                    Dados Básicos
+                    Dados do Estabelecimento
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Nome Completo do Sócio -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo do Sócio *</label>
-                        <input type="text" name="nome_completo" value="<?= htmlspecialchars(old('nome_completo')) ?>" required 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Digite o nome completo">
+                <div id="document-upload-section">
+                    <div id="pj-fields" class="mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
+                                <div class="flex gap-2">
+                                    <input type="text" name="cnpj" id="cnpj" value="<?= htmlspecialchars(old('cnpj')) ?>"
+                                           class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="00.000.000/0000-00">
+                                    <button type="button" id="btn-buscar-cnpj" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-search"></i> Buscar
+                                    </button>
+                                </div>
+                                <small class="text-gray-500">Digite o CNPJ e clique em Buscar para preencher automaticamente</small>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
+                                <input type="text" name="razao_social" value="<?= htmlspecialchars(old('razao_social')) ?>"
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Digite a razão social">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Data de Abertura</label>
+                                <input type="text" name="data_abertura" value="<?= htmlspecialchars(old('data_abertura')) ?>"
+                                       readonly
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Preenchida automaticamente pelo CNPJ">
+                            </div>
+                        </div>
                     </div>
-
-                    <!-- Nome Fantasia -->
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nome Fantasia *</label>
-                        <input type="text" name="nome_fantasia" value="<?= htmlspecialchars(old('nome_fantasia')) ?>" required 
+                        <input type="text" name="nome_fantasia" value="<?= htmlspecialchars(old('nome_fantasia')) ?>" required
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome fantasia">
                     </div>
-
-                    <!-- Segmento -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Segmento *</label>
-                        <select name="segmento" id="segmento" required 
+                        <select name="segmento" id="segmento" required
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Selecione o segmento</option>
                             <?php foreach ($segments as $segment): ?>
@@ -152,97 +172,26 @@ if (!$hasOtherDocumentType) {
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    
-                    <?php if (App\Core\Auth::isAdmin()): ?>
-                    <!-- Representante -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Representante</label>
-                        <select name="representative_id" id="representative_id"
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Sem representante vinculado</option>
-                            <?php foreach ($representatives as $representative): ?>
-                                <option value="<?= (int) $representative['id'] ?>" <?= old('representative_id') == $representative['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($representative['nome_completo']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <small class="text-gray-500">Selecione um representante já cadastrado para vincular ao estabelecimento.</small>
-                    </div>
-                    <?php endif; ?>
-
-                    <!-- Telefone -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Telefone *</label>
-                        <input type="tel" name="telefone" value="<?= htmlspecialchars(old('telefone')) ?>" required 
+                        <input type="tel" name="telefone" value="<?= htmlspecialchars(old('telefone')) ?>" required
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="(00) 00000-0000">
                     </div>
-
-                    <!-- Email -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" name="email" value="<?= htmlspecialchars(old('email')) ?>" required 
+                        <input type="email" name="email" value="<?= htmlspecialchars(old('email')) ?>" required
                                autocomplete="new-email" autocapitalize="off" spellcheck="false"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
-                </div>
-            </div>
-
-            <!-- Campos específicos por tipo -->
-            <div id="document-upload-section" class="mb-8 hidden">
-                <!-- Campos PF -->
-                <div id="pf-fields" class="hidden">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
-                        <input type="text" name="cpf" value="<?= htmlspecialchars(old('cpf')) ?>" 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="000.000.000-00">
-                    </div>
-                </div>
-
-                <!-- Campos PJ -->
-                <div id="pj-fields" class="hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
-                            <div class="flex gap-2">
-                                <input type="text" name="cnpj" id="cnpj" value="<?= htmlspecialchars(old('cnpj')) ?>" 
-                                       class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="00.000.000/0000-00">
-                                <button type="button" id="btn-buscar-cnpj" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <i class="fas fa-search"></i> Buscar
-                                </button>
-                            </div>
-                            <small class="text-gray-500">Digite o CNPJ e clique em Buscar para preencher automaticamente</small>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
-                            <input type="text" name="razao_social" value="<?= htmlspecialchars(old('razao_social')) ?>" 
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Digite a razão social">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Data de Abertura</label>
-                            <input type="text" name="data_abertura" value="<?= htmlspecialchars(old('data_abertura')) ?>"
-                                   readonly
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Preenchida automaticamente pelo CNPJ">
-                        </div>
-                        <div id="pj-pagseguro-cpf-field">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
-                            <input type="text" name="cpf_pj" id="cpf-pj" value="<?= htmlspecialchars(old('cpf_pj', old('cpf'))) ?>" 
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="000.000.000-00">
-                            <small class="text-gray-500">CPF do sócio/responsável (exigido para PagSeguro)</small>
-                        </div>
-                        <div id="pj-pagseguro-birth-field">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
-                            <input type="text" name="data_nascimento" value="<?= htmlspecialchars(old('data_nascimento')) ?>" 
-                                   maxlength="10"
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <small class="text-gray-500">Exigido para envio à API PagSeguro</small>
-                        </div>
+                    <div class="md:col-span-2">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="is_filial" value="1" class="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                                   <?= old('is_filial') ? 'checked' : '' ?>>
+                            <span class="ml-2 text-sm font-medium text-gray-700">É FILIAL?</span>
+                        </label>
+                        <p class="mt-2 text-sm text-gray-500">Se for filial, informe na observação o CNPJ da MATRIZ e o LOGIN E SENHA.</p>
                     </div>
                 </div>
             </div>
@@ -346,6 +295,75 @@ if (!$hasOtherDocumentType) {
                 </div>
             </div>
 
+            <!-- Sócio -->
+            <div class="mb-8" id="socio-section">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-user-tie mr-2 text-blue-600"></i>
+                    Dados do Sócio
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo do Sócio *</label>
+                        <input type="text" name="nome_completo" value="<?= htmlspecialchars(old('nome_completo')) ?>" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Digite o nome completo">
+                    </div>
+                    <div id="pf-fields" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
+                        <input type="text" name="cpf" value="<?= htmlspecialchars(old('cpf')) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="000.000.000-00">
+                    </div>
+                    <div id="pj-pagseguro-cpf-field">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
+                        <input type="text" name="cpf_pj" id="cpf-pj" value="<?= htmlspecialchars(old('cpf_pj', old('cpf'))) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="000.000.000-00">
+                        <small class="text-gray-500">CPF do sócio/responsável (exigido para PagSeguro)</small>
+                    </div>
+                    <div id="pj-pagseguro-birth-field">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
+                        <input type="text" name="data_nascimento" value="<?= htmlspecialchars(old('data_nascimento')) ?>"
+                               maxlength="10"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <small class="text-gray-500">Exigido para envio à API PagSeguro</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Condições comerciais -->
+            <div class="mb-8" id="condicoes-comerciais-section">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-handshake mr-2 text-blue-600"></i>
+                    Condições Comerciais
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Adesão</label>
+                        <select name="adesao" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <?php $selectedAdesao = (string) old('adesao'); ?>
+                            <option value="">Selecione o meio</option>
+                            <option value="a_vista" <?= $selectedAdesao === 'a_vista' ? 'selected' : '' ?>>À Vista</option>
+                            <option value="cartao" <?= $selectedAdesao === 'cartao' ? 'selected' : '' ?>>Cartão</option>
+                            <option value="criacao" <?= $selectedAdesao === 'criacao' ? 'selected' : '' ?>>Criação</option>
+                            <option value="isento" <?= $selectedAdesao === 'isento' ? 'selected' : '' ?>>Isento</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Valor</label>
+                        <input type="text" name="valor_adesao" value="<?= htmlspecialchars(old('valor_adesao')) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="R$ 0,00" data-mask="currency">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">MDR (%)</label>
+                        <input type="text" name="mdr" value="<?= htmlspecialchars(old('mdr')) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Ex: 1,99">
+                    </div>
+                </div>
+            </div>
+
             <?php if (!empty($customFieldDefinitions)): ?>
             <div class="mb-8" id="custom-fields-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
@@ -366,6 +384,7 @@ if (!$hasOtherDocumentType) {
                             $fieldHelp = $customField['help_text'] ?? '';
                             $fieldName = 'custom_fields[' . $fieldKey . ']';
                             $fieldValue = $oldCustomFieldValues[$fieldKey] ?? '';
+                            $isCurrencyField = ($fieldType === 'currency');
                             $inputType = in_array($fieldType, ['number', 'email', 'date', 'datetime-local'], true) ? $fieldType : 'text';
                             $fieldTargets = (array) ($customField['product_targets'] ?? []);
                             $fieldTargetsJson = htmlspecialchars(json_encode(array_values($fieldTargets), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
@@ -395,8 +414,8 @@ if (!$hasOtherDocumentType) {
                                        name="<?= htmlspecialchars($fieldName) ?>"
                                        value="<?= htmlspecialchars((string) $fieldValue) ?>"
                                        <?= $fieldRequired ? 'required' : '' ?> data-base-required="<?= $fieldRequired ? '1' : '0' ?>"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="<?= htmlspecialchars($fieldPlaceholder) ?>">
+                                       <?= $isCurrencyField ? 'data-mask="currency" placeholder="R$ 0,00"' : 'placeholder="' . htmlspecialchars($fieldPlaceholder) . '"' ?>
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <?php endif; ?>
                             <?php if (!empty($fieldHelp)): ?>
                                 <small class="text-gray-500"><?= htmlspecialchars($fieldHelp) ?></small>
@@ -524,6 +543,7 @@ if (!$hasOtherDocumentType) {
                                             continue;
                                         }
                                         $fieldType = $field['field_type'] ?? 'text';
+                                        $isCurrencyField = ($fieldType === 'currency');
                                         $fieldName = "dynamic_values[{$dynamicProductId}][{$fieldKey}]";
                                         $fieldOld = $_SESSION['old_input']['dynamic_values'][$dynamicProductId][$fieldKey] ?? '';
                                     ?>
@@ -554,7 +574,8 @@ if (!$hasOtherDocumentType) {
                                                    name="<?= htmlspecialchars($fieldName) ?>"
                                                    value="<?= htmlspecialchars($fieldOld) ?>"
                                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                                   placeholder="<?= htmlspecialchars($field['placeholder'] ?? '') ?>">
+                                                   <?= $isCurrencyField ? 'data-mask="currency"' : '' ?>
+                                                   placeholder="<?= $isCurrencyField ? 'R$ 0,00' : htmlspecialchars($field['placeholder'] ?? '') ?>">
                                         <?php endif; ?>
                                         <?php if (!empty($field['help_text'])): ?>
                                             <small class="text-gray-400"><?= htmlspecialchars($field['help_text']) ?></small>
@@ -799,7 +820,7 @@ if (!$hasOtherDocumentType) {
             </div>
 
             <!-- Dados Bancários -->
-            <div id="dados-bancarios-section" class="mb-8 hidden">
+            <div id="dados-bancarios-section" class="mb-8 p-4 border border-gray-200 rounded-lg bg-gray-50">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-university mr-2 text-blue-600"></i>
                     Dados Bancários
@@ -884,6 +905,28 @@ if (!$hasOtherDocumentType) {
                 </div>
             </div>
 
+            <?php if (App\Core\Auth::isAdmin()): ?>
+            <div class="mb-8" id="representative-section">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-user mr-2 text-blue-600"></i>
+                    Representante
+                </h4>
+                <div class="max-w-xl">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Representante</label>
+                    <select name="representative_id" id="representative_id"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Sem representante vinculado</option>
+                        <?php foreach ($representatives as $representative): ?>
+                            <option value="<?= (int) $representative['id'] ?>" <?= old('representative_id') == $representative['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($representative['nome_completo']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small class="text-gray-500">Selecione um representante já cadastrado para vincular ao estabelecimento.</small>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Upload de Documentos -->
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
@@ -891,6 +934,40 @@ if (!$hasOtherDocumentType) {
                     Documentos
                 </h3>
                 
+                <?php
+                $pendingDocuments = $pending_documents ?? ($_SESSION['pending_documents'] ?? []);
+                $pendingDocuments = is_array($pendingDocuments) ? $pendingDocuments : [];
+                ?>
+                <?php if (!empty($pendingDocuments)): ?>
+                <div id="pending-documents-list" class="space-y-3 mb-4">
+                    <p class="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+                        Os documentos abaixo foram mantidos após o erro. Não é necessário anexá-los novamente.
+                    </p>
+                    <?php foreach ($pendingDocuments as $pendingDoc): ?>
+                        <?php
+                            $pendingToken = htmlspecialchars((string) ($pendingDoc['token'] ?? ''));
+                            $pendingType = strtoupper((string) ($pendingDoc['document_type'] ?? ''));
+                            $pendingName = (string) ($pendingDoc['original_name'] ?? 'arquivo');
+                            $pendingLabel = $pendingType;
+                            foreach ($documentTypeOptions as $docTypeOption) {
+                                if (strtoupper((string) ($docTypeOption['code'] ?? '')) === $pendingType) {
+                                    $pendingLabel = (string) ($docTypeOption['label'] ?? $pendingType);
+                                    break;
+                                }
+                            }
+                        ?>
+                        <div class="pending-document-item flex items-center justify-between p-3 border border-green-200 rounded-lg bg-green-50" data-pending-type="<?= htmlspecialchars($pendingType) ?>">
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate"><?= htmlspecialchars($pendingName) ?></p>
+                                <p class="text-xs text-gray-600"><?= htmlspecialchars($pendingLabel) ?></p>
+                            </div>
+                            <button type="button" class="remove-pending-document text-red-600 hover:text-red-800 text-sm" data-token="<?= $pendingToken ?>">
+                                <i class="fas fa-times mr-1"></i> Remover
+                            </button>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
                 <div id="documentos-container" class="space-y-4">
                     <!-- Primeiro campo de documento -->
                     <div class="documento-item p-4 border border-gray-300 rounded-lg bg-gray-50">
@@ -941,7 +1018,7 @@ if (!$hasOtherDocumentType) {
                     <label class="block text-sm font-medium text-gray-700 mb-1">Observações</label>
                     <textarea name="observacoes" rows="4" 
                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                              placeholder="Digite observações sobre o estabelecimento..."></textarea>
+                              placeholder="Digite observações sobre o estabelecimento..."><?= htmlspecialchars(old('observacoes')) ?></textarea>
                 </div>
             </div>
 
@@ -982,6 +1059,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Mostrar/ocultar campos específicos por tipo de registro
     const registrationTypeSelect = document.getElementById('registration-type-select');
+    const registrationTypeHidden = document.getElementById('registration-type-hidden');
     const registrationTypeSection = document.getElementById('registration-type-section');
     const registrationProductHelp = document.getElementById('registration-type-product-help');
     const pagSeguroCpfField = document.getElementById('pj-pagseguro-cpf-field');
@@ -1005,24 +1083,64 @@ document.addEventListener('DOMContentLoaded', function() {
         return !!document.querySelector('input[name="products[]"][value="prod-pagbank"]:checked');
     }
 
+    function isEvoSelected() {
+        const checkedProducts = document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked');
+        for (const checkbox of checkedProducts) {
+            const productValue = String(checkbox.value || '').toLowerCase();
+            const productName = String(checkbox.nextElementSibling?.textContent || '').toUpperCase();
+            const productKey = String(checkbox.dataset.productKey || '').toUpperCase();
+            if (productValue === 'prod-pagseguro' || productValue === 'prod-subaquirente') {
+                return true;
+            }
+            if (productName.includes('EVO') || productKey.includes('EVO')) {
+                return true;
+            }
+        }
+        const modeloSelect = document.querySelector('select[name="modelo_maquininha_prod-pagseguro"]');
+        return !!(modeloSelect && String(modeloSelect.value || '').toUpperCase() === 'EVO');
+    }
+
+    function isPagSeguroOrEvoSelected() {
+        return isPagSeguroSelected() || isEvoSelected();
+    }
+
+    function syncRegistrationTypeAvailability() {
+        const showType = isPagSeguroOrEvoSelected();
+        if (registrationTypeSection) {
+            registrationTypeSection.classList.toggle('hidden', !showType);
+        }
+        if (registrationTypeSelect) {
+            registrationTypeSelect.disabled = !showType;
+        }
+        if (registrationTypeHidden) {
+            registrationTypeHidden.disabled = showType;
+            registrationTypeHidden.value = 'PJ';
+        }
+        if (!showType && registrationTypeSelect && registrationTypeSelect.value !== 'PJ') {
+            registrationTypeSelect.value = 'PJ';
+            updateRegistrationVisibility();
+        }
+    }
+
     function syncPagSeguroRegistrationRules() {
-        const selectedTypeValue = registrationTypeSelect ? registrationTypeSelect.value : '';
-        const isPj = selectedTypeValue === 'PJ';
+        syncRegistrationTypeAvailability();
+        const selectedTypeValue = registrationTypeSelect ? registrationTypeSelect.value : 'PJ';
+        const isPj = selectedTypeValue !== 'PF';
         const pagSeguroSelected = isPagSeguroSelected();
         const cpfPj = document.querySelector('input[name="cpf_pj"]');
         const dataNasc = document.querySelector('input[name="data_nascimento"]');
 
         if (registrationProductHelp) {
-            registrationProductHelp.classList.toggle('hidden', pagSeguroSelected);
+            registrationProductHelp.classList.toggle('hidden', !isPagSeguroOrEvoSelected());
         }
         if (registrationTypeSelect) {
             const pfSelectOption = registrationTypeSelect.querySelector('option[value="PF"]');
             if (pfSelectOption) {
-                pfSelectOption.disabled = !pagSeguroSelected;
+                pfSelectOption.disabled = !isPagSeguroOrEvoSelected();
             }
         }
 
-        if (!pagSeguroSelected && selectedTypeValue === 'PF' && registrationTypeSelect) {
+        if (!isPagSeguroOrEvoSelected() && selectedTypeValue === 'PF' && registrationTypeSelect) {
             registrationTypeSelect.value = 'PJ';
             updateRegistrationVisibility();
             return;
@@ -1052,11 +1170,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateRegistrationVisibility() {
-        const selectedTypeValue = registrationTypeSelect ? registrationTypeSelect.value : '';
-        if (!selectedTypeValue) {
-            syncPagSeguroRegistrationRules();
-            return;
-        }
+        const selectedTypeValue = registrationTypeSelect ? (registrationTypeSelect.value || 'PJ') : 'PJ';
 
         if (selectedTypeValue === 'PF') {
             pfFields.classList.remove('hidden');
@@ -1084,48 +1198,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (registrationTypeSelect) {
         registrationTypeSelect.addEventListener('change', function() {
             updateRegistrationVisibility();
+            if (typeof syncDocumentRowsWithSelectedProducts === 'function') {
+                syncDocumentRowsWithSelectedProducts();
+            }
         });
     }
     
     updateRegistrationVisibility();
     
-    // Função para verificar se deve mostrar campos bancários (apenas CDC ou EVO)
     function verificarCamposBancarios() {
         const dadosBancariosSection = document.getElementById('dados-bancarios-section');
-        if (!dadosBancariosSection) return;
-        
-        let deveMostrar = false;
-        const productCheckboxes = document.querySelectorAll('input[name="products[]"]:checked');
-        
-        productCheckboxes.forEach(checkbox => {
-            const productName = checkbox.nextElementSibling?.textContent?.trim() || '';
-            const productValue = checkbox.value || '';
-            
-            // Verificar se é CDC (prod-brasil-card ou nome contém CDC)
-            if (productValue === 'prod-brasil-card' || productName.toUpperCase().includes('CDC')) {
-                deveMostrar = true;
-            }
-            
-            // Verificar se é EVO (prod-pagseguro ou prod-subaquirente com modelo EVO ou nome contém EVO)
-            if (productValue === 'prod-pagseguro' || productValue === 'prod-subaquirente') {
-                // Verificar se o modelo selecionado é EVO
-                const modeloSelect = document.querySelector('select[name="modelo_maquininha_prod-pagseguro"]');
-                if (modeloSelect && modeloSelect.value === 'EVO') {
-                    deveMostrar = true;
-                }
-                // Também verificar se o nome contém EVO
-                if (productName.toUpperCase().includes('EVO')) {
-                    deveMostrar = true;
-                }
-            }
-            
-            // PagSeguro NÃO precisa de dados bancários, então não adicionar aqui
-        });
-        
-        if (deveMostrar) {
+        if (dadosBancariosSection) {
             dadosBancariosSection.classList.remove('hidden');
-        } else {
-            dadosBancariosSection.classList.add('hidden');
         }
     }
     
@@ -1212,6 +1296,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             syncDocumentRowsWithSelectedProducts();
             syncCustomFieldsBySelectedProducts();
+            syncPagSeguroRegistrationRules();
         });
 
         if (checkbox.checked) {
@@ -1227,6 +1312,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modeloSelect) {
         modeloSelect.addEventListener('change', function() {
             verificarCamposBancarios();
+            syncPagSeguroRegistrationRules();
         });
     }
     
@@ -1626,18 +1712,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function getCurrentRegistrationType() {
+        return registrationTypeSelect ? String(registrationTypeSelect.value || '').toUpperCase() : '';
+    }
+
+    function getPendingDocumentTypes() {
+        return Array.from(document.querySelectorAll('.pending-document-item')).map(function(item) {
+            return String(item.dataset.pendingType || '').trim().toUpperCase();
+        }).filter(Boolean);
+    }
+
     function getRequiredDocumentCodesByProducts() {
         const selectedKeys = getSelectedProductKeysForDocuments();
         if (!selectedKeys.length) {
             return [];
         }
+        const isPf = getCurrentRegistrationType() === 'PF';
         const required = new Set();
         selectedKeys.forEach(function(key) {
             (documentTypeProductMap[key] || []).forEach(function(code) {
                 const normalized = String(code || '').trim().toUpperCase();
-                if (normalized) {
-                    required.add(normalized);
+                if (!normalized) {
+                    return;
                 }
+                if (isPf && normalized === 'CONTRATO_SOCIAL') {
+                    return;
+                }
+                required.add(normalized);
             });
         });
         return Array.from(required);
@@ -1718,6 +1819,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        if (getCurrentRegistrationType() === 'PF') {
+            Array.from(documentosContainer.querySelectorAll('.documento-item')).forEach(function(item) {
+                const select = item.querySelector('select[name="document_type[]"]');
+                const code = String(select ? select.value : '').trim().toUpperCase();
+                if (code === 'CONTRATO_SOCIAL') {
+                    item.remove();
+                }
+            });
+        }
+
         if (!hasSelectedProducts) {
             // Sem produtos selecionados, liberar novamente os automáticos removidos.
             removedAutoDocumentCodes.clear();
@@ -1760,9 +1871,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        const pendingTypes = getPendingDocumentTypes();
         requiredCodes.forEach(function(code) {
             const normalized = String(code || '').trim().toUpperCase();
-            if (!normalized || existingCodes.has(normalized) || removedAutoDocumentCodes.has(normalized)) {
+            if (!normalized || existingCodes.has(normalized) || removedAutoDocumentCodes.has(normalized) || pendingTypes.includes(normalized)) {
                 return;
             }
             const reusableRow = emptyRows.shift();
@@ -1788,6 +1900,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         atualizarEventListenersDocumentos();
+        markRequiredDocumentInputs();
+    }
+
+    function markRequiredDocumentInputs() {
+        const requiredCodes = getRequiredDocumentCodesByProducts();
+        const pendingTypes = getPendingDocumentTypes();
+        if (!documentosContainer) {
+            return;
+        }
+        Array.from(documentosContainer.querySelectorAll('.documento-item')).forEach(function(item) {
+            const select = item.querySelector('select[name="document_type[]"]');
+            const fileInput = item.querySelector('input[name="documents[]"]');
+            const code = String(select ? select.value : '').trim().toUpperCase();
+            const isRequired = code && requiredCodes.includes(code) && !pendingTypes.includes(code);
+            if (fileInput) {
+                if (isRequired) {
+                    fileInput.setAttribute('required', 'required');
+                } else {
+                    fileInput.removeAttribute('required');
+                }
+            }
+            if (select && isRequired) {
+                select.setAttribute('required', 'required');
+            }
+        });
     }
 
     // Gerenciar campos de documentos
@@ -1836,6 +1973,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     atualizarEventListenersDocumentos();
+    document.querySelectorAll('.remove-pending-document').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const token = String(this.dataset.token || '');
+            const item = this.closest('.pending-document-item');
+            if (token) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'remove_pending_tokens[]';
+                input.value = token;
+                formEstabelecimentoRef = document.querySelector('form');
+                if (formEstabelecimentoRef) {
+                    formEstabelecimentoRef.appendChild(input);
+                }
+            }
+            if (item) {
+                item.remove();
+            }
+            markRequiredDocumentInputs();
+            syncDocumentRowsWithSelectedProducts();
+        });
+    });
     syncDocumentRowsWithSelectedProducts();
     syncCustomFieldsBySelectedProducts();
 
@@ -1909,6 +2067,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (formEstabelecimento && btnSalvar) {
         formEstabelecimento.addEventListener('submit', function(e) {
+            markRequiredDocumentInputs();
+            const requiredCodes = getRequiredDocumentCodesByProducts();
+            const pendingTypes = getPendingDocumentTypes();
+            const missingDocs = [];
+            requiredCodes.forEach(function(code) {
+                if (pendingTypes.includes(code)) {
+                    return;
+                }
+                const row = Array.from(documentosContainer ? documentosContainer.querySelectorAll('.documento-item') : []).find(function(item) {
+                    const select = item.querySelector('select[name="document_type[]"]');
+                    return String(select ? select.value : '').trim().toUpperCase() === code;
+                });
+                const fileInput = row ? row.querySelector('input[name="documents[]"]') : null;
+                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                    const option = row ? row.querySelector('select[name="document_type[]"] option:checked') : null;
+                    missingDocs.push(option ? option.textContent : code);
+                }
+            });
+            if (missingDocs.length) {
+                e.preventDefault();
+                alert('Anexe os documentos obrigatórios antes de continuar:\n- ' + missingDocs.join('\n- '));
+                return;
+            }
             // Validar formulário antes de mostrar mensagem
             if (formEstabelecimento.checkValidity()) {
                 // Desabilitar botão e mostrar feedback

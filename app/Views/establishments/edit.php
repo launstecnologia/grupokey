@@ -42,7 +42,7 @@ if (!empty($oldInput) && is_array($oldInput)) {
         'nome_completo', 'nome_fantasia', 'segmento', 'telefone', 'email',
         'cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf',
         'banco', 'agencia', 'conta', 'tipo_conta', 'chave_pix',
-        'observacoes', 'status', 'representative_id'
+        'observacoes', 'status', 'representative_id', 'is_filial', 'mdr', 'adesao', 'valor_adesao'
     ];
     foreach ($editableFields as $field) {
         if (array_key_exists($field, $oldInput)) {
@@ -195,13 +195,13 @@ function isProductSelected($productId, $productData) {
             <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
             <input type="hidden" name="_method" value="PUT">
             
-            <!-- Tipo de Registro -->
-            <div class="mb-8" id="registration-type-section">
+            <!-- Tipo de Cadastro (somente PagSeguro/EVO) -->
+            <div class="mb-8 hidden" id="registration-type-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-id-card mr-2 text-blue-600"></i>
-                    Tipo de Registro
+                    Tipo de Cadastro
                 </h4>
-                <small id="registration-type-product-help" class="text-gray-500 hidden mb-3 block">Pessoa Física disponível apenas quando o produto PagSeguro estiver selecionado.</small>
+                <small id="registration-type-product-help" class="text-gray-500 mb-3 block">Pessoa Física disponível apenas quando o produto PagSeguro ou EVO estiver selecionado.</small>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label class="relative flex cursor-pointer" id="registration-type-option-pf">
                         <input type="radio" name="registration_type" id="registration-type-pf" value="PF" class="sr-only peer" required
@@ -223,36 +223,58 @@ function isProductSelected($productId, $productData) {
                     </label>
                 </div>
             </div>
+            <input type="hidden" name="registration_type" id="registration-type-hidden" value="PJ" disabled>
 
-            <!-- Dados Básicos -->
+            <!-- Identificação -->
             <div class="mb-8" id="documents-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-info-circle mr-2 text-blue-600"></i>
-                    Dados Básicos
+                    Dados do Estabelecimento
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Nome Completo do Sócio -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo do Sócio *</label>
-                        <input type="text" name="nome_completo" required 
-                               value="<?= htmlspecialchars($establishment['nome_completo'] ?? '') ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Digite o nome completo">
+                <div id="document-upload-section">
+                    <div id="pj-fields" class="mb-6 <?= ($establishment['registration_type'] ?? '') === 'PF' ? 'hidden' : '' ?>">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
+                                <div class="flex gap-2">
+                                    <input type="text" name="cnpj" id="cnpj"
+                                           value="<?= htmlspecialchars($establishment['cnpj'] ?? '') ?>"
+                                           class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="00.000.000/0000-00">
+                                    <button type="button" id="btn-buscar-cnpj" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-search"></i> Buscar
+                                    </button>
+                                </div>
+                                <small class="text-gray-500">Digite o CNPJ e clique em Buscar para preencher automaticamente</small>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
+                                <input type="text" name="razao_social"
+                                       value="<?= htmlspecialchars($establishment['razao_social'] ?? '') ?>"
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Digite a razão social">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Data de Abertura</label>
+                                <input type="text" name="data_abertura" value="<?= htmlspecialchars((string) $oldField('data_abertura', $establishment['data_abertura'] ?? '')) ?>"
+                                       readonly
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Preenchida automaticamente pelo CNPJ">
+                            </div>
+                        </div>
                     </div>
-
-                    <!-- Nome Fantasia -->
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nome Fantasia *</label>
-                        <input type="text" name="nome_fantasia" required 
+                        <input type="text" name="nome_fantasia" required
                                value="<?= htmlspecialchars($establishment['nome_fantasia'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome fantasia">
                     </div>
-
-                    <!-- Segmento -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Segmento *</label>
-                        <select name="segmento" id="segmento" required 
+                        <select name="segmento" id="segmento" required
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Selecione o segmento</option>
                             <?php foreach ($segments as $segment): ?>
@@ -262,17 +284,13 @@ function isProductSelected($productId, $productData) {
                             <?php endforeach; ?>
                         </select>
                     </div>
-
-                    <!-- Telefone -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Telefone *</label>
-                        <input type="tel" name="telefone" required 
+                        <input type="tel" name="telefone" required
                                value="<?= htmlspecialchars($establishment['telefone'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="(00) 00000-0000">
                     </div>
-
-                    <!-- Email -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                         <input type="email" name="email" required
@@ -281,68 +299,13 @@ function isProductSelected($productId, $productData) {
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
-                </div>
-            </div>
-
-            <!-- Campos específicos por tipo -->
-            <div id="document-upload-section" class="mb-8 hidden">
-                <!-- Campos PF -->
-                <div id="pf-fields" class="<?= ($establishment['registration_type'] ?? '') === 'PF' ? '' : 'hidden' ?>">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
-                        <input type="text" name="cpf" 
-                               value="<?= htmlspecialchars($establishment['cpf'] ?? '') ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="000.000.000-00">
-                    </div>
-                </div>
-
-                <!-- Campos PJ (CPF e Data de Nascimento do responsável exigidos para PagSeguro) -->
-                <div id="pj-fields" class="<?= ($establishment['registration_type'] ?? '') === 'PJ' ? '' : 'hidden' ?>">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
-                            <div class="flex gap-2">
-                                <input type="text" name="cnpj" id="cnpj" 
-                                       value="<?= htmlspecialchars($establishment['cnpj'] ?? '') ?>"
-                                       class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="00.000.000/0000-00">
-                                <button type="button" id="btn-buscar-cnpj" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <i class="fas fa-search"></i> Buscar
-                                </button>
-                            </div>
-                            <small class="text-gray-500">Digite o CNPJ e clique em Buscar para preencher automaticamente</small>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
-                            <input type="text" name="razao_social"
-                                   value="<?= htmlspecialchars($establishment['razao_social'] ?? '') ?>"
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Digite a razão social">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Data de Abertura</label>
-                            <input type="text" name="data_abertura" value="<?= htmlspecialchars((string) $oldField('data_abertura', $establishment['data_abertura'] ?? '')) ?>"
-                                   readonly
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Preenchida automaticamente pelo CNPJ">
-                        </div>
-                        <div id="pj-pagseguro-cpf-field">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
-                            <input type="text" name="cpf_pj" id="cpf-pj"
-                                   value="<?= htmlspecialchars($establishment['cpf'] ?? '') ?>"
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="000.000.000-00">
-                            <small class="text-gray-500">CPF do sócio/responsável (exigido para PagSeguro)</small>
-                        </div>
-                        <div id="pj-pagseguro-birth-field">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
-                            <input type="text" name="data_nascimento"
-                                   value="<?= htmlspecialchars((string) $oldField('data_nascimento', isset($establishment['birth_date']) && $establishment['birth_date'] ? date('d/m/Y', strtotime($establishment['birth_date'])) : '')) ?>"
-                                   maxlength="10"
-                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <small class="text-gray-500">Exigido para envio à API PagSeguro</small>
-                        </div>
+                    <div class="md:col-span-2">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="is_filial" value="1" class="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                                   <?= !empty($establishment['is_filial']) ? 'checked' : '' ?>>
+                            <span class="ml-2 text-sm font-medium text-gray-700">É FILIAL?</span>
+                        </label>
+                        <p class="mt-2 text-sm text-gray-500">Se for filial, informe na observação o CNPJ da MATRIZ e o LOGIN E SENHA.</p>
                     </div>
                 </div>
             </div>
@@ -430,6 +393,83 @@ function isProductSelected($productId, $productData) {
                 </div>
             </div>
 
+            <div class="mb-8" id="socio-section">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-user-tie mr-2 text-blue-600"></i>
+                    Dados do Sócio
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo do Sócio *</label>
+                        <input type="text" name="nome_completo" required
+                               value="<?= htmlspecialchars($establishment['nome_completo'] ?? '') ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Digite o nome completo">
+                    </div>
+                    <div id="pf-fields" class="<?= ($establishment['registration_type'] ?? '') === 'PF' ? '' : 'hidden' ?>">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
+                        <input type="text" name="cpf"
+                               value="<?= htmlspecialchars($establishment['cpf'] ?? '') ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="000.000.000-00">
+                    </div>
+                    <div id="pj-pagseguro-cpf-field">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
+                        <input type="text" name="cpf_pj" id="cpf-pj"
+                               value="<?= htmlspecialchars($establishment['cpf'] ?? '') ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="000.000.000-00">
+                        <small class="text-gray-500">CPF do sócio/responsável (exigido para PagSeguro)</small>
+                    </div>
+                    <div id="pj-pagseguro-birth-field">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento do responsável *</label>
+                        <input type="text" name="data_nascimento"
+                               value="<?= htmlspecialchars((string) $oldField('data_nascimento', isset($establishment['birth_date']) && $establishment['birth_date'] ? date('d/m/Y', strtotime($establishment['birth_date'])) : '')) ?>"
+                               maxlength="10"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <small class="text-gray-500">Exigido para envio à API PagSeguro</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8" id="condicoes-comerciais-section">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-handshake mr-2 text-blue-600"></i>
+                    Condições Comerciais
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Adesão</label>
+                        <?php $selectedAdesao = (string) $oldField('adesao', $establishment['adesao'] ?? ''); ?>
+                        <select name="adesao" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Selecione o meio</option>
+                            <option value="a_vista" <?= $selectedAdesao === 'a_vista' ? 'selected' : '' ?>>À Vista</option>
+                            <option value="cartao" <?= $selectedAdesao === 'cartao' ? 'selected' : '' ?>>Cartão</option>
+                            <option value="criacao" <?= $selectedAdesao === 'criacao' ? 'selected' : '' ?>>Criação</option>
+                            <option value="isento" <?= $selectedAdesao === 'isento' ? 'selected' : '' ?>>Isento</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Valor</label>
+                        <?php
+                        $valorAdesao = $oldField('valor_adesao', $establishment['valor_adesao'] ?? '');
+                        $valorAdesaoDisplay = ($valorAdesao === '' || $valorAdesao === null)
+                            ? ''
+                            : (strpos((string) $valorAdesao, 'R$') !== false ? (string) $valorAdesao : 'R$ ' . number_format((float) $valorAdesao, 2, ',', '.'));
+                        ?>
+                        <input type="text" name="valor_adesao" value="<?= htmlspecialchars($valorAdesaoDisplay) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="R$ 0,00" data-mask="currency">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">MDR (%)</label>
+                        <input type="text" name="mdr" value="<?= htmlspecialchars((string) $oldField('mdr', $establishment['mdr'] ?? '')) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Ex: 1,99">
+                    </div>
+                </div>
+            </div>
+
             <?php if (!empty($customFieldDefinitions)): ?>
             <div class="mb-8" id="custom-fields-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
@@ -452,6 +492,7 @@ function isProductSelected($productId, $productData) {
                             $fieldValue = array_key_exists($fieldKey, $oldCustomFieldValues)
                                 ? $oldCustomFieldValues[$fieldKey]
                                 : ($customFieldValues[$fieldKey] ?? '');
+                            $isCurrencyField = ($fieldType === 'currency');
                             $inputType = in_array($fieldType, ['number', 'email', 'date', 'datetime-local'], true) ? $fieldType : 'text';
                             $fieldTargets = (array) ($customField['product_targets'] ?? []);
                             $fieldTargetsJson = htmlspecialchars(json_encode(array_values($fieldTargets), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
@@ -481,8 +522,8 @@ function isProductSelected($productId, $productData) {
                                        name="<?= htmlspecialchars($fieldName) ?>"
                                        value="<?= htmlspecialchars((string) $fieldValue) ?>"
                                        <?= $fieldRequired ? 'required' : '' ?> data-base-required="<?= $fieldRequired ? '1' : '0' ?>"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="<?= htmlspecialchars($fieldPlaceholder) ?>">
+                                       <?= $isCurrencyField ? 'data-mask="currency" placeholder="R$ 0,00"' : 'placeholder="' . htmlspecialchars($fieldPlaceholder) . '"' ?>
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <?php endif; ?>
                             <?php if (!empty($fieldHelp)): ?>
                                 <small class="text-gray-500"><?= htmlspecialchars($fieldHelp) ?></small>
@@ -492,152 +533,6 @@ function isProductSelected($productId, $productData) {
                 </div>
             </div>
             <?php endif; ?>
-
-            <?php if (!empty($documents)): ?>
-            <!-- Documentos atuais -->
-            <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-                    <i class="fas fa-file-alt mr-2 text-blue-600 dark:text-blue-400"></i>
-                    Documentos atuais
-                </h3>
-                <div class="space-y-4">
-                    <?php foreach ($documents as $document): ?>
-                        <?php
-                            $documentId = (string) ($document['id'] ?? '');
-                            $docTypeCode = strtoupper((string) ($document['document_type'] ?? ''));
-                            $tipoLabel = $documentTypeLabels[$docTypeCode] ?? ($docTypeCode !== '' ? $docTypeCode : 'Documento');
-                            $originalName = (string) ($document['original_name'] ?? basename((string) ($document['file_path'] ?? 'documento')));
-                            $mimeType = strtolower((string) ($document['mime_type'] ?? ''));
-                            $fileName = strtolower((string) ($document['original_name'] ?? $document['file_name'] ?? ''));
-                            $ext = strtoupper((string) pathinfo($fileName, PATHINFO_EXTENSION));
-                            $fileSize = isset($document['size']) ? number_format(((float) $document['size']) / 1024, 2, ',', '.') . ' KB' : '0 KB';
-                            $uploadedAtTs = !empty($document['uploaded_at']) ? strtotime((string) $document['uploaded_at']) : false;
-                            $uploadedAt = $uploadedAtTs ? date('d/m/Y H:i', $uploadedAtTs) : 'Sem data';
-                            $previewUrl = url('estabelecimentos/' . ($establishment['id'] ?? '') . '/documentos/' . $documentId . '/download?preview=1');
-                            $downloadUrl = url('estabelecimentos/' . ($establishment['id'] ?? '') . '/documentos/' . $documentId . '/download');
-                            $isImage = strpos($mimeType, 'image/') === 0 || in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], true);
-                        ?>
-                        <div class="edit-document-card rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                            <div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)] xl:items-center">
-                                <div class="flex min-w-0 gap-4">
-                                    <div class="edit-document-icon flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
-                                        <?php if ($isImage): ?>
-                                            <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" class="block h-full w-full" title="Abrir documento">
-                                                <img src="<?= htmlspecialchars($previewUrl) ?>" alt="Miniatura do documento" class="h-full w-full object-cover">
-                                            </a>
-                                        <?php else: ?>
-                                            <i class="fas fa-file-alt text-2xl"></i>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <div class="mb-2 flex flex-wrap items-center gap-2">
-                                            <span class="edit-document-type rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
-                                                <?= htmlspecialchars($tipoLabel) ?>
-                                            </span>
-                                            <?php if ($ext !== ''): ?>
-                                                <span class="edit-document-ext rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-                                                    <?= htmlspecialchars($ext) ?>
-                                                </span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <p class="break-words text-sm font-semibold text-gray-900 dark:text-white">
-                                            <?= htmlspecialchars($originalName) ?>
-                                        </p>
-                                        <div class="edit-document-meta mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
-                                            <span><i class="far fa-calendar-alt mr-1"></i><?= htmlspecialchars($uploadedAt) ?></span>
-                                            <span><i class="fas fa-weight-hanging mr-1"></i><?= htmlspecialchars($fileSize) ?></span>
-                                        </div>
-                                        <div class="mt-3 flex flex-wrap gap-2">
-                                            <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" class="edit-document-action-view inline-flex items-center rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-200 dark:hover:bg-indigo-900/50">
-                                                <i class="fas fa-eye mr-2"></i> Abrir
-                                            </a>
-                                            <a href="<?= htmlspecialchars($downloadUrl) ?>" class="edit-document-action-download inline-flex items-center rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-200 dark:hover:bg-blue-900/50">
-                                                <i class="fas fa-download mr-2"></i> Baixar
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                                        Substituir arquivo
-                                    </label>
-                                    <label class="edit-document-dropzone document-dropzone flex min-h-[104px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-4 text-center text-sm text-gray-600 transition hover:border-blue-500 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-blue-400 dark:hover:bg-blue-900/30">
-                                        <i class="fas fa-cloud-upload-alt mb-2 text-2xl text-blue-600 dark:text-blue-400"></i>
-                                        <span class="document-dropzone-text">Arraste e solte para trocar ou clique para escolher</span>
-                                        <span class="document-file-name mt-1 text-xs font-medium text-gray-500 dark:text-gray-400"></span>
-                                        <input type="file" name="replace_documents[<?= htmlspecialchars($documentId) ?>]" class="sr-only document-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                                    </label>
-                                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                        Ao salvar, o arquivo antigo será substituído e removido.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <?php endif; ?>
-
-            <!-- Upload de Documentos -->
-            <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-file-upload mr-2 text-blue-600"></i>
-                    Documentos
-                </h3>
-                
-                <div id="documentos-container" class="space-y-4">
-                    <!-- Primeiro campo de documento -->
-                    <div class="documento-item p-4 border border-gray-300 rounded-lg bg-gray-50">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Tipo de Documento
-                                </label>
-                                <select name="document_type[]" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">Selecione o tipo</option>
-                                    <?php foreach ($documentTypeOptions as $docType): ?>
-                                        <option value="<?= htmlspecialchars((string) ($docType['code'] ?? '')) ?>">
-                                            <?= htmlspecialchars((string) ($docType['label'] ?? ($docType['code'] ?? ''))) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Anexar Documento
-                                </label>
-                                <label class="document-dropzone mt-1 flex min-h-[96px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-white px-4 py-4 text-center text-sm text-gray-600 transition hover:border-blue-500 hover:bg-blue-50">
-                                    <i class="fas fa-cloud-upload-alt mb-2 text-2xl text-blue-600"></i>
-                                    <span class="document-dropzone-text">Arraste e solte o arquivo aqui ou clique para escolher</span>
-                                    <span class="document-file-name mt-1 text-xs font-medium text-gray-500"></span>
-                                    <input type="file" name="documents[]" class="sr-only document-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                                </label>
-                            </div>
-                        </div>
-                        <button type="button" class="mt-2 text-red-600 hover:text-red-800 text-sm remove-documento hidden">
-                            <i class="fas fa-trash mr-1"></i> Remover
-                        </button>
-                    </div>
-                </div>
-                
-                <button type="button" id="adicionar-documento" class="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
-                    <i class="fas fa-plus mr-2"></i> Adicionar Mais Documentos
-                </button>
-            </div>
-
-            <!-- Observações -->
-            <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-sticky-note mr-2 text-blue-600"></i>
-                    Observações
-                </h3>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Observações</label>
-                    <textarea name="observacoes" rows="4" 
-                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                              placeholder="Digite observações sobre o estabelecimento..."><?= htmlspecialchars($establishment['observacoes'] ?? '') ?></textarea>
-                </div>
-            </div>
 
             <!-- Produtos -->
             <div class="mb-8" id="manual-products-section">
@@ -780,6 +675,7 @@ function isProductSelected($productId, $productData) {
                                             continue;
                                         }
                                         $fieldType = $field['field_type'] ?? 'text';
+                                        $isCurrencyField = ($fieldType === 'currency');
                                         $fieldName = "dynamic_values[{$dynamicProductId}][{$fieldKey}]";
                                         $fieldValue = $dynamicValues[$fieldKey] ?? '';
                                     ?>
@@ -810,7 +706,8 @@ function isProductSelected($productId, $productData) {
                                                    name="<?= htmlspecialchars($fieldName) ?>"
                                                    value="<?= htmlspecialchars((string) $fieldValue) ?>"
                                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                                   placeholder="<?= htmlspecialchars($field['placeholder'] ?? '') ?>">
+                                                   <?= $isCurrencyField ? 'data-mask="currency"' : '' ?>
+                                                   placeholder="<?= $isCurrencyField ? 'R$ 0,00' : htmlspecialchars($field['placeholder'] ?? '') ?>">
                                         <?php endif; ?>
                                         <?php if (!empty($field['help_text'])): ?>
                                             <small class="text-gray-400"><?= htmlspecialchars($field['help_text']) ?></small>
@@ -1049,7 +946,7 @@ function isProductSelected($productId, $productData) {
             </div>
 
             <!-- Dados Bancários -->
-            <div id="dados-bancarios-section" class="mb-8 hidden">
+            <div id="dados-bancarios-section" class="mb-8 p-4 border border-gray-200 rounded-lg bg-gray-50">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-university mr-2 text-blue-600"></i>
                     Dados Bancários
@@ -1134,6 +1031,126 @@ function isProductSelected($productId, $productData) {
                 </div>
             </div>
 
+            <?php if (App\Core\Auth::isAdmin()): ?>
+            <div class="mb-8" id="representative-section">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-user mr-2 text-blue-600"></i>
+                    Representante
+                </h4>
+                <div class="max-w-xl">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Representante</label>
+                    <select name="representative_id" id="representative_id"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Sem representante vinculado</option>
+                        <?php foreach ($representatives as $representative): ?>
+                            <option value="<?= (int) $representative['id'] ?>" <?= (int) ($establishment['created_by_representative_id'] ?? $establishment['representative_id'] ?? 0) === (int) $representative['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($representative['nome_completo']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small class="text-gray-500">Selecione um representante já cadastrado para vincular ao estabelecimento.</small>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!empty($documents)): ?>
+            <!-- Documentos atuais (últimos na página) -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <i class="fas fa-file-alt mr-2 text-blue-600 dark:text-blue-400"></i>
+                    Documentos
+                </h3>
+                <div class="space-y-4">
+                    <?php foreach ($documents as $document): ?>
+                        <?php
+                            $documentId = (string) ($document['id'] ?? '');
+                            $docTypeCode = strtoupper((string) ($document['document_type'] ?? ''));
+                            $tipoLabel = $documentTypeLabels[$docTypeCode] ?? ($docTypeCode !== '' ? $docTypeCode : 'Documento');
+                            $originalName = (string) ($document['original_name'] ?? basename((string) ($document['file_path'] ?? 'documento')));
+                            $mimeType = strtolower((string) ($document['mime_type'] ?? ''));
+                            $fileName = strtolower((string) ($document['original_name'] ?? $document['file_name'] ?? ''));
+                            $ext = strtoupper((string) pathinfo($fileName, PATHINFO_EXTENSION));
+                            $fileSize = isset($document['size']) ? number_format(((float) $document['size']) / 1024, 2, ',', '.') . ' KB' : '0 KB';
+                            $uploadedAtTs = !empty($document['uploaded_at']) ? strtotime((string) $document['uploaded_at']) : false;
+                            $uploadedAt = $uploadedAtTs ? date('d/m/Y H:i', $uploadedAtTs) : 'Sem data';
+                            $previewUrl = url('estabelecimentos/' . ($establishment['id'] ?? '') . '/documentos/' . $documentId . '/download?preview=1');
+                            $downloadUrl = url('estabelecimentos/' . ($establishment['id'] ?? '') . '/documentos/' . $documentId . '/download');
+                            $isImage = strpos($mimeType, 'image/') === 0 || in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], true);
+                        ?>
+                        <div class="edit-document-card rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)] xl:items-center">
+                                <div class="flex min-w-0 gap-4">
+                                    <div class="edit-document-icon flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                                        <?php if ($isImage): ?>
+                                            <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" class="block h-full w-full" title="Abrir documento">
+                                                <img src="<?= htmlspecialchars($previewUrl) ?>" alt="Miniatura do documento" class="h-full w-full object-cover">
+                                            </a>
+                                        <?php else: ?>
+                                            <i class="fas fa-file-alt text-2xl"></i>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="mb-2 flex flex-wrap items-center gap-2">
+                                            <span class="edit-document-type rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
+                                                <?= htmlspecialchars($tipoLabel) ?>
+                                            </span>
+                                            <?php if ($ext !== ''): ?>
+                                                <span class="edit-document-ext rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                                    <?= htmlspecialchars($ext) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <p class="break-words text-sm font-semibold text-gray-900 dark:text-white">
+                                            <?= htmlspecialchars($originalName) ?>
+                                        </p>
+                                        <div class="edit-document-meta mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                            <span><i class="far fa-calendar-alt mr-1"></i><?= htmlspecialchars($uploadedAt) ?></span>
+                                            <span><i class="fas fa-weight-hanging mr-1"></i><?= htmlspecialchars($fileSize) ?></span>
+                                        </div>
+                                        <div class="mt-3 flex flex-wrap gap-2">
+                                            <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" rel="noopener" class="edit-document-action-view inline-flex items-center rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-200 dark:hover:bg-indigo-900/50">
+                                                <i class="fas fa-eye mr-2"></i> Abrir
+                                            </a>
+                                            <a href="<?= htmlspecialchars($downloadUrl) ?>" class="edit-document-action-download inline-flex items-center rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-200 dark:hover:bg-blue-900/50">
+                                                <i class="fas fa-download mr-2"></i> Baixar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                                        Editar / substituir arquivo
+                                    </label>
+                                    <label class="edit-document-dropzone document-dropzone flex min-h-[104px] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-4 text-center text-sm text-gray-600 transition hover:border-blue-500 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-blue-400 dark:hover:bg-blue-900/30">
+                                        <i class="fas fa-cloud-upload-alt mb-2 text-2xl text-blue-600 dark:text-blue-400"></i>
+                                        <span class="document-dropzone-text">Arraste e solte para trocar ou clique para escolher</span>
+                                        <span class="document-file-name mt-1 text-xs font-medium text-gray-500 dark:text-gray-400"></span>
+                                        <input type="file" name="replace_documents[<?= htmlspecialchars($documentId) ?>]" class="sr-only document-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                    </label>
+                                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        Ao salvar, o arquivo antigo será substituído e removido.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-sticky-note mr-2 text-blue-600"></i>
+                    Observações
+                </h3>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+                    <textarea name="observacoes" rows="4"
+                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Digite observações sobre o estabelecimento..."><?= htmlspecialchars(old('observacoes', unescape_stored($establishment['observacoes'] ?? ''))) ?></textarea>
+                </div>
+            </div>
+
             <!-- Botões -->
             <div class="flex justify-end space-x-4">
                 <a href="<?= url('estabelecimentos/' . ($establishment['id'] ?? '')) ?>" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
@@ -1161,7 +1178,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const documentTypeProductMap = <?= json_encode($documentTypeProductMap, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 
     // Mostrar/ocultar campos específicos por tipo de registro
-    const registrationTypeInputs = document.querySelectorAll('input[name="registration_type"]');
+    const registrationTypeInputs = document.querySelectorAll('input[name="registration_type"][type="radio"]');
+    const registrationTypeHidden = document.getElementById('registration-type-hidden');
     const registrationTypeSection = document.getElementById('registration-type-section');
     const pfOption = document.getElementById('registration-type-option-pf');
     const pfInput = document.getElementById('registration-type-pf');
@@ -1187,28 +1205,65 @@ document.addEventListener('DOMContentLoaded', function() {
         return !!document.querySelector('input[name="products[]"][value="prod-pagbank"]:checked');
     }
 
+    function isEvoSelected() {
+        const checkedProducts = document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked');
+        for (const checkbox of checkedProducts) {
+            const productValue = String(checkbox.value || '').toLowerCase();
+            const productName = String(checkbox.nextElementSibling?.textContent || '').toUpperCase();
+            const productKey = String(checkbox.dataset.productKey || '').toUpperCase();
+            if (productValue === 'prod-pagseguro' || productValue === 'prod-subaquirente') {
+                return true;
+            }
+            if (productName.includes('EVO') || productKey.includes('EVO')) {
+                return true;
+            }
+        }
+        const modeloSelect = document.querySelector('select[name="modelo_maquininha_prod-pagseguro"]');
+        return !!(modeloSelect && String(modeloSelect.value || '').toUpperCase() === 'EVO');
+    }
+
+    function isPagSeguroOrEvoSelected() {
+        return isPagSeguroSelected() || isEvoSelected();
+    }
+
+    function syncRegistrationTypeAvailability() {
+        const showType = isPagSeguroOrEvoSelected();
+        if (registrationTypeSection) {
+            registrationTypeSection.classList.toggle('hidden', !showType);
+        }
+        if (registrationTypeHidden) {
+            registrationTypeHidden.disabled = showType;
+            registrationTypeHidden.value = 'PJ';
+        }
+        if (!showType && pjInput) {
+            pjInput.checked = true;
+        }
+    }
+
     function syncPagSeguroPjRequired() {
-        const tipoSelecionado = document.querySelector('input[name="registration_type"]:checked');
-        const isPj = tipoSelecionado && tipoSelecionado.value === 'PJ';
+        syncRegistrationTypeAvailability();
+        const tipoSelecionado = document.querySelector('input[name="registration_type"][type="radio"]:checked');
+        const isPj = !tipoSelecionado || tipoSelecionado.value === 'PJ';
         const pagBankSelected = isPagSeguroSelected();
+        const showType = isPagSeguroOrEvoSelected();
         const cpfPj = document.querySelector('input[name="cpf_pj"]');
         const dataNasc = document.querySelector('input[name="data_nascimento"]');
 
         if (pfOption) {
-            pfOption.classList.toggle('hidden', !pagBankSelected);
+            pfOption.classList.toggle('hidden', !showType);
         }
         if (registrationProductHelp) {
-            registrationProductHelp.classList.toggle('hidden', pagBankSelected);
+            registrationProductHelp.classList.toggle('hidden', !showType);
         }
         if (pfInput) {
-            if (pagBankSelected) {
+            if (showType) {
                 pfInput.removeAttribute('disabled');
             } else {
                 pfInput.setAttribute('disabled', 'disabled');
             }
         }
 
-        if (!pagBankSelected && tipoSelecionado && tipoSelecionado.value === 'PF' && pjInput) {
+        if (!showType && tipoSelecionado && tipoSelecionado.value === 'PF' && pjInput) {
             pjInput.checked = true;
             updateRegistrationVisibility();
             return;
@@ -1239,7 +1294,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateRegistrationVisibility() {
-        const selectedType = document.querySelector('input[name="registration_type"]:checked');
+        const selectedType = document.querySelector('input[name="registration_type"][type="radio"]:checked');
         if (!selectedType) {
             syncPagSeguroPjRequired();
             return;
@@ -1278,40 +1333,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Função para verificar se deve mostrar campos bancários (apenas CDC ou EVO)
     function verificarCamposBancarios() {
         const dadosBancariosSection = document.getElementById('dados-bancarios-section');
-        if (!dadosBancariosSection) return;
-        
-        let deveMostrar = false;
-        const productCheckboxes = document.querySelectorAll('input[name="products[]"]:checked');
-        
-        productCheckboxes.forEach(checkbox => {
-            const productName = checkbox.nextElementSibling?.textContent?.trim() || '';
-            const productValue = checkbox.value || '';
-            
-            // Verificar se é CDC (prod-brasil-card ou nome contém CDC)
-            if (productValue === 'prod-brasil-card' || productName.toUpperCase().includes('CDC')) {
-                deveMostrar = true;
-            }
-            
-            // Verificar se é EVO (prod-pagseguro ou prod-subaquirente com modelo EVO ou nome contém EVO)
-            if (productValue === 'prod-pagseguro' || productValue === 'prod-subaquirente') {
-                // Verificar se o modelo selecionado é EVO
-                const modeloSelect = document.querySelector('select[name="modelo_maquininha_prod-pagseguro"]');
-                if (modeloSelect && modeloSelect.value === 'EVO') {
-                    deveMostrar = true;
-                }
-                // Também verificar se o nome contém EVO
-                if (productName.toUpperCase().includes('EVO')) {
-                    deveMostrar = true;
-                }
-            }
-            
-            // PagSeguro NÃO precisa de dados bancários, então não adicionar aqui
-        });
-        
-        if (deveMostrar) {
+        if (dadosBancariosSection) {
             dadosBancariosSection.classList.remove('hidden');
-        } else {
-            dadosBancariosSection.classList.add('hidden');
         }
     }
     
@@ -1322,7 +1345,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'prod-brasilcard': 'prod-brasil-card-config',
         'prod-pagseguro': 'prod-pagseguro-config',
         'prod-subaquirente': 'prod-pagseguro-config',
-        'prod-pagbank': 'prod-pagseguro-config'
+        'prod-pagbank': 'prod-pagbank-config'
     };
     
     // Função para obter o ID de configuração baseado no ID do produto
@@ -1339,15 +1362,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'prod-brasil-card-config';
         }
         
-        // Verificar se contém 'pagseguro' ou 'subaquirente'
-        if (productId.toLowerCase().includes('pagseguro') || 
+        // EVO/CDX: não confundir com PagBank/PagSeguro
+        if ((productId.toLowerCase().includes('pagseguro') && !productId.toLowerCase().includes('pagbank')) ||
             productId.toLowerCase().includes('subaquirente')) {
             return 'prod-pagseguro-config';
         }
         
         // Verificar se contém 'pagbank'
         if (productId.toLowerCase().includes('pagbank')) {
-            return 'prod-pagseguro-config';
+            return 'prod-pagbank-config';
         }
         
         // Fallback: tentar com o ID original + '-config'
@@ -1369,6 +1392,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     configDiv.classList.add('hidden');
                 }
             }
+
+            const evoPanel = document.getElementById('prod-pagseguro-config');
+            const hasEvoSelected = !!document.querySelector('input[name="products[]"][value="prod-pagseguro"]:checked, input[name="products[]"][value="prod-subaquirente"]:checked');
+            if (evoPanel && !hasEvoSelected) {
+                evoPanel.classList.add('hidden');
+            }
             
             // Verificar campos bancários quando produto mudar
             verificarCamposBancarios();
@@ -1387,6 +1416,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    const evoConfig = document.getElementById('prod-pagseguro-config');
+    const hasEvoProduct = !!document.querySelector('input[name="products[]"][value="prod-pagseguro"]:checked, input[name="products[]"][value="prod-subaquirente"]:checked');
+    if (evoConfig && !hasEvoProduct) {
+        evoConfig.classList.add('hidden');
+    }
+
     // Mostrar/ocultar configurações dos produtos dinâmicos
     const dynamicProductCheckboxes = document.querySelectorAll('.dynamic-product-checkbox');
     dynamicProductCheckboxes.forEach(checkbox => {
@@ -1398,6 +1433,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             syncDocumentRowsWithSelectedProducts();
             syncCustomFieldsBySelectedProducts();
+            syncPagSeguroPjRequired();
         });
 
         if (checkbox.checked) {
@@ -1814,13 +1850,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!selectedKeys.length) {
             return [];
         }
+        const selectedType = document.querySelector('input[name="registration_type"]:checked');
+        const isPf = selectedType && String(selectedType.value).toUpperCase() === 'PF';
         const required = new Set();
         selectedKeys.forEach(function(key) {
             (documentTypeProductMap[key] || []).forEach(function(code) {
                 const normalized = String(code || '').trim().toUpperCase();
-                if (normalized) {
-                    required.add(normalized);
+                if (!normalized) {
+                    return;
                 }
+                if (isPf && normalized === 'CONTRATO_SOCIAL') {
+                    return;
+                }
+                required.add(normalized);
             });
         });
         return Array.from(required);
