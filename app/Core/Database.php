@@ -9,47 +9,38 @@ class Database
 {
     private static $instance = null;
     private $pdo;
+    private $dsn;
+    private $username;
+    private $password;
+    private $options;
     
     private function __construct()
     {
-        // Usar configurações do ambiente dinâmico
         $host = $_ENV['DB_HOST'] ?? 'localhost';
         $port = $_ENV['DB_PORT'] ?? '3306';
         $database = $_ENV['DB_NAME'] ?? 'grupokey_platform';
-        $username = $_ENV['DB_USER'] ?? 'root';
-        $password = $_ENV['DB_PASS'] ?? '';
+        $this->username = $_ENV['DB_USER'] ?? 'root';
+        $this->password = $_ENV['DB_PASS'] ?? '';
         
-        $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
+        $this->dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
         
-        $options = [
+        $this->options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
-            PDO::ATTR_TIMEOUT => 5, // Timeout de 5 segundos para conexão
-            PDO::MYSQL_ATTR_INIT_COMMAND => "SET SESSION wait_timeout=30, interactive_timeout=30"
+            PDO::ATTR_TIMEOUT => 5,
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET SESSION wait_timeout=300, interactive_timeout=300"
         ];
         
         try {
             set_time_limit(10);
-            $this->pdo = new PDO($dsn, $username, $password, $options);
-            
-            // Garantir que não há transação aberta
-            if ($this->pdo->inTransaction()) {
-                try {
-                    $this->pdo->rollBack();
-                } catch (\PDOException $e) {
-                    // Ignorar erro de rollback se não houver transação
-                }
-            }
-            
-            // Restaurar timeout padrão
+            $this->connect();
             set_time_limit(30);
         } catch (PDOException $e) {
-            set_time_limit(30); // Restaurar timeout em caso de erro
+            set_time_limit(30);
             
-            // Log detalhado do erro
             if (function_exists('write_log')) {
-                write_log("Erro de conexão DB: Host={$host}, Port={$port}, DB={$database}, User={$username}, Erro: " . $e->getMessage(), 'database.log');
+                write_log("Erro de conexão DB: Host={$host}, Port={$port}, DB={$database}, User={$this->username}, Erro: " . $e->getMessage(), 'database.log');
             }
             
             $errorMsg = "Erro na conexão com o banco de dados";
@@ -60,6 +51,44 @@ class Database
             }
             
             throw new PDOException($errorMsg);
+        }
+    }
+
+    private function connect(): void
+    {
+        $this->pdo = new PDO($this->dsn, $this->username, $this->password, $this->options);
+        
+        if ($this->pdo->inTransaction()) {
+            try {
+                $this->pdo->rollBack();
+            } catch (\PDOException $e) {
+                // Ignorar erro de rollback se não houver transação
+            }
+        }
+    }
+
+    private function reconnect(): void
+    {
+        $this->pdo = null;
+        $this->connect();
+    }
+
+    private function isGoneAway(PDOException $e): bool
+    {
+        $code = (string) ($e->errorInfo[1] ?? $e->getCode());
+        $message = $e->getMessage();
+
+        return in_array($code, ['2006', '2013'], true)
+            || stripos($message, 'server has gone away') !== false
+            || stripos($message, 'Lost connection') !== false;
+    }
+
+    private function isInTransaction(): bool
+    {
+        try {
+            return $this->pdo && $this->pdo->inTransaction();
+        } catch (\Throwable $e) {
+            return false;
         }
     }
     
@@ -78,9 +107,19 @@ class Database
     
     public function query($sql, $params = [])
     {
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        return $stmt;
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            return $stmt;
+        } catch (PDOException $e) {
+            if ($this->isGoneAway($e) && !$this->isInTransaction()) {
+                $this->reconnect();
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute($params);
+                return $stmt;
+            }
+            throw $e;
+        }
     }
     
     public function fetch($sql, $params = [])
@@ -102,7 +141,6 @@ class Database
     
     public function beginTransaction()
     {
-        // Se já estiver em transação, fazer rollback primeiro
         if ($this->pdo->inTransaction()) {
             $this->pdo->rollBack();
         }
@@ -112,12 +150,11 @@ class Database
     public function commit()
     {
         if (!$this->pdo->inTransaction()) {
-            return true; // Já não está em transação
+            return true;
         }
         try {
             return $this->pdo->commit();
         } catch (\PDOException $e) {
-            // Se o commit falhar, tentar rollback
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -128,7 +165,7 @@ class Database
     public function rollback()
     {
         if (!$this->pdo->inTransaction()) {
-            return true; // Já não está em transação
+            return true;
         }
         return $this->pdo->rollBack();
     }

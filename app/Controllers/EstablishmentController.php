@@ -497,6 +497,22 @@ class EstablishmentController
         $representatives = [];
         if (Auth::isAdmin()) {
             $representatives = $this->representativeModel->getAll(['status' => 'ACTIVE']);
+            $currentRepresentativeId = (int) ($establishment['created_by_representative_id'] ?? 0);
+            if ($currentRepresentativeId > 0) {
+                $hasCurrent = false;
+                foreach ($representatives as $representative) {
+                    if ((int) ($representative['id'] ?? 0) === $currentRepresentativeId) {
+                        $hasCurrent = true;
+                        break;
+                    }
+                }
+                if (!$hasCurrent) {
+                    $currentRepresentative = $this->representativeModel->findById($currentRepresentativeId);
+                    if (is_array($currentRepresentative) && !empty($currentRepresentative)) {
+                        array_unshift($representatives, $currentRepresentative);
+                    }
+                }
+            }
         }
         
         // Debug: Log dos dados do estabelecimento
@@ -504,6 +520,8 @@ class EstablishmentController
         write_log('Estabelecimento: ' . json_encode($establishment), 'app.log');
         write_log('Produtos do estabelecimento: ' . json_encode($establishment['products'] ?? []), 'app.log');
         
+        $products = $this->productModel->getAll();
+
         // Buscar planos disponíveis da API SistPay
         $plans = [];
         try {
@@ -522,7 +540,7 @@ class EstablishmentController
             'currentPage' => 'estabelecimentos',
             'establishment' => $establishment,
             'representatives' => $representatives,
-            'products' => $this->productModel->getAll(),
+            'products' => $products,
             'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
             'custom_field_values' => $this->getSafeCustomFieldValues('establishment', (int) $id),

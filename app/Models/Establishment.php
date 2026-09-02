@@ -1078,6 +1078,12 @@ class Establishment
 
     private function ensureOptionalColumns(): void
     {
+        static $alreadyChecked = false;
+        if ($alreadyChecked) {
+            return;
+        }
+        $alreadyChecked = true;
+
         $definitions = [
             'is_filial' => 'TINYINT(1) NOT NULL DEFAULT 0',
             'mdr' => 'VARCHAR(50) NULL',
@@ -1085,12 +1091,22 @@ class Establishment
             'valor_adesao' => 'DECIMAL(12,2) NULL',
         ];
 
+        try {
+            $existing = [];
+            foreach ($this->db->fetchAll('SHOW COLUMNS FROM establishments') as $column) {
+                $existing[strtolower((string) ($column['Field'] ?? ''))] = true;
+            }
+        } catch (\Throwable $e) {
+            error_log('Establishment::ensureOptionalColumns list: ' . $e->getMessage());
+            return;
+        }
+
         foreach ($definitions as $name => $definition) {
+            if (isset($existing[strtolower($name)])) {
+                continue;
+            }
             try {
-                $exists = $this->db->fetch("SHOW COLUMNS FROM establishments LIKE '{$name}'");
-                if (!$exists) {
-                    $this->db->query("ALTER TABLE establishments ADD COLUMN {$name} {$definition}");
-                }
+                $this->db->query("ALTER TABLE establishments ADD COLUMN {$name} {$definition}");
             } catch (\Throwable $e) {
                 error_log('Establishment::ensureOptionalColumns ' . $name . ': ' . $e->getMessage());
             }

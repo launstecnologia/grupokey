@@ -310,6 +310,34 @@ function isProductSelected($productId, $productData) {
                 </div>
             </div>
 
+            <?php if (App\Core\Auth::isAdmin()): ?>
+            <div class="mb-8" id="representative-section">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-user mr-2 text-blue-600"></i>
+                    Representante
+                </h4>
+                <div class="max-w-xl">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Trocar representante</label>
+                    <?php $currentRepresentativeId = (int) ($establishment['created_by_representative_id'] ?? $establishment['representative_id'] ?? 0); ?>
+                    <select name="representative_id" id="representative_id"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Sem representante vinculado</option>
+                        <?php foreach ($representatives as $representative): ?>
+                            <option value="<?= (int) $representative['id'] ?>" <?= $currentRepresentativeId === (int) $representative['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($representative['nome_completo']) ?>
+                                <?= (($representative['status'] ?? '') !== 'ACTIVE') ? ' (inativo)' : '' ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?php if (!empty($establishment['created_by_representative_name'])): ?>
+                        <small class="text-gray-500">Atual: <?= htmlspecialchars($establishment['created_by_representative_name']) ?></small>
+                    <?php else: ?>
+                        <small class="text-gray-500">Selecione um representante para vincular a este estabelecimento.</small>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Endereço -->
             <div class="mb-8" id="observations-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
@@ -1030,28 +1058,6 @@ function isProductSelected($productId, $productData) {
                     </div>
                 </div>
             </div>
-
-            <?php if (App\Core\Auth::isAdmin()): ?>
-            <div class="mb-8" id="representative-section">
-                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-user mr-2 text-blue-600"></i>
-                    Representante
-                </h4>
-                <div class="max-w-xl">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Representante</label>
-                    <select name="representative_id" id="representative_id"
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Sem representante vinculado</option>
-                        <?php foreach ($representatives as $representative): ?>
-                            <option value="<?= (int) $representative['id'] ?>" <?= (int) ($establishment['created_by_representative_id'] ?? $establishment['representative_id'] ?? 0) === (int) $representative['id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($representative['nome_completo']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <small class="text-gray-500">Selecione um representante já cadastrado para vincular ao estabelecimento.</small>
-                </div>
-            </div>
-            <?php endif; ?>
 
             <?php if (!empty($documents)): ?>
             <!-- Documentos atuais (últimos na página) -->
