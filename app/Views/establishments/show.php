@@ -364,34 +364,34 @@ $statusLabels = [
                     <?php if (!empty($productData) || !empty($dynamicProductData)): ?>
                         <!-- CDX/EVO -->
                         <?php if (isset($productData['pagseguro'])): ?>
-                        <div class="mb-6 p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div class="mb-6 p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-copy-product>
                             <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                                 <i class="fas fa-credit-card mr-2"></i>
-                                CDX/EVO
+                                <span class="copyable-title">CDX/EVO</span>
                             </h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                                 <?php if (!empty($productData['pagseguro']['previsao_faturamento'])): ?>
                                 <div>
                                     <span class="text-gray-600 dark:text-gray-400">Previsão de Faturamento:</span>
-                                    <span class="font-medium text-gray-900 dark:text-white">R$ <?= number_format($productData['pagseguro']['previsao_faturamento'], 2, ',', '.') ?></span>
+                                    <span class="font-medium text-gray-900 dark:text-white copyable-value">R$ <?= number_format($productData['pagseguro']['previsao_faturamento'], 2, ',', '.') ?></span>
                                 </div>
                                 <?php endif; ?>
                                 <?php if (!empty($productData['pagseguro']['tabela'])): ?>
                                 <div>
                                     <span class="text-gray-600 dark:text-gray-400">Tabela:</span>
-                                    <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars($productData['pagseguro']['tabela']) ?></span>
+                                    <span class="font-medium text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars($productData['pagseguro']['tabela']) ?></span>
                                 </div>
                                 <?php endif; ?>
                                 <?php if (!empty($productData['pagseguro']['modelo_maquininha'])): ?>
                                 <div>
                                     <span class="text-gray-600 dark:text-gray-400">Modelo de Maquininha:</span>
-                                    <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars($productData['pagseguro']['modelo_maquininha']) ?></span>
+                                    <span class="font-medium text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars($productData['pagseguro']['modelo_maquininha']) ?></span>
                                 </div>
                                 <?php endif; ?>
                                 <?php if (!empty($productData['pagseguro']['meio_pagamento'])): ?>
                                 <div>
                                     <span class="text-gray-600 dark:text-gray-400">Meio de Pagamento da Adesão:</span>
-                                    <span class="font-medium text-gray-900 dark:text-white">
+                                    <span class="font-medium text-gray-900 dark:text-white copyable-value">
                                         <?php
                                         $meioPagamento = $productData['pagseguro']['meio_pagamento'];
                                         $meioLabels = [
@@ -408,7 +408,7 @@ $statusLabels = [
                                 <?php if (!empty($productData['pagseguro']['valor'])): ?>
                                 <div>
                                     <span class="text-gray-600 dark:text-gray-400">Valor:</span>
-                                    <span class="font-medium text-gray-900 dark:text-white">R$ <?= number_format($productData['pagseguro']['valor'], 2, ',', '.') ?></span>
+                                    <span class="font-medium text-gray-900 dark:text-white copyable-value">R$ <?= number_format($productData['pagseguro']['valor'], 2, ',', '.') ?></span>
                                 </div>
                                 <?php endif; ?>
                             </div>
@@ -417,22 +417,22 @@ $statusLabels = [
 
                         <!-- CDC -->
                         <?php if (isset($productData['brasilcard'])): ?>
-                        <div class="mb-6 p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div class="mb-6 p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-copy-product>
                             <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                                 <i class="fas fa-id-card mr-2"></i>
-                                CDC
+                                <span class="copyable-title">CDC</span>
                             </h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                 <?php if (!empty($productData['brasilcard']['taxa'])): ?>
                                 <div>
                                     <span class="text-gray-600 dark:text-gray-400">Taxa:</span>
-                                    <span class="font-medium text-gray-900 dark:text-white"><?= number_format($productData['brasilcard']['taxa'], 2, ',', '.') ?>%</span>
+                                    <span class="font-medium text-gray-900 dark:text-white copyable-value"><?= number_format($productData['brasilcard']['taxa'], 2, ',', '.') ?>%</span>
                                 </div>
                                 <?php endif; ?>
                                 <?php if (!empty($productData['brasilcard']['meio_pagamento'])): ?>
                                 <div>
                                     <span class="text-gray-600 dark:text-gray-400">Meio de Pagamento da Adesão:</span>
-                                    <span class="font-medium text-gray-900 dark:text-white">
+                                    <span class="font-medium text-gray-900 dark:text-white copyable-value">
                                         <?php
                                         $meioPagamento = $productData['brasilcard']['meio_pagamento'];
                                         $meioLabels = [
@@ -449,7 +449,7 @@ $statusLabels = [
                                 <?php if (!empty($productData['brasilcard']['valor'])): ?>
                                 <div>
                                     <span class="text-gray-600 dark:text-gray-400">Valor:</span>
-                                    <span class="font-medium text-gray-900 dark:text-white">R$ <?= number_format($productData['brasilcard']['valor'], 2, ',', '.') ?></span>
+                                    <span class="font-medium text-gray-900 dark:text-white copyable-value">R$ <?= number_format($productData['brasilcard']['valor'], 2, ',', '.') ?></span>
                                 </div>
                                 <?php endif; ?>
                             </div>
@@ -484,34 +484,34 @@ $statusLabels = [
                                 $displayName = $productNameMap[$productName] ?? $productName;
                                 $isPagSeguro = ($productName === 'prod-pagbank');
                             ?>
-                            <div class="p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div class="p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-copy-product>
                                 <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                                     <i class="fas fa-box mr-2"></i>
-                                    <?= htmlspecialchars($displayName) ?>
+                                    <span class="copyable-title"><?= htmlspecialchars($displayName) ?></span>
                                 </h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                                     <?php if ($isPagSeguro && !empty($otherProduct['previsao_faturamento'])): ?>
                                     <div>
                                         <span class="text-gray-600 dark:text-gray-400">Previsão de Faturamento:</span>
-                                        <span class="font-medium text-gray-900 dark:text-white">R$ <?= number_format($otherProduct['previsao_faturamento'], 2, ',', '.') ?></span>
+                                        <span class="font-medium text-gray-900 dark:text-white copyable-value">R$ <?= number_format($otherProduct['previsao_faturamento'], 2, ',', '.') ?></span>
                                     </div>
                                     <?php endif; ?>
                                     <?php if ($isPagSeguro && !empty($otherProduct['tabela'])): ?>
                                     <div>
                                         <span class="text-gray-600 dark:text-gray-400">Tabela:</span>
-                                        <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars($otherProduct['tabela']) ?></span>
+                                        <span class="font-medium text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars($otherProduct['tabela']) ?></span>
                                     </div>
                                     <?php endif; ?>
                                     <?php if ($isPagSeguro && !empty($otherProduct['modelo_maquininha'])): ?>
                                     <div>
                                         <span class="text-gray-600 dark:text-gray-400">Modelo de Maquininha:</span>
-                                        <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars($otherProduct['modelo_maquininha']) ?></span>
+                                        <span class="font-medium text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars($otherProduct['modelo_maquininha']) ?></span>
                                     </div>
                                     <?php endif; ?>
                                     <?php if (!empty($otherProduct['meio_pagamento'])): ?>
                                     <div>
                                         <span class="text-gray-600 dark:text-gray-400">Meio de Pagamento da Adesão:</span>
-                                        <span class="font-medium text-gray-900 dark:text-white">
+                                        <span class="font-medium text-gray-900 dark:text-white copyable-value">
                                             <?php
                                             $meioPagamento = $otherProduct['meio_pagamento'];
                                             $meioLabels = [
@@ -528,7 +528,7 @@ $statusLabels = [
                                     <?php if (!empty($otherProduct['valor'])): ?>
                                     <div>
                                         <span class="text-gray-600 dark:text-gray-400">Valor:</span>
-                                        <span class="font-medium text-gray-900 dark:text-white">R$ <?= number_format($otherProduct['valor'], 2, ',', '.') ?></span>
+                                        <span class="font-medium text-gray-900 dark:text-white copyable-value">R$ <?= number_format($otherProduct['valor'], 2, ',', '.') ?></span>
                                     </div>
                                     <?php endif; ?>
                                 </div>
@@ -541,10 +541,10 @@ $statusLabels = [
                         <?php if (!empty($dynamicProductData)): ?>
                         <div class="space-y-4 mt-4">
                             <?php foreach ($dynamicProductData as $dynamicProduct): ?>
-                            <div class="p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div class="p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-copy-product>
                                 <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                                     <i class="fas fa-layer-group mr-2"></i>
-                                    <?= htmlspecialchars($dynamicProduct['product_name'] ?? 'Produto Dinâmico') ?>
+                                    <span class="copyable-title"><?= htmlspecialchars($dynamicProduct['product_name'] ?? 'Produto Dinâmico') ?></span>
                                 </h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                                     <?php foreach (($dynamicProduct['fields'] ?? []) as $field): ?>
@@ -557,7 +557,7 @@ $statusLabels = [
                                         ?>
                                         <div>
                                             <span class="text-gray-600 dark:text-gray-400"><?= htmlspecialchars($field['label'] ?? $fieldKey) ?>:</span>
-                                            <span class="font-medium text-gray-900 dark:text-white"><?= htmlspecialchars((string) $fieldValue) ?></span>
+                                            <span class="font-medium text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars((string) $fieldValue) ?></span>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
@@ -716,16 +716,11 @@ $statusLabels = [
                                 <?= date('d/m/Y H:i', strtotime($establishment['updated_at'] ?? '')) ?>
                             </dd>
                         </div>
-                        <?php if (!empty($establishment['created_by_user_name'])): ?>
+                        <?php $ownerName = establishment_owner_name($establishment); ?>
+                        <?php if ($ownerName !== ''): ?>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Criado por (Admin)</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['created_by_user_name']) ?></dd>
-                        </div>
-                        <?php endif; ?>
-                        <?php if (!empty($establishment['created_by_representative_name'])): ?>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Criado por (Representante)</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($establishment['created_by_representative_name']) ?></dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Parceiros/Usuário</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($ownerName) ?></dd>
                         </div>
                         <?php endif; ?>
                     </dl>
@@ -1082,6 +1077,10 @@ document.addEventListener('keydown', function(e) {
     align-items: center;
     gap: 0.5rem;
 }
+h4.copy-value-wrapper {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
 .copy-value-button {
     width: 1.75rem;
     height: 1.75rem;
@@ -1098,9 +1097,17 @@ document.addEventListener('keydown', function(e) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('dl dd').forEach(function(valueEl) {
-        const text = valueEl.innerText.trim();
-        if (!text || text === '-' || valueEl.dataset.copyReady === '1') {
+    function markCopied(button) {
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(function() { button.innerHTML = '<i class="fas fa-copy"></i>'; }, 1200);
+    }
+
+    function attachCopyButton(valueEl, getText, title) {
+        if (!valueEl || valueEl.dataset.copyReady === '1') {
+            return;
+        }
+        const text = (typeof getText === 'function' ? getText() : (getText || valueEl.innerText)).trim();
+        if (!text || text === '-') {
             return;
         }
         valueEl.dataset.copyReady = '1';
@@ -1108,15 +1115,61 @@ document.addEventListener('DOMContentLoaded', function() {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'copy-value-button';
-        button.title = 'Copiar informação';
+        button.title = title || 'Copiar informação';
         button.innerHTML = '<i class="fas fa-copy"></i>';
-        button.addEventListener('click', function() {
-            navigator.clipboard.writeText(text).then(function() {
-                button.innerHTML = '<i class="fas fa-check"></i>';
-                setTimeout(function() { button.innerHTML = '<i class="fas fa-copy"></i>'; }, 1200);
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const currentText = (typeof getText === 'function' ? getText() : text).trim();
+            navigator.clipboard.writeText(currentText).then(function() {
+                markCopied(button);
             });
         });
         valueEl.appendChild(button);
+    }
+
+    document.querySelectorAll('dl dd').forEach(function(valueEl) {
+        attachCopyButton(valueEl, function() { return valueEl.innerText.replace(/\s+$/, ''); });
+    });
+
+    document.querySelectorAll('.copyable-value').forEach(function(valueEl) {
+        attachCopyButton(valueEl, function() { return valueEl.innerText; });
+    });
+
+    document.querySelectorAll('[data-copy-product]').forEach(function(card) {
+        const titleEl = card.querySelector('.copyable-title');
+        const heading = card.querySelector('h4');
+        if (!heading || heading.dataset.copyReady === '1') {
+            return;
+        }
+        heading.dataset.copyReady = '1';
+        heading.classList.add('copy-value-wrapper');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-value-button';
+        button.title = 'Copiar produto e campos';
+        button.innerHTML = '<i class="fas fa-copy"></i>';
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const lines = [];
+            const title = titleEl ? titleEl.innerText.trim() : '';
+            if (title) {
+                lines.push(title);
+            }
+            card.querySelectorAll('.copyable-value').forEach(function(valueEl) {
+                const labelEl = valueEl.previousElementSibling;
+                const label = labelEl ? labelEl.innerText.replace(':', '').trim() : '';
+                const value = valueEl.innerText.trim();
+                if (value) {
+                    lines.push(label ? (label + ': ' + value) : value);
+                }
+            });
+            navigator.clipboard.writeText(lines.join('\n')).then(function() {
+                markCopied(button);
+            });
+        });
+        heading.appendChild(button);
     });
 });
 </script>

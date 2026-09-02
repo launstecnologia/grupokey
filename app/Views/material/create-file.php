@@ -10,9 +10,9 @@ ob_start();
     <div>
         <h1 class="h3 mb-0 text-gray-800">
             <i class="fas fa-plus me-2 text-primary"></i>
-            Novo Arquivo
+            Novo Material
         </h1>
-        <p class="text-muted mb-0">Envie um novo arquivo para o material de apoio</p>
+        <p class="text-muted mb-0">Envie um arquivo, HTML ou cadastre um link no material de apoio</p>
     </div>
     <div>
         <a href="<?= url('material') ?>" class="btn btn-outline-secondary shadow-sm">
@@ -75,7 +75,21 @@ ob_start();
                             <div class="form-text">Descrição opcional do arquivo</div>
                         </div>
                         
-                        <div class="col-12 mb-4">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-semibold d-block">Tipo do material <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="material_kind" id="material_kind_file" value="file" <?= (($_POST['material_kind'] ?? 'file') !== 'link') ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="material_kind_file">Arquivo (incluindo HTML)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="material_kind" id="material_kind_link" value="link" <?= (($_POST['material_kind'] ?? '') === 'link') ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="material_kind_link">Link externo</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-4" id="material-file-fields">
                             <label for="file" class="form-label fw-semibold">Arquivo <span class="text-danger">*</span></label>
                             <label for="file" class="material-dropzone" id="material-dropzone">
                                 <span class="material-dropzone-icon">
@@ -85,11 +99,19 @@ ob_start();
                                 <span class="material-dropzone-subtitle">ou clique para escolher no computador</span>
                                 <span class="material-dropzone-filename" id="material-dropzone-filename"></span>
                             </label>
-                            <input type="file" class="visually-hidden" id="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.m4v,.mov,.avi,.webm,.mkv,.zip,.rar" required>
+                            <input type="file" class="visually-hidden" id="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.html,.htm,.jpg,.jpeg,.png,.gif,.mp4,.m4v,.mov,.avi,.webm,.mkv,.zip,.rar" required>
                             <div class="form-text">
-                                <strong>Tipos permitidos:</strong> PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, M4V, MOV, AVI, WEBM, MKV, ZIP, RAR<br>
+                                <strong>Tipos permitidos:</strong> PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, HTML, HTM, JPG, PNG, GIF, MP4, M4V, MOV, AVI, WEBM, MKV, ZIP, RAR<br>
                                 <strong>Tamanho máximo:</strong> 200MB
                             </div>
+                        </div>
+
+                        <div class="col-12 mb-4" id="material-link-fields" style="display: none;">
+                            <label for="external_url" class="form-label fw-semibold">Link <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control shadow-sm" id="external_url" name="external_url"
+                                   value="<?= htmlspecialchars($_POST['external_url'] ?? '') ?>"
+                                   placeholder="https://exemplo.com/material">
+                            <div class="form-text">Informe um endereço completo começando com http:// ou https://</div>
                         </div>
 
                         <div class="col-12 mb-4">
@@ -108,7 +130,7 @@ ob_start();
                         </a>
                         <button type="submit" class="btn btn-primary shadow-sm" id="material-create-file-submit-btn">
                             <i class="fas fa-upload me-2" id="material-create-file-submit-icon"></i>
-                            <span id="material-create-file-submit-text">Enviar Arquivo</span>
+                            <span id="material-create-file-submit-text">Salvar Material</span>
                         </button>
                     </div>
                 </form>
@@ -132,6 +154,8 @@ ob_start();
                     <li><i class="fas fa-file-excel text-success me-2"></i> Excel (XLS, XLSX)</li>
                     <li><i class="fas fa-file-powerpoint text-warning me-2"></i> PowerPoint (PPT, PPTX)</li>
                     <li><i class="fas fa-file-alt text-secondary me-2"></i> Texto (TXT)</li>
+                    <li><i class="fas fa-file-code text-warning me-2"></i> HTML (HTML, HTM)</li>
+                    <li><i class="fas fa-link text-primary me-2"></i> Link externo</li>
                     <li><i class="fas fa-file-image text-info me-2"></i> Imagens (JPG, PNG, GIF)</li>
                     <li><i class="fas fa-file-video text-danger me-2"></i> Vídeos (MP4, M4V, MOV, AVI, WEBM, MKV)</li>
                     <li><i class="fas fa-file-archive text-warning me-2"></i> Compactados (ZIP, RAR)</li>
@@ -163,6 +187,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitText = document.getElementById('material-create-file-submit-text');
     const dropzone = document.getElementById('material-dropzone');
     const dropzoneFilename = document.getElementById('material-dropzone-filename');
+    const fileFields = document.getElementById('material-file-fields');
+    const linkFields = document.getElementById('material-link-fields');
+    const urlInput = document.getElementById('external_url');
+    const kindInputs = document.querySelectorAll('input[name="material_kind"]');
+
+    function getMaterialKind() {
+        const selected = document.querySelector('input[name="material_kind"]:checked');
+        return selected ? selected.value : 'file';
+    }
+
+    function syncMaterialKind() {
+        const kind = getMaterialKind();
+        const isLink = kind === 'link';
+        if (fileFields) fileFields.style.display = isLink ? 'none' : '';
+        if (linkFields) linkFields.style.display = isLink ? '' : 'none';
+        if (fileInput) {
+            if (isLink) {
+                fileInput.removeAttribute('required');
+            } else {
+                fileInput.setAttribute('required', 'required');
+            }
+        }
+        if (urlInput) {
+            if (isLink) {
+                urlInput.setAttribute('required', 'required');
+            } else {
+                urlInput.removeAttribute('required');
+            }
+        }
+    }
+
+    kindInputs.forEach(function(input) {
+        input.addEventListener('change', syncMaterialKind);
+    });
+    syncMaterialKind();
 
     function updateDropzoneFilename() {
         const file = fileInput && fileInput.files ? fileInput.files[0] : null;
@@ -198,22 +257,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     form.addEventListener('submit', function(e) {
-        const file = fileInput.files[0];
-        
-        if (file) {
-            if (file.size > 200 * 1024 * 1024) {
+        if (getMaterialKind() === 'link') {
+            const url = urlInput ? urlInput.value.trim() : '';
+            if (!/^https?:\/\//i.test(url)) {
                 e.preventDefault();
-                alert('Arquivo muito grande! Tamanho máximo: 200MB');
+                alert('Informe um link válido começando com http:// ou https://');
                 return;
             }
+        } else {
+            const file = fileInput.files[0];
+            
+            if (file) {
+                if (file.size > 200 * 1024 * 1024) {
+                    e.preventDefault();
+                    alert('Arquivo muito grande! Tamanho máximo: 200MB');
+                    return;
+                }
 
-            const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'm4v', 'mov', 'avi', 'webm', 'mkv', 'zip', 'rar'];
-            const fileExtension = (file.name.split('.').pop() || '').toLowerCase();
+                const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'html', 'htm', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'm4v', 'mov', 'avi', 'webm', 'mkv', 'zip', 'rar'];
+                const fileExtension = (file.name.split('.').pop() || '').toLowerCase();
 
-            if (!allowedExtensions.includes(fileExtension)) {
-                e.preventDefault();
-                alert('Tipo de arquivo não permitido!');
-                return;
+                if (!allowedExtensions.includes(fileExtension)) {
+                    e.preventDefault();
+                    alert('Tipo de arquivo não permitido!');
+                    return;
+                }
             }
         }
 

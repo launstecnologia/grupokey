@@ -179,6 +179,15 @@ class Material
             } else {
                 $sql .= " AND 1 = 0";
             }
+        } elseif (!empty($filters['allowed_product_keys']) && is_array($filters['allowed_product_keys'])) {
+            $categoryIds = $this->getCategoryIdsByProductKeys($filters['allowed_product_keys']);
+            if (empty($categoryIds)) {
+                $sql .= " AND 1 = 0";
+            } else {
+                $placeholders = implode(',', array_fill(0, count($categoryIds), '?'));
+                $sql .= " AND f.category_id IN ({$placeholders})";
+                $params = array_merge($params, $categoryIds);
+            }
         }
 
         if (isset($filters['is_active']) && $filters['is_active'] !== '') {
@@ -272,9 +281,9 @@ class Material
     {
         $file = $this->getFileById($id);
         if ($file) {
-            // Deletar arquivo físico
-            $filePath = $file['file_path'];
-            if (file_exists($filePath)) {
+            $filePath = (string) ($file['file_path'] ?? '');
+            $isLink = strtolower((string) ($file['file_type'] ?? '')) === 'link';
+            if (!$isLink && $filePath !== '' && is_file($filePath)) {
                 unlink($filePath);
             }
             
@@ -405,6 +414,19 @@ class Material
         }
 
         return strtoupper(trim((string) ($category['name'] ?? '')));
+    }
+
+    public function getCategoryIdsByProductKeys(array $productKeys): array
+    {
+        $ids = [];
+        foreach ($productKeys as $productKey) {
+            $categoryId = $this->getCategoryIdByProductKey((string) $productKey);
+            if ($categoryId !== null) {
+                $ids[] = $categoryId;
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 
     private function getCategoryIdByProductKey(string $productKey): ?string

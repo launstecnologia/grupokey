@@ -42,7 +42,7 @@ if (!empty($oldInput) && is_array($oldInput)) {
         'nome_completo', 'nome_fantasia', 'segmento', 'telefone', 'email',
         'cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf',
         'banco', 'agencia', 'conta', 'tipo_conta', 'chave_pix',
-        'observacoes', 'status', 'representative_id', 'is_filial', 'mdr', 'adesao', 'valor_adesao'
+        'observacoes', 'status', 'representative_id', 'owner_ref', 'is_filial', 'mdr', 'adesao', 'valor_adesao'
     ];
     foreach ($editableFields as $field) {
         if (array_key_exists($field, $oldInput)) {
@@ -311,28 +311,47 @@ function isProductSelected($productId, $productData) {
             </div>
 
             <?php if (App\Core\Auth::isAdmin()): ?>
+            <?php
+                $selectedOwnerRef = (string) old('owner_ref', establishment_owner_ref($establishment));
+                $currentOwnerName = establishment_owner_name($establishment);
+            ?>
             <div class="mb-8" id="representative-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-user mr-2 text-blue-600"></i>
-                    Representante
+                    Parceiros/Usuário
                 </h4>
                 <div class="max-w-xl">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Trocar representante</label>
-                    <?php $currentRepresentativeId = (int) ($establishment['created_by_representative_id'] ?? $establishment['representative_id'] ?? 0); ?>
-                    <select name="representative_id" id="representative_id"
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Trocar parceiro/usuário</label>
+                    <select name="owner_ref" id="owner_ref"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Sem representante vinculado</option>
-                        <?php foreach ($representatives as $representative): ?>
-                            <option value="<?= (int) $representative['id'] ?>" <?= $currentRepresentativeId === (int) $representative['id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($representative['nome_completo']) ?>
-                                <?= (($representative['status'] ?? '') !== 'ACTIVE') ? ' (inativo)' : '' ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <option value="">Sem vínculo</option>
+                        <?php if (!empty($representatives)): ?>
+                        <optgroup label="Parceiros">
+                            <?php foreach ($representatives as $representative): ?>
+                                <?php $repRef = 'rep:' . (int) $representative['id']; ?>
+                                <option value="<?= $repRef ?>" <?= $selectedOwnerRef === $repRef ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($representative['nome_completo']) ?>
+                                    <?= (($representative['status'] ?? '') !== 'ACTIVE') ? ' (inativo)' : '' ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <?php endif; ?>
+                        <?php if (!empty($systemUsers)): ?>
+                        <optgroup label="Usuários do sistema">
+                            <?php foreach ($systemUsers as $systemUser): ?>
+                                <?php $userRef = 'user:' . (int) $systemUser['id']; ?>
+                                <option value="<?= $userRef ?>" <?= $selectedOwnerRef === $userRef ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($systemUser['name'] ?? '') ?>
+                                    <?= (($systemUser['status'] ?? '') !== 'ACTIVE') ? ' (inativo)' : '' ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <?php endif; ?>
                     </select>
-                    <?php if (!empty($establishment['created_by_representative_name'])): ?>
-                        <small class="text-gray-500">Atual: <?= htmlspecialchars($establishment['created_by_representative_name']) ?></small>
+                    <?php if ($currentOwnerName !== ''): ?>
+                        <small class="text-gray-500">Atual: <?= htmlspecialchars($currentOwnerName) ?></small>
                     <?php else: ?>
-                        <small class="text-gray-500">Selecione um representante para vincular a este estabelecimento.</small>
+                        <small class="text-gray-500">Selecione um parceiro ou um usuário do sistema para vincular a este estabelecimento.</small>
                     <?php endif; ?>
                 </div>
             </div>
@@ -2132,7 +2151,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.querySelectorAll('input, select, textarea').forEach(function(field) {
+    function markCopied(button) {
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(function() { button.innerHTML = '<i class="fas fa-copy"></i>'; }, 1200);
+    }
+
+    function attachFieldCopy(field) {
         const type = (field.getAttribute('type') || '').toLowerCase();
         const name = field.getAttribute('name') || '';
         if (!name || ['hidden', 'password', 'file', 'checkbox', 'radio'].includes(type) || field.dataset.copyReady === '1') {
@@ -2153,11 +2177,82 @@ document.addEventListener('DOMContentLoaded', function() {
                 ? (field.options[field.selectedIndex] ? field.options[field.selectedIndex].text : field.value)
                 : field.value;
             navigator.clipboard.writeText(value || '').then(function() {
-                button.innerHTML = '<i class="fas fa-check"></i>';
-                setTimeout(function() { button.innerHTML = '<i class="fas fa-copy"></i>'; }, 1200);
+                markCopied(button);
             });
         });
         wrapper.appendChild(button);
+    }
+
+    document.querySelectorAll('input, select, textarea').forEach(attachFieldCopy);
+
+    document.querySelectorAll('#manual-products-section label').forEach(function(label) {
+        if (label.dataset.copyReady === '1') {
+            return;
+        }
+        const nameEl = label.querySelector('span');
+        const productName = nameEl ? nameEl.innerText.trim() : label.innerText.trim();
+        if (!productName) {
+            return;
+        }
+        label.dataset.copyReady = '1';
+        label.classList.add('copy-product-label');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-field-button';
+        button.title = 'Copiar produto';
+        button.innerHTML = '<i class="fas fa-copy"></i>';
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            navigator.clipboard.writeText(productName).then(function() {
+                markCopied(button);
+            });
+        });
+        label.appendChild(button);
+    });
+
+    document.querySelectorAll('[id$="-config"]').forEach(function(card) {
+        const heading = card.querySelector('h5, h4');
+        if (!heading || heading.dataset.copyReady === '1') {
+            return;
+        }
+        if (!card.querySelector('input, select, textarea')) {
+            return;
+        }
+        heading.dataset.copyReady = '1';
+        heading.classList.add('copy-product-heading');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-field-button';
+        button.title = 'Copiar produto e campos';
+        button.innerHTML = '<i class="fas fa-copy"></i>';
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const lines = [];
+            const title = heading.innerText.trim();
+            if (title) {
+                lines.push(title);
+            }
+            card.querySelectorAll('input, select, textarea').forEach(function(field) {
+                const type = (field.getAttribute('type') || '').toLowerCase();
+                if (['hidden', 'password', 'file', 'checkbox', 'radio'].includes(type)) {
+                    return;
+                }
+                const label = field.closest('div') ? field.closest('div').querySelector('label') : null;
+                const labelText = label ? label.innerText.replace('*', '').trim() : '';
+                const value = field.tagName === 'SELECT'
+                    ? (field.options[field.selectedIndex] ? field.options[field.selectedIndex].text : field.value)
+                    : field.value;
+                if (String(value || '').trim() !== '') {
+                    lines.push(labelText ? (labelText + ': ' + value) : value);
+                }
+            });
+            navigator.clipboard.writeText(lines.join('\n')).then(function() {
+                markCopied(button);
+            });
+        });
+        heading.appendChild(button);
     });
 });
 </script>
@@ -2184,6 +2279,18 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 .copy-field-wrapper > textarea + .copy-field-button {
     top: 1.35rem;
+}
+.copy-product-label,
+.copy-product-heading {
+    position: relative;
+    padding-right: 2.5rem;
+}
+.copy-product-label .copy-field-button,
+.copy-product-heading .copy-field-button {
+    position: absolute;
+    right: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
 }
 .dark .edit-document-card {
     background-color: #0f172a !important;

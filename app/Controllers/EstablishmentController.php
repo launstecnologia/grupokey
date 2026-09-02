@@ -66,6 +66,7 @@ class EstablishmentController
         
         $establishments = $this->establishmentModel->getAll($filters);
         $representatives = $this->representativeModel->getAll(['status' => 'ACTIVE']);
+        $systemUsers = $this->getSystemUsersForOwnerSelect();
         
         $stats = $this->establishmentModel->getStats($filters);
         
@@ -74,6 +75,7 @@ class EstablishmentController
             'currentPage' => 'estabelecimentos',
             'establishments' => $establishments,
             'representatives' => $representatives,
+            'systemUsers' => $systemUsers,
             'productFilterOptions' => $this->getProductFilterOptions(),
             'filters' => $filters,
             'stats' => $stats ?? [
@@ -100,8 +102,10 @@ class EstablishmentController
         Auth::requireAuth();
         
         $representatives = [];
+        $systemUsers = [];
         if (Auth::isAdmin()) {
             $representatives = $this->representativeModel->getAll(['status' => 'ACTIVE']);
+            $systemUsers = $this->getSystemUsersForOwnerSelect();
         }
         
         // Buscar planos disponíveis da API SistPay
@@ -121,6 +125,7 @@ class EstablishmentController
             'title' => 'Novo Estabelecimento',
             'currentPage' => 'estabelecimentos',
             'representatives' => $representatives,
+            'systemUsers' => $systemUsers,
             'products' => $this->productModel->getAll(),
             'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
@@ -173,7 +178,7 @@ class EstablishmentController
                 'Cidade',
                 'UF',
                 'Produtos',
-                'Representante',
+                'Parceiros/Usuário',
                 'Status',
                 'Criado em'
             ], ';');
@@ -190,9 +195,8 @@ class EstablishmentController
                 $products = $this->resolveEstablishmentProductsForExport($establishment);
                 $status = strtoupper((string) ($establishment['status'] ?? ''));
                 $statusLabel = $statusLabels[$status] ?? $status;
-                $createdBy = !empty($establishment['created_by_representative_name'])
-                    ? (string) $establishment['created_by_representative_name']
-                    : (!empty($establishment['created_by_user_name']) ? (string) $establishment['created_by_user_name'] : 'N/A');
+                $createdBy = establishment_owner_name($establishment);
+                $createdBy = $createdBy !== '' ? $createdBy : 'N/A';
 
                 fputcsv($output, [
                     (string) ($establishment['id'] ?? ''),
@@ -495,6 +499,7 @@ class EstablishmentController
         }
         
         $representatives = [];
+        $systemUsers = [];
         if (Auth::isAdmin()) {
             $representatives = $this->representativeModel->getAll(['status' => 'ACTIVE']);
             $currentRepresentativeId = (int) ($establishment['created_by_representative_id'] ?? 0);
@@ -513,6 +518,7 @@ class EstablishmentController
                     }
                 }
             }
+            $systemUsers = $this->getSystemUsersForOwnerSelect((int) ($establishment['created_by_user_id'] ?? 0));
         }
         
         // Debug: Log dos dados do estabelecimento
@@ -540,6 +546,7 @@ class EstablishmentController
             'currentPage' => 'estabelecimentos',
             'establishment' => $establishment,
             'representatives' => $representatives,
+            'systemUsers' => $systemUsers,
             'products' => $products,
             'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
@@ -1067,6 +1074,44 @@ class EstablishmentController
         redirect(url('estabelecimentos/' . $id));
     }
     
+    private function parseOwnerRef($raw): array
+    {
+        $value = trim((string) $raw);
+        if ($value === '') {
+            return ['type' => null, 'id' => 0];
+        }
+
+        if (preg_match('/^(rep|user):(\d+)$/', $value, $matches)) {
+            $id = (int) $matches[2];
+            if ($id > 0) {
+                return ['type' => $matches[1], 'id' => $id];
+            }
+        }
+
+        return ['type' => null, 'id' => 0];
+    }
+
+    private function getSystemUsersForOwnerSelect(int $includeUserId = 0): array
+    {
+        $users = $this->userModel->getAll(['status' => 'ACTIVE']);
+        $unique = [];
+        foreach ($users as $user) {
+            $userId = (int) ($user['id'] ?? 0);
+            if ($userId > 0) {
+                $unique[$userId] = $user;
+            }
+        }
+
+        if ($includeUserId > 0 && !isset($unique[$includeUserId])) {
+            $currentUser = $this->userModel->findById($includeUserId);
+            if (is_array($currentUser) && !empty($currentUser)) {
+                $unique = [$includeUserId => $currentUser] + $unique;
+            }
+        }
+
+        return array_values($unique);
+    }
+
     private function getFilters()
     {
         $filters = [];
@@ -1083,8 +1128,19 @@ class EstablishmentController
             $filters['cidade'] = sanitize_input($_GET['cidade']);
         }
         
-        if (isset($_GET['representative_id']) && !empty($_GET['representative_id'])) {
-            $filters['representative_id'] = (int)$_GET['representative_id'];
+        if (Auth::isAdmin()) {
+            $ownerRef = trim((string) ($_GET['owner_ref'] ?? ''));
+            if ($ownerRef === '' && isset($_GET['representative_id']) && $_GET['representative_id'] !== '') {
+                $ownerRef = 'rep:' . (int) $_GET['representative_id'];
+            }
+            $owner = $this->parseOwnerRef($ownerRef);
+            if ($owner['type'] === 'rep') {
+                $filters['representative_id'] = $owner['id'];
+                $filters['owner_ref'] = $ownerRef;
+            } elseif ($owner['type'] === 'user') {
+                $filters['created_by_user_id'] = $owner['id'];
+                $filters['owner_ref'] = $ownerRef;
+            }
         }
         
         if (isset($_GET['cnpj']) && !empty($_GET['cnpj'])) {
@@ -1152,7 +1208,7 @@ class EstablishmentController
             'Cidade',
             'UF',
             'Produtos',
-            'Representante',
+            'Parceiros/Usuário',
             'Status',
             'Criado em'
         ];
@@ -1165,9 +1221,8 @@ class EstablishmentController
             $products = $this->resolveEstablishmentProductsForExport($establishment);
             $status = strtoupper((string)($establishment['status'] ?? ''));
             $statusLabel = $statusLabels[$status] ?? $status;
-            $createdBy = !empty($establishment['created_by_representative_name'])
-                ? (string)$establishment['created_by_representative_name']
-                : (!empty($establishment['created_by_user_name']) ? (string)$establishment['created_by_user_name'] : 'N/A');
+            $createdBy = establishment_owner_name($establishment);
+            $createdBy = $createdBy !== '' ? $createdBy : 'N/A';
 
             $row = [
                 (string)($establishment['id'] ?? ''),
@@ -1337,7 +1392,8 @@ class EstablishmentController
             'status' => 'Status',
             'produto' => 'Produto',
             'cidade' => 'Cidade',
-            'representative_id' => 'Representante',
+            'representative_id' => 'Parceiro',
+            'created_by_user_id' => 'Usuário',
             'cnpj' => 'CNPJ',
             'cpf' => 'CPF',
             'razao_social' => 'Razão Social',
@@ -1498,20 +1554,29 @@ class EstablishmentController
             }
         }
 
-        // Validar representante selecionado (apenas admin)
-        $selectedRepresentativeId = null;
-        if (Auth::isAdmin() && isset($_POST['representative_id']) && $_POST['representative_id'] !== '') {
-            $selectedRepresentativeId = (int) $_POST['representative_id'];
+        $selectedOwner = ['type' => null, 'id' => 0];
+        if (Auth::isAdmin() && (isset($_POST['owner_ref']) || isset($_POST['representative_id']))) {
+            $ownerRef = trim((string) ($_POST['owner_ref'] ?? ''));
+            if ($ownerRef === '' && isset($_POST['representative_id']) && $_POST['representative_id'] !== '') {
+                $ownerRef = 'rep:' . (int) $_POST['representative_id'];
+            }
+            $selectedOwner = $this->parseOwnerRef($ownerRef);
 
-            if ($selectedRepresentativeId <= 0) {
-                $errors[] = 'Representante selecionado é inválido';
-            } else {
-                $selectedRepresentative = $this->representativeModel->findById($selectedRepresentativeId);
-
+            if ($ownerRef !== '' && $selectedOwner['type'] === null) {
+                $errors[] = 'Parceiro/Usuário selecionado é inválido';
+            } elseif ($selectedOwner['type'] === 'rep') {
+                $selectedRepresentative = $this->representativeModel->findById($selectedOwner['id']);
                 if (!$selectedRepresentative) {
-                    $errors[] = 'Representante selecionado não foi encontrado';
-                } elseif (($selectedRepresentative['status'] ?? '') !== 'ACTIVE') {
-                    $errors[] = 'Apenas representantes ativos podem ser vinculados ao estabelecimento';
+                    $errors[] = 'Parceiro selecionado não foi encontrado';
+                } elseif (($selectedRepresentative['status'] ?? '') !== 'ACTIVE' && $id === null) {
+                    $errors[] = 'Apenas parceiros ativos podem ser vinculados ao estabelecimento';
+                }
+            } elseif ($selectedOwner['type'] === 'user') {
+                $selectedUser = $this->userModel->findById($selectedOwner['id']);
+                if (!$selectedUser) {
+                    $errors[] = 'Usuário selecionado não foi encontrado';
+                } elseif (($selectedUser['status'] ?? '') !== 'ACTIVE' && $id === null) {
+                    $errors[] = 'Apenas usuários ativos podem ser vinculados ao estabelecimento';
                 }
             }
         }
@@ -1607,9 +1672,19 @@ class EstablishmentController
         
         // Definir quem criou/atualizou
         if (Auth::isAdmin()) {
-            $data['created_by_user_id'] = Auth::user()['id'];
-            if (isset($_POST['representative_id'])) {
-                $data['created_by_representative_id'] = !empty($selectedRepresentativeId) ? $selectedRepresentativeId : null;
+            if (isset($_POST['owner_ref']) || isset($_POST['representative_id'])) {
+                if ($selectedOwner['type'] === 'rep') {
+                    $data['created_by_representative_id'] = $selectedOwner['id'];
+                    $data['created_by_user_id'] = Auth::user()['id'] ?? null;
+                } elseif ($selectedOwner['type'] === 'user') {
+                    $data['created_by_representative_id'] = null;
+                    $data['created_by_user_id'] = $selectedOwner['id'];
+                } else {
+                    $data['created_by_representative_id'] = null;
+                    $data['created_by_user_id'] = null;
+                }
+            } else {
+                $data['created_by_user_id'] = Auth::user()['id'] ?? null;
             }
         } else {
             $representative = Auth::representative();
@@ -1660,6 +1735,7 @@ class EstablishmentController
             'adesao',
             'valor_adesao',
             'created_by_representative_id',
+            'created_by_user_id',
             'status',
         ];
 

@@ -1,6 +1,9 @@
 <?php
 use App\Core\Auth;
 $currentPage = 'material';
+$isCurrentLink = is_material_link($file ?? []);
+$selectedKind = $_POST['material_kind'] ?? ($isCurrentLink ? 'link' : 'file');
+$currentUrl = $_POST['external_url'] ?? ($isCurrentLink ? (string) ($file['file_path'] ?? '') : '');
 ob_start();
 ?>
 
@@ -85,7 +88,21 @@ ob_start();
                             </div>
                         </div>
 
-                        <div class="col-12 mb-4">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-semibold d-block">Tipo do material <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="material_kind" id="material_kind_file" value="file" <?= $selectedKind !== 'link' ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="material_kind_file">Arquivo (incluindo HTML)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="material_kind" id="material_kind_link" value="link" <?= $selectedKind === 'link' ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="material_kind_link">Link externo</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-4" id="material-file-fields">
                             <label for="file" class="form-label fw-semibold">Substituir arquivo de download</label>
                             <label for="file" class="material-dropzone" id="material-dropzone">
                                 <span class="material-dropzone-icon">
@@ -95,10 +112,19 @@ ob_start();
                                 <span class="material-dropzone-subtitle">ou clique para escolher no computador</span>
                                 <span class="material-dropzone-filename" id="material-dropzone-filename"></span>
                             </label>
-                            <input type="file" class="visually-hidden" id="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.m4v,.mov,.avi,.webm,.mkv,.zip,.rar">
+                            <input type="file" class="visually-hidden" id="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.html,.htm,.jpg,.jpeg,.png,.gif,.mp4,.m4v,.mov,.avi,.webm,.mkv,.zip,.rar">
                             <div class="form-text">
-                                Deixe em branco para manter o arquivo atual. Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, M4V, MOV, AVI, WEBM, MKV, ZIP, RAR. Tamanho máximo: 200MB.
+                                <?= $isCurrentLink ? 'Envie um arquivo para trocar o link por um download.' : 'Deixe em branco para manter o arquivo atual.' ?>
+                                Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, HTML, HTM, JPG, PNG, GIF, MP4, M4V, MOV, AVI, WEBM, MKV, ZIP, RAR. Tamanho máximo: 200MB.
                             </div>
+                        </div>
+
+                        <div class="col-12 mb-4" id="material-link-fields" style="display: none;">
+                            <label for="external_url" class="form-label fw-semibold">Link <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control shadow-sm" id="external_url" name="external_url"
+                                   value="<?= htmlspecialchars($currentUrl) ?>"
+                                   placeholder="https://exemplo.com/material">
+                            <div class="form-text">Informe um endereço completo começando com http:// ou https://</div>
                         </div>
                     </div>
                     
@@ -130,9 +156,11 @@ ob_start();
                 <ul class="list-unstyled">
                     <li><strong>Título:</strong> <?= htmlspecialchars($file['title']) ?></li>
                     <li><strong>Produto:</strong> <?= htmlspecialchars($file['category_name']) ?></li>
-                    <li><strong>Arquivo:</strong> <?= htmlspecialchars($file['original_filename']) ?></li>
-                    <li><strong>Tipo:</strong> <?= strtoupper($file['file_type']) ?></li>
+                    <li><strong><?= $isCurrentLink ? 'Link:' : 'Arquivo:' ?></strong> <?= htmlspecialchars($file['original_filename']) ?></li>
+                    <li><strong>Tipo:</strong> <?= $isCurrentLink ? 'LINK' : strtoupper($file['file_type']) ?></li>
+                    <?php if (!$isCurrentLink): ?>
                     <li><strong>Tamanho:</strong> <?= format_file_size($file['file_size']) ?></li>
+                    <?php endif; ?>
                     <li><strong>Downloads:</strong> <?= number_format($file['download_count']) ?></li>
                     <li><strong>Enviado por:</strong> <?= htmlspecialchars($file['uploaded_by_name']) ?></li>
                     <li><strong>Criado em:</strong> <?= format_datetime($file['created_at']) ?></li>
@@ -142,10 +170,26 @@ ob_start();
                 <hr>
                 
                 <div class="d-grid gap-2">
+                    <?php if ($isCurrentLink): ?>
+                    <a href="<?= url('material/download/' . $file['id']) ?>" class="btn btn-success btn-sm" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-external-link-alt me-2"></i>
+                        Abrir link
+                    </a>
+                    <?php elseif (is_material_html($file)): ?>
+                    <a href="<?= url('material/download/' . $file['id']) ?>" class="btn btn-success btn-sm">
+                        <i class="fas fa-download me-2"></i>
+                        Baixar HTML
+                    </a>
+                    <a href="<?= url('material/preview/' . $file['id']) ?>" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-eye me-2"></i>
+                        Abrir HTML
+                    </a>
+                    <?php else: ?>
                     <a href="<?= url('material/download/' . $file['id']) ?>" class="btn btn-success btn-sm">
                         <i class="fas fa-download me-2"></i>
                         Download
                     </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -163,8 +207,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('file');
     const dropzone = document.getElementById('material-dropzone');
     const dropzoneFilename = document.getElementById('material-dropzone-filename');
+    const fileFields = document.getElementById('material-file-fields');
+    const linkFields = document.getElementById('material-link-fields');
+    const urlInput = document.getElementById('external_url');
+    const kindInputs = document.querySelectorAll('input[name="material_kind"]');
+    const wasLink = <?= $isCurrentLink ? 'true' : 'false' ?>;
 
     if (!form) return;
+
+    function getMaterialKind() {
+        const selected = document.querySelector('input[name="material_kind"]:checked');
+        return selected ? selected.value : 'file';
+    }
+
+    function syncMaterialKind() {
+        const isLink = getMaterialKind() === 'link';
+        if (fileFields) fileFields.style.display = isLink ? 'none' : '';
+        if (linkFields) linkFields.style.display = isLink ? '' : 'none';
+        if (urlInput) {
+            if (isLink) {
+                urlInput.setAttribute('required', 'required');
+            } else {
+                urlInput.removeAttribute('required');
+            }
+        }
+    }
+
+    kindInputs.forEach(function(input) {
+        input.addEventListener('change', syncMaterialKind);
+    });
+    syncMaterialKind();
 
     function updateDropzoneFilename() {
         const file = fileInput && fileInput.files ? fileInput.files[0] : null;
@@ -200,20 +272,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     form.addEventListener('submit', function(e) {
-        const file = fileInput && fileInput.files ? fileInput.files[0] : null;
-        if (file) {
-            if (file.size > 200 * 1024 * 1024) {
+        if (getMaterialKind() === 'link') {
+            const url = urlInput ? urlInput.value.trim() : '';
+            if (!/^https?:\/\//i.test(url)) {
                 e.preventDefault();
-                alert('Arquivo muito grande! Tamanho máximo: 200MB');
+                alert('Informe um link válido começando com http:// ou https://');
                 return;
             }
-
-            const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'm4v', 'mov', 'avi', 'webm', 'mkv', 'zip', 'rar'];
-            const fileExtension = (file.name.split('.').pop() || '').toLowerCase();
-            if (!allowedExtensions.includes(fileExtension)) {
+        } else {
+            const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+            if (wasLink && !file) {
                 e.preventDefault();
-                alert('Tipo de arquivo não permitido!');
+                alert('Envie um arquivo para substituir o link.');
                 return;
+            }
+            if (file) {
+                if (file.size > 200 * 1024 * 1024) {
+                    e.preventDefault();
+                    alert('Arquivo muito grande! Tamanho máximo: 200MB');
+                    return;
+                }
+
+                const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'html', 'htm', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'm4v', 'mov', 'avi', 'webm', 'mkv', 'zip', 'rar'];
+                const fileExtension = (file.name.split('.').pop() || '').toLowerCase();
+                if (!allowedExtensions.includes(fileExtension)) {
+                    e.preventDefault();
+                    alert('Tipo de arquivo não permitido!');
+                    return;
+                }
             }
         }
 

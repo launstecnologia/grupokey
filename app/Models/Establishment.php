@@ -241,6 +241,11 @@ class Establishment
             $params[] = $filters['representative_id'];
         }
 
+        if (isset($filters['created_by_user_id'])) {
+            $sql .= " AND e.created_by_user_id = ? AND e.created_by_representative_id IS NULL";
+            $params[] = $filters['created_by_user_id'];
+        }
+
         if (isset($filters['date_from'])) {
             $sql .= " AND e.created_at >= ?";
             $params[] = $filters['date_from'];
@@ -339,6 +344,11 @@ class Establishment
             $params[] = $filters['representative_id'];
         }
 
+        if (isset($filters['created_by_user_id'])) {
+            $sql .= " AND e.created_by_user_id = ? AND e.created_by_representative_id IS NULL";
+            $params[] = $filters['created_by_user_id'];
+        }
+
         if (isset($filters['date_from'])) {
             $sql .= " AND e.created_at >= ?";
             $params[] = $filters['date_from'];
@@ -369,7 +379,7 @@ class Establishment
                     banco = ?, agencia = ?, conta = ?, tipo_conta = ?, chave_pix = ?, observacoes = ?,
                     is_filial = ?, mdr = ?, adesao = ?, valor_adesao = ?,
                     pending_product_tags = ?,
-                    status = ?, birth_date = ?, created_by_representative_id = ?, updated_at = NOW()
+                    status = ?, birth_date = ?, created_by_user_id = ?, created_by_representative_id = ?, updated_at = NOW()
                     WHERE id = ?";
 
             // Validar e corrigir valor do ENUM produto
@@ -418,6 +428,7 @@ class Establishment
                 $data['pending_product_tags'] ?? null,
                 $data['status'] ?? 'PENDING',
                 $data['birth_date'] ?? null,
+                array_key_exists('created_by_user_id', $data) ? $data['created_by_user_id'] : null,
                 $data['created_by_representative_id'] ?? null,
                 $id
             ];
@@ -601,6 +612,11 @@ class Establishment
         if (isset($filters['representative_id'])) {
             $sql .= " AND e.created_by_representative_id = ?";
             $params[] = $filters['representative_id'];
+        }
+
+        if (isset($filters['created_by_user_id'])) {
+            $sql .= " AND e.created_by_user_id = ? AND e.created_by_representative_id IS NULL";
+            $params[] = $filters['created_by_user_id'];
         }
 
         if (isset($filters['date_from'])) {

@@ -7,7 +7,8 @@ $stats = $stats ?? ['total' => 0, 'aprovados' => 0, 'pendentes' => 0, 'reprovado
 $establishments = $establishments ?? [];
 $representatives = $representatives ?? [];
 $hasUserFilters = false;
-foreach (['status', 'produto', 'cidade', 'representative_id', 'cnpj', 'cpf', 'razao_social', 'nome', 'date_from', 'date_to'] as $filterKey) {
+$systemUsers = $systemUsers ?? [];
+foreach (['status', 'produto', 'cidade', 'representative_id', 'owner_ref', 'cnpj', 'cpf', 'razao_social', 'nome', 'date_from', 'date_to'] as $filterKey) {
     if (!empty($_GET[$filterKey])) {
         $hasUserFilters = true;
         break;
@@ -173,18 +174,36 @@ foreach (['status', 'produto', 'cidade', 'representative_id', 'cnpj', 'cpf', 'ra
                 <input type="text" name="cidade" value="<?= htmlspecialchars($filters['cidade'] ?? '') ?>" placeholder="Digite a cidade" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             </div>
 
-            <!-- Representante -->
+            <?php if (App\Core\Auth::isAdmin()): ?>
+            <!-- Parceiros/Usuário -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Representante</label>
-                <select name="representative_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Todos os representantes</option>
-                    <?php foreach ($representatives as $representative): ?>
-                    <option value="<?= $representative['id'] ?>" <?= ($filters['representative_id'] ?? '') == $representative['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($representative['nome_completo']) ?>
-                    </option>
-                    <?php endforeach; ?>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parceiros/Usuário</label>
+                <?php $selectedOwnerRef = (string) ($filters['owner_ref'] ?? ''); ?>
+                <select name="owner_ref" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Todos</option>
+                    <?php if (!empty($representatives)): ?>
+                    <optgroup label="Parceiros">
+                        <?php foreach ($representatives as $representative): ?>
+                        <?php $repRef = 'rep:' . (int) $representative['id']; ?>
+                        <option value="<?= $repRef ?>" <?= $selectedOwnerRef === $repRef ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($representative['nome_completo']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </optgroup>
+                    <?php endif; ?>
+                    <?php if (!empty($systemUsers)): ?>
+                    <optgroup label="Usuários do sistema">
+                        <?php foreach ($systemUsers as $systemUser): ?>
+                        <?php $userRef = 'user:' . (int) $systemUser['id']; ?>
+                        <option value="<?= $userRef ?>" <?= $selectedOwnerRef === $userRef ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($systemUser['name'] ?? '') ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </optgroup>
+                    <?php endif; ?>
                 </select>
             </div>
+            <?php endif; ?>
 
             <!-- CNPJ -->
             <div>
@@ -321,7 +340,7 @@ foreach (['status', 'produto', 'cidade', 'representative_id', 'cnpj', 'cpf', 'ra
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estabelecimento</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Representante</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parceiros/Usuário</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
@@ -427,13 +446,10 @@ foreach (['status', 'produto', 'cidade', 'representative_id', 'cnpj', 'cpf', 'ra
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <?php if (!empty($establishment['created_by_representative_name'])): ?>
+                                <?php $ownerName = establishment_owner_name($establishment); ?>
+                                <?php if ($ownerName !== ''): ?>
                                     <span class="text-sm text-gray-900">
-                                        <?= htmlspecialchars($establishment['created_by_representative_name']) ?>
-                                    </span>
-                                <?php elseif (!empty($establishment['created_by_user_id'])): ?>
-                                    <span class="text-sm text-gray-900">
-                                        <?= htmlspecialchars($establishment['created_by_user_name'] ?? 'Administrador') ?>
+                                        <?= htmlspecialchars($ownerName) ?>
                                     </span>
                                 <?php else: ?>
                                     <span class="text-sm text-gray-400">

@@ -906,23 +906,44 @@ if (!$hasOtherDocumentType) {
             </div>
 
             <?php if (App\Core\Auth::isAdmin()): ?>
+            <?php
+                $selectedOwnerRef = (string) old('owner_ref', '');
+                if ($selectedOwnerRef === '' && old('representative_id') !== '' && old('representative_id') !== null) {
+                    $selectedOwnerRef = 'rep:' . (int) old('representative_id');
+                }
+            ?>
             <div class="mb-8" id="representative-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-user mr-2 text-blue-600"></i>
-                    Representante
+                    Parceiros/Usuário
                 </h4>
                 <div class="max-w-xl">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Representante</label>
-                    <select name="representative_id" id="representative_id"
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Parceiros/Usuário</label>
+                    <select name="owner_ref" id="owner_ref"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Sem representante vinculado</option>
-                        <?php foreach ($representatives as $representative): ?>
-                            <option value="<?= (int) $representative['id'] ?>" <?= old('representative_id') == $representative['id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($representative['nome_completo']) ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <option value="">Sem vínculo</option>
+                        <?php if (!empty($representatives)): ?>
+                        <optgroup label="Parceiros">
+                            <?php foreach ($representatives as $representative): ?>
+                                <?php $repRef = 'rep:' . (int) $representative['id']; ?>
+                                <option value="<?= $repRef ?>" <?= $selectedOwnerRef === $repRef ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($representative['nome_completo']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <?php endif; ?>
+                        <?php if (!empty($systemUsers)): ?>
+                        <optgroup label="Usuários do sistema">
+                            <?php foreach ($systemUsers as $systemUser): ?>
+                                <?php $userRef = 'user:' . (int) $systemUser['id']; ?>
+                                <option value="<?= $userRef ?>" <?= $selectedOwnerRef === $userRef ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($systemUser['name'] ?? '') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <?php endif; ?>
                     </select>
-                    <small class="text-gray-500">Selecione um representante já cadastrado para vincular ao estabelecimento.</small>
+                    <small class="text-gray-500">Selecione um parceiro ou um usuário do sistema para vincular ao estabelecimento.</small>
                 </div>
             </div>
             <?php endif; ?>

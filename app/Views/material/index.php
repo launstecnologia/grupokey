@@ -31,7 +31,7 @@ $listFiles = array_values(array_filter($files, static function ($f) {
         <div>
             <a href="<?= url('material/files/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md inline-flex items-center">
                 <i class="fas fa-plus mr-2"></i>
-                Novo Arquivo
+                Novo Material
             </a>
         </div>
         <?php endif; ?>
@@ -101,7 +101,13 @@ $listFiles = array_values(array_filter($files, static function ($f) {
             <?php if (!empty($cardFiles)): ?>
             <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 <?php foreach ($cardFiles as $file): ?>
-                <?php $isImage = stripos((string) ($file['mime_type'] ?? ''), 'image/') === 0; ?>
+                <?php
+                    $isImage = stripos((string) ($file['mime_type'] ?? ''), 'image/') === 0;
+                    $isLink = is_material_link($file);
+                    $isHtml = is_material_html($file);
+                    $typeLabel = $isLink ? 'LINK' : strtoupper((string) $file['file_type']);
+                    $placeholderIcon = $isLink ? 'fa-link' : ($isHtml ? 'fa-file-code' : 'fa-file-alt');
+                ?>
                 <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-all duration-200">
                     <?php if ($isImage): ?>
                     <a href="<?= url('material/preview/' . $file['id']) ?>" target="_blank" title="Ver imagem">
@@ -109,7 +115,7 @@ $listFiles = array_values(array_filter($files, static function ($f) {
                     </a>
                     <?php else: ?>
                     <div class="w-full aspect-square bg-gray-100 flex items-center justify-center text-gray-500">
-                        <i class="fas fa-file-alt text-4xl"></i>
+                        <i class="fas <?= $placeholderIcon ?> text-4xl"></i>
                     </div>
                     <?php endif; ?>
 
@@ -123,29 +129,63 @@ $listFiles = array_values(array_filter($files, static function ($f) {
 
                         <div class="flex flex-wrap gap-1.5 mb-4">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-600 text-white"><?= htmlspecialchars($file['category_name']) ?></span>
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-600 text-white"><?= strtoupper($file['file_type']) ?></span>
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-600 text-white"><i class="fas fa-download mr-1"></i><?= number_format($file['download_count']) ?></span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-600 text-white"><?= htmlspecialchars($typeLabel) ?></span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-600 text-white"><i class="fas <?= $isLink ? 'fa-external-link-alt' : 'fa-download' ?> mr-1"></i><?= number_format($file['download_count']) ?></span>
+                            <?php if (!$isLink): ?>
                             <span class="text-xs text-gray-500 self-center"><?= format_file_size($file['file_size']) ?></span>
+                            <?php endif; ?>
                         </div>
 
                         <?php if (Auth::isRepresentative()): ?>
-                        <a href="<?= url('material/download/' . $file['id']) ?>" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center font-medium" title="Download">
-                            <i class="fas fa-download mr-2"></i>Download
-                        </a>
+                            <?php if ($isLink): ?>
+                            <a href="<?= url('material/download/' . $file['id']) ?>" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center font-medium" title="Abrir link" target="_blank" rel="noopener noreferrer">
+                                <i class="fas fa-external-link-alt mr-2"></i>Abrir link
+                            </a>
+                            <?php elseif ($isHtml): ?>
+                            <div class="grid grid-cols-2 gap-2">
+                                <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center font-medium text-xs" title="Baixar HTML">
+                                    <i class="fas fa-download mr-1"></i>Baixar HTML
+                                </a>
+                                <a href="<?= url('material/preview/' . $file['id']) ?>" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center font-medium text-xs" title="Abrir HTML" target="_blank" rel="noopener noreferrer">
+                                    <i class="fas fa-eye mr-1"></i>Abrir
+                                </a>
+                            </div>
+                            <?php else: ?>
+                            <a href="<?= url('material/download/' . $file['id']) ?>" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center font-medium" title="Download">
+                                <i class="fas fa-download mr-2"></i>Download
+                            </a>
+                            <?php endif; ?>
                         <?php else: ?>
-                        <div class="grid grid-cols-3 gap-2">
-                            <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center" title="Download">
-                                <i class="fas fa-download"></i>
+                        <div class="flex flex-col gap-2">
+                            <?php if ($isLink): ?>
+                            <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center text-sm font-medium" title="Abrir link" target="_blank" rel="noopener noreferrer">
+                                <i class="fas fa-external-link-alt mr-2"></i>Abrir link
                             </a>
-                            <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center" title="Editar">
-                                <i class="fas fa-edit"></i>
+                            <?php elseif ($isHtml): ?>
+                            <div class="grid grid-cols-2 gap-2">
+                                <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center text-xs font-medium" title="Baixar HTML">
+                                    <i class="fas fa-download mr-1"></i>Baixar HTML
+                                </a>
+                                <a href="<?= url('material/preview/' . $file['id']) ?>" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center text-xs font-medium" title="Abrir HTML" target="_blank" rel="noopener noreferrer">
+                                    <i class="fas fa-eye mr-1"></i>Abrir
+                                </a>
+                            </div>
+                            <?php else: ?>
+                            <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center text-sm font-medium" title="Download">
+                                <i class="fas fa-download mr-2"></i>Download
                             </a>
-                            <form method="POST" action="<?= url('material/files/' . $file['id']) ?>" onsubmit="return confirm('Deseja excluir este arquivo?');" class="inline">
-                                <input type="hidden" name="_method" value="DELETE">
-                                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center" title="Excluir">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                            <?php endif; ?>
+                            <div class="grid grid-cols-2 gap-2">
+                                <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="<?= url('material/files/' . $file['id']) ?>" onsubmit="return confirm('Deseja excluir este arquivo?');" class="inline">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg inline-flex items-center justify-center" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -160,17 +200,35 @@ $listFiles = array_values(array_filter($files, static function ($f) {
                 <div class="rounded-lg border border-gray-200 overflow-hidden bg-white">
                     <div class="divide-y divide-gray-200">
                         <?php foreach ($listFiles as $file): ?>
+                        <?php
+                            $isLink = is_material_link($file);
+                            $isHtml = is_material_html($file);
+                            $typeLabel = $isLink ? 'LINK' : strtoupper((string) $file['file_type']);
+                        ?>
                         <div class="px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div class="min-w-0">
                                 <p class="text-sm font-semibold text-gray-900 truncate"><?= htmlspecialchars($file['title']) ?></p>
                                 <p class="text-xs text-gray-500 truncate">
-                                    <?= htmlspecialchars($file['category_name']) ?> • <?= strtoupper((string) $file['file_type']) ?> • <?= format_file_size((int) $file['file_size']) ?>
+                                    <?= htmlspecialchars($file['category_name']) ?> • <?= htmlspecialchars($typeLabel) ?><?= $isLink ? '' : ' • ' . format_file_size((int) $file['file_size']) ?>
                                 </p>
                             </div>
                             <div class="flex items-center gap-2">
+                                <?php if ($isLink): ?>
+                                <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center text-xs" title="Abrir link" target="_blank" rel="noopener noreferrer">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                                <?php elseif ($isHtml): ?>
+                                <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center text-xs" title="Baixar HTML">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <a href="<?= url('material/preview/' . $file['id']) ?>" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center text-xs" title="Abrir HTML" target="_blank" rel="noopener noreferrer">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <?php else: ?>
                                 <a href="<?= url('material/download/' . $file['id']) ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center text-xs" title="Download">
                                     <i class="fas fa-download"></i>
                                 </a>
+                                <?php endif; ?>
                                 <?php if (Auth::isAdmin()): ?>
                                 <a href="<?= url('material/files/' . $file['id'] . '/edit') ?>" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-md inline-flex items-center justify-center text-xs" title="Editar">
                                     <i class="fas fa-edit"></i>

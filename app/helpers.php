@@ -406,10 +406,27 @@ if (!function_exists('get_file_icon')) {
             'rar' => 'fas fa-file-archive text-secondary',
             'txt' => 'fas fa-file-alt text-muted',
             'csv' => 'fas fa-file-csv text-success',
+            'html' => 'fas fa-file-code text-warning',
+            'htm' => 'fas fa-file-code text-warning',
+            'link' => 'fas fa-link text-primary',
         ];
         
         $fileTypeLower = strtolower($fileType ?? '');
         return $icons[$fileTypeLower] ?? 'fas fa-file text-secondary';
+    }
+}
+
+if (!function_exists('is_material_link')) {
+    function is_material_link(array $file): bool
+    {
+        return strtolower((string) ($file['file_type'] ?? '')) === 'link';
+    }
+}
+
+if (!function_exists('is_material_html')) {
+    function is_material_html(array $file): bool
+    {
+        return in_array(strtolower((string) ($file['file_type'] ?? '')), ['html', 'htm'], true);
     }
 }
 
@@ -551,6 +568,40 @@ if (!function_exists('old')) {
             return is_string($value) ? unescape_stored($value) : $value;
         }
         return is_string($default) ? unescape_stored($default) : $default;
+    }
+}
+
+if (!function_exists('establishment_owner_ref')) {
+    function establishment_owner_ref(array $establishment): string
+    {
+        $representativeId = (int) ($establishment['created_by_representative_id'] ?? 0);
+        if ($representativeId > 0) {
+            return 'rep:' . $representativeId;
+        }
+
+        $userId = (int) ($establishment['created_by_user_id'] ?? 0);
+        if ($userId > 0) {
+            return 'user:' . $userId;
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('establishment_owner_name')) {
+    function establishment_owner_name(array $establishment): string
+    {
+        $representativeName = trim((string) ($establishment['created_by_representative_name'] ?? ''));
+        if ($representativeName !== '') {
+            return $representativeName;
+        }
+
+        $userName = trim((string) ($establishment['created_by_user_name'] ?? ''));
+        if ($userName !== '') {
+            return $userName;
+        }
+
+        return '';
     }
 }
 

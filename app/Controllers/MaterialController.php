@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Auth;
+use App\Core\Database;
 use App\Models\Material;
 use App\Models\Representative;
 use App\Models\Notification;
@@ -12,6 +13,7 @@ class MaterialController
     private const MATERIAL_MAX_FILE_SIZE = 200 * 1024 * 1024;
     private const MATERIAL_ALLOWED_EXTENSIONS = [
         'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt',
+        'html', 'htm',
         'jpg', 'jpeg', 'png', 'gif',
         'mp4', 'm4v', 'mov', 'avi', 'webm', 'mkv',
         'zip', 'rar'
@@ -25,6 +27,8 @@ class MaterialController
         'application/vnd.ms-powerpoint',
         'application/vnd.openxmlformats-officedocument.presentationml.presentation',
         'text/plain',
+        'text/html',
+        'application/xhtml+xml',
         'image/jpeg',
         'image/png',
         'image/gif',
@@ -62,8 +66,21 @@ class MaterialController
         Auth::requireAuth();
         
         $filters = $this->getFilters();
-        $files = $this->materialModel->getAllFiles($filters);
         $productOptions = $this->materialModel->getProductOptions();
+
+        if (Auth::isRepresentative()) {
+            $allowedProductKeys = $this->getAllowedMaterialProductKeysForRepresentative();
+            if ($allowedProductKeys !== null) {
+                if (!empty($filters['product']) && !in_array((string) $filters['product'], $allowedProductKeys, true)) {
+                    unset($filters['product']);
+                }
+                $filters['allowed_product_keys'] = $allowedProductKeys;
+                $productOptions = array_intersect_key($productOptions, array_flip($allowedProductKeys));
+            }
+            $filters['is_active'] = 1;
+        }
+
+        $files = $this->materialModel->getAllFiles($filters);
         $stats = $this->materialModel->getStats();
         $readMap = [];
 
@@ -98,20 +115,38 @@ class MaterialController
             $_SESSION['error'] = 'Arquivo não encontrado';
             redirect(url('material'));
         }
+
+        if (!$this->representativeCanAccessMaterialFile($file)) {
+            $_SESSION['error'] = 'Você não tem permissão para acessar este material.';
+            redirect(url('material'));
+        }
         
-        $filePath = $file['file_path'];
-        
-        if (!file_exists($filePath)) {
+        if ($this->isMaterialLink($file)) {
+            $url = $this->sanitizeExternalUrl((string) ($file['file_path'] ?? ''));
+            if ($url === '') {
+                $_SESSION['error'] = 'Link inválido';
+                redirect(url('material'));
+            }
+
+            $this->materialModel->incrementDownloadCount($id);
+            redirect($url);
+        }
+
+        $filePath = (string) ($file['file_path'] ?? '');
+
+        if ($filePath === '' || !is_file($filePath)) {
             $_SESSION['error'] = 'Arquivo não encontrado no servidor';
             redirect(url('material'));
         }
         
         // Incrementar contador de downloads
         $this->materialModel->incrementDownloadCount($id);
+
+        $downloadName = str_replace(['"', "\r", "\n"], '', (string) ($file['original_filename'] ?? 'arquivo'));
         
-        // Forçar download
+        // Forçar download (incluindo HTML)
         header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . $file['original_filename'] . '"');
+        header('Content-Disposition: attachment; filename="' . $downloadName . '"');
         header('Content-Length: ' . filesize($filePath));
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
@@ -130,19 +165,41 @@ class MaterialController
             exit('Arquivo não encontrado');
         }
 
+        if (!$this->representativeCanAccessMaterialFile($file)) {
+            http_response_code(403);
+            exit('Você não tem permissão para acessar este material.');
+        }
+
+        if ($this->isMaterialLink($file)) {
+            $url = $this->sanitizeExternalUrl((string) ($file['file_path'] ?? ''));
+            if ($url === '') {
+                http_response_code(404);
+                exit('Link inválido');
+            }
+            redirect($url);
+        }
+
         $filePath = (string) ($file['file_path'] ?? '');
-        if ($filePath === '' || !file_exists($filePath)) {
+        if ($filePath === '' || !is_file($filePath)) {
             http_response_code(404);
             exit('Arquivo não encontrado no servidor');
         }
 
         $mimeType = (string) ($file['mime_type'] ?? '');
-        if (stripos($mimeType, 'image/') !== 0) {
+        $isImage = stripos($mimeType, 'image/') === 0;
+        $isHtml = $this->isMaterialHtml($file);
+
+        if (!$isImage && !$isHtml) {
             http_response_code(415);
-            exit('Preview disponível apenas para imagens');
+            exit('Preview disponível apenas para imagens e HTML');
         }
 
-        header('Content-Type: ' . $mimeType);
+        if ($isHtml) {
+            header('Content-Type: text/html; charset=UTF-8');
+            header('X-Content-Type-Options: nosniff');
+        } else {
+            header('Content-Type: ' . $mimeType);
+        }
         header('Content-Length: ' . filesize($filePath));
         header('Cache-Control: public, max-age=86400');
         readfile($filePath);
@@ -435,7 +492,7 @@ class MaterialController
         try {
             $fileId = $this->materialModel->createFile($data);
             $this->notifyRepresentativesAboutNewMaterial($fileId, $data);
-            $_SESSION['success'] = 'Arquivo enviado com sucesso!';
+            $_SESSION['success'] = 'Material enviado com sucesso!';
             redirect(url('material'));
         } catch (Exception $e) {
             $_SESSION['error'] = 'Erro ao enviar arquivo: ' . $e->getMessage();
@@ -450,6 +507,11 @@ class MaterialController
         $file = $this->materialModel->getFileById($id);
         if (!$file) {
             $_SESSION['error'] = 'Arquivo não encontrado';
+            redirect(url('material'));
+        }
+
+        if (!$this->representativeCanAccessMaterialFile($file)) {
+            $_SESSION['error'] = 'Você não tem permissão para acessar este material.';
             redirect(url('material'));
         }
 
@@ -504,11 +566,23 @@ class MaterialController
         if (empty($data)) {
             redirect(url('material/files/' . $id . '/edit'));
         }
+
+        $postedKind = strtolower(trim((string) ($_POST['material_kind'] ?? 'file')));
+        if ($postedKind === 'file' && $this->isMaterialLink($file) && empty($data['file_path'])) {
+            $_SESSION['validation_errors'] = ['Envie um arquivo para substituir o link.'];
+            redirect(url('material/files/' . $id . '/edit'));
+        }
         
         try {
             $this->materialModel->updateFile($id, $data);
-            if (!empty($data['file_path']) && !empty($file['file_path']) && file_exists((string) $file['file_path'])) {
-                @unlink((string) $file['file_path']);
+            $oldPath = (string) ($file['file_path'] ?? '');
+            $replacedFile = array_key_exists('file_path', $data)
+                && $oldPath !== ''
+                && $oldPath !== (string) $data['file_path']
+                && !$this->isMaterialLink($file)
+                && is_file($oldPath);
+            if ($replacedFile) {
+                @unlink($oldPath);
             }
             $_SESSION['success'] = 'Arquivo atualizado com sucesso!';
             redirect(url('material'));
@@ -631,64 +705,93 @@ class MaterialController
         
         $description = trim($_POST['description'] ?? '');
         $fileData = [];
-
-        $uploadError = $_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE;
-        $hasUploadedFile = isset($_FILES['file']) && $uploadError === UPLOAD_ERR_OK;
-
-        if (!$isUpdate || $uploadError !== UPLOAD_ERR_NO_FILE) {
-            if (!$hasUploadedFile) {
-                $errors[] = $uploadError === UPLOAD_ERR_NO_FILE
-                    ? 'Arquivo é obrigatório'
-                    : $this->getUploadErrorMessage((int) $uploadError);
-            } else {
-                $file = $_FILES['file'];
-
-                $fileExtension = strtolower((string) pathinfo($file['name'], PATHINFO_EXTENSION));
-                $mimeType = $this->detectUploadedMimeType($file);
-
-                if (!$this->isAllowedMaterialFile($fileExtension, $mimeType)) {
-                    $errors[] = 'Tipo de arquivo não permitido. Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF, MP4, M4V, MOV, AVI, WEBM, MKV, ZIP e RAR.';
-                }
-                
-                if ($file['size'] > self::MATERIAL_MAX_FILE_SIZE) {
-                    $errors[] = 'Arquivo muito grande (máximo 200MB)';
-                }
-            }
+        $materialKind = strtolower(trim((string) ($_POST['material_kind'] ?? 'file')));
+        if (!in_array($materialKind, ['file', 'link'], true)) {
+            $materialKind = 'file';
         }
 
-        if (!empty($errors)) {
-            $_SESSION['validation_errors'] = $errors;
-            return [];
-        }
-
-        if (!$isUpdate || $hasUploadedFile) {
-            $file = $_FILES['file'];
-
-            // Processar upload
-            $uploadDir = 'storage/uploads/material/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
+        if ($materialKind === 'link') {
+            $externalUrl = $this->sanitizeExternalUrl($_POST['external_url'] ?? '');
+            if ($externalUrl === '') {
+                $errors[] = 'Informe um link válido começando com http:// ou https://';
             }
-            
-            $fileExtension = strtolower((string) pathinfo($file['name'], PATHINFO_EXTENSION));
-            $filename = uniqid() . '.' . $fileExtension;
-            $filePath = $uploadDir . $filename;
-            $mimeType = $this->detectUploadedMimeType($file);
-            
-            if (!move_uploaded_file($file['tmp_name'], $filePath)) {
-                $_SESSION['error'] = 'Erro ao fazer upload do arquivo';
+
+            if (!empty($errors)) {
+                $_SESSION['validation_errors'] = $errors;
                 return [];
             }
 
             $fileData = [
-                'filename' => $filename,
-                'original_filename' => $file['name'],
-                'file_path' => $filePath,
-                'file_size' => $file['size'],
-                'file_type' => $fileExtension,
-                'mime_type' => $mimeType,
-                'uploaded_by' => Auth::user()['id'],
+                'filename' => '',
+                'original_filename' => $externalUrl,
+                'file_path' => $externalUrl,
+                'file_size' => 0,
+                'file_type' => 'link',
+                'mime_type' => 'text/uri-list',
             ];
+
+            if (!$isUpdate) {
+                $fileData['uploaded_by'] = Auth::user()['id'];
+            }
+        } else {
+            $uploadError = $_FILES['file']['error'] ?? UPLOAD_ERR_NO_FILE;
+            $hasUploadedFile = isset($_FILES['file']) && $uploadError === UPLOAD_ERR_OK;
+
+            if (!$isUpdate || $uploadError !== UPLOAD_ERR_NO_FILE) {
+                if (!$hasUploadedFile) {
+                    $errors[] = $uploadError === UPLOAD_ERR_NO_FILE
+                        ? 'Arquivo é obrigatório'
+                        : $this->getUploadErrorMessage((int) $uploadError);
+                } else {
+                    $file = $_FILES['file'];
+
+                    $fileExtension = strtolower((string) pathinfo($file['name'], PATHINFO_EXTENSION));
+                    $mimeType = $this->detectUploadedMimeType($file);
+
+                    if (!$this->isAllowedMaterialFile($fileExtension, $mimeType)) {
+                        $errors[] = 'Tipo de arquivo não permitido. Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, HTML, HTM, JPG, PNG, GIF, MP4, M4V, MOV, AVI, WEBM, MKV, ZIP e RAR.';
+                    }
+                    
+                    if ($file['size'] > self::MATERIAL_MAX_FILE_SIZE) {
+                        $errors[] = 'Arquivo muito grande (máximo 200MB)';
+                    }
+                }
+            }
+
+            if (!empty($errors)) {
+                $_SESSION['validation_errors'] = $errors;
+                return [];
+            }
+
+            if (!$isUpdate || $hasUploadedFile) {
+                $file = $_FILES['file'];
+
+                // Processar upload
+                $uploadDir = 'storage/uploads/material/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
+                $fileExtension = strtolower((string) pathinfo($file['name'], PATHINFO_EXTENSION));
+                $filename = uniqid() . '.' . $fileExtension;
+                $filePath = $uploadDir . $filename;
+                $mimeType = $this->detectUploadedMimeType($file);
+                
+                if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+                    $_SESSION['error'] = 'Erro ao fazer upload do arquivo';
+                    return [];
+                }
+
+                $fileData = [
+                    'filename' => $filename,
+                    'original_filename' => $file['name'],
+                    'file_path' => $filePath,
+                    'file_size' => $file['size'],
+                    'file_type' => $fileExtension,
+                    'mime_type' => $mimeType,
+                    'uploaded_by' => Auth::user()['id'],
+                ];
+            }
         }
         
         $isActive = isset($_POST['is_active']) && (string) $_POST['is_active'] === '1' ? 1 : 0;
@@ -701,13 +804,39 @@ class MaterialController
         ], $fileData);
     }
 
+    private function isMaterialLink(array $file): bool
+    {
+        return strtolower((string) ($file['file_type'] ?? '')) === 'link';
+    }
+
+    private function isMaterialHtml(array $file): bool
+    {
+        return in_array(strtolower((string) ($file['file_type'] ?? '')), ['html', 'htm'], true);
+    }
+
+    private function sanitizeExternalUrl($raw): string
+    {
+        $url = trim((string) $raw);
+        if ($url === '' || !preg_match('#^https?://#i', $url)) {
+            return '';
+        }
+
+        $validated = filter_var($url, FILTER_VALIDATE_URL);
+        return is_string($validated) ? $validated : '';
+    }
+
     private function isAllowedMaterialFile(string $extension, string $mimeType): bool
     {
         if (!in_array($extension, self::MATERIAL_ALLOWED_EXTENSIONS, true)) {
             return false;
         }
 
+        $mimeType = $this->normalizeMimeType($mimeType);
         if ($mimeType === '') {
+            return true;
+        }
+
+        if (in_array($extension, ['html', 'htm'], true) && in_array($mimeType, ['text/html', 'application/xhtml+xml', 'text/plain', 'application/octet-stream'], true)) {
             return true;
         }
 
@@ -721,7 +850,7 @@ class MaterialController
             if (function_exists('mime_content_type')) {
                 $mimeType = \mime_content_type($tmpName);
                 if (is_string($mimeType) && $mimeType !== '') {
-                    return $mimeType;
+                    return $this->normalizeMimeType($mimeType);
                 }
             }
 
@@ -731,13 +860,18 @@ class MaterialController
                     $mimeType = \finfo_file($finfo, $tmpName);
                     \finfo_close($finfo);
                     if (is_string($mimeType) && $mimeType !== '') {
-                        return $mimeType;
+                        return $this->normalizeMimeType($mimeType);
                     }
                 }
             }
         }
 
-        return (string) ($file['type'] ?? '');
+        return $this->normalizeMimeType((string) ($file['type'] ?? ''));
+    }
+
+    private function normalizeMimeType(string $mimeType): string
+    {
+        return strtolower(trim(explode(';', $mimeType, 2)[0]));
     }
 
     private function getUploadErrorMessage(int $errorCode): string
@@ -764,10 +898,16 @@ class MaterialController
 
             $title = trim((string) ($data['title'] ?? 'Novo material'));
             $message = sprintf('Novo material de apoio disponível: "%s".', $title);
+            $productKey = strtoupper(trim((string) ($data['product_key'] ?? '')));
 
             foreach ($representatives as $representative) {
                 $repId = (int) ($representative['id'] ?? 0);
                 if ($repId <= 0) {
+                    continue;
+                }
+
+                $allowedKeys = $this->mapRepresentativeProductsToMaterialKeys($repId);
+                if ($allowedKeys !== null && ($productKey === '' || !in_array($productKey, $allowedKeys, true))) {
                     continue;
                 }
 
@@ -784,5 +924,79 @@ class MaterialController
         } catch (\Throwable $e) {
             write_log('Falha ao notificar representantes sobre novo material: ' . $e->getMessage(), 'app.log');
         }
+    }
+
+    private function representativeCanAccessMaterialFile(array $file): bool
+    {
+        if (!Auth::isRepresentative()) {
+            return true;
+        }
+
+        $allowedKeys = $this->getAllowedMaterialProductKeysForRepresentative();
+        if ($allowedKeys === null) {
+            return true;
+        }
+
+        $productKey = $this->materialModel->getProductKeyByCategoryId($file['category_id'] ?? '');
+        return $productKey !== '' && in_array($productKey, $allowedKeys, true);
+    }
+
+    private function getAllowedMaterialProductKeysForRepresentative(): ?array
+    {
+        $representativeId = (int) (Auth::representative()['id'] ?? 0);
+        if ($representativeId <= 0) {
+            return [];
+        }
+
+        return $this->mapRepresentativeProductsToMaterialKeys($representativeId);
+    }
+
+    private function mapRepresentativeProductsToMaterialKeys(int $representativeId): ?array
+    {
+        $allowedProducts = $this->representativeModel->getProducts($representativeId);
+        $productTypes = array_values(array_filter(array_map(static function ($row) {
+            return strtoupper(trim((string) ($row['product_type'] ?? '')));
+        }, $allowedProducts)));
+
+        if (empty($productTypes)) {
+            return null;
+        }
+
+        $keys = [];
+        $dynamicIds = [];
+
+        foreach ($productTypes as $type) {
+            if ($type === 'PAGBANK' || $type === 'PAGSEGURO') {
+                $keys[] = 'PAGSEGURO';
+                continue;
+            }
+
+            if (preg_match('/^DYNAMIC_(\d+)$/', $type, $matches)) {
+                $dynamicIds[] = (int) $matches[1];
+                continue;
+            }
+
+            $keys[] = $type;
+        }
+
+        if (!empty($dynamicIds)) {
+            $placeholders = implode(',', array_fill(0, count($dynamicIds), '?'));
+            try {
+                $rows = Database::getInstance()->fetchAll(
+                    "SELECT slug FROM dynamic_products WHERE id IN ({$placeholders})",
+                    $dynamicIds
+                );
+                foreach ($rows as $row) {
+                    $slug = strtoupper(trim((string) ($row['slug'] ?? '')));
+                    if ($slug !== '') {
+                        $keys[] = $slug;
+                    }
+                }
+            } catch (\Throwable $e) {
+                write_log('Falha ao mapear produtos dinâmicos do representante: ' . $e->getMessage(), 'app.log');
+            }
+        }
+
+        return array_values(array_unique($keys));
     }
 }
