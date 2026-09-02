@@ -7,7 +7,7 @@ $stats = $stats ?? ['total' => 0, 'aprovados' => 0, 'pendentes' => 0, 'reprovado
 $establishments = $establishments ?? [];
 $representatives = $representatives ?? [];
 $hasUserFilters = false;
-foreach (['status', 'produto', 'cidade', 'representative_id', 'cnpj', 'razao_social', 'nome', 'date_from', 'date_to'] as $filterKey) {
+foreach (['status', 'produto', 'cidade', 'representative_id', 'cnpj', 'cpf', 'razao_social', 'nome', 'date_from', 'date_to'] as $filterKey) {
     if (!empty($_GET[$filterKey])) {
         $hasUserFilters = true;
         break;
@@ -190,6 +190,12 @@ foreach (['status', 'produto', 'cidade', 'representative_id', 'cnpj', 'razao_soc
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CNPJ</label>
                 <input type="text" name="cnpj" value="<?= htmlspecialchars($filters['cnpj'] ?? '') ?>" placeholder="Digite o CNPJ" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <!-- CPF -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CPF</label>
+                <input type="text" name="cpf" value="<?= htmlspecialchars($filters['cpf'] ?? '') ?>" placeholder="Digite o CPF" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             </div>
 
             <!-- Razão Social -->

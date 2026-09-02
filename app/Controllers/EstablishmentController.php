@@ -1072,6 +1072,10 @@ class EstablishmentController
         if (isset($_GET['cnpj']) && !empty($_GET['cnpj'])) {
             $filters['cnpj'] = preg_replace('/[^0-9]/', '', sanitize_input($_GET['cnpj']));
         }
+
+        if (isset($_GET['cpf']) && !empty($_GET['cpf'])) {
+            $filters['cpf'] = preg_replace('/[^0-9]/', '', sanitize_input($_GET['cpf']));
+        }
         
         if (isset($_GET['razao_social']) && !empty($_GET['razao_social'])) {
             $filters['razao_social'] = sanitize_input($_GET['razao_social']);
@@ -1317,6 +1321,7 @@ class EstablishmentController
             'cidade' => 'Cidade',
             'representative_id' => 'Representante',
             'cnpj' => 'CNPJ',
+            'cpf' => 'CPF',
             'razao_social' => 'Razão Social',
             'nome' => 'Nome'
         ];

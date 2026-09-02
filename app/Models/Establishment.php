@@ -208,8 +208,8 @@ class Establishment
         }
 
         if (isset($filters['cpf'])) {
-            $sql .= " AND e.cpf LIKE ?";
-            $params[] = '%' . $filters['cpf'] . '%';
+            $sql .= " AND REPLACE(REPLACE(REPLACE(IFNULL(e.cpf, ''), '.', ''), '-', ''), ' ', '') LIKE ?";
+            $params[] = '%' . preg_replace('/[^0-9]/', '', (string) $filters['cpf']) . '%';
         }
 
         if (isset($filters['cnpj'])) {
@@ -306,8 +306,8 @@ class Establishment
         }
 
         if (isset($filters['cpf'])) {
-            $sql .= " AND e.cpf LIKE ?";
-            $params[] = '%' . $filters['cpf'] . '%';
+            $sql .= " AND REPLACE(REPLACE(REPLACE(IFNULL(e.cpf, ''), '.', ''), '-', ''), ' ', '') LIKE ?";
+            $params[] = '%' . preg_replace('/[^0-9]/', '', (string) $filters['cpf']) . '%';
         }
 
         if (isset($filters['cnpj'])) {
