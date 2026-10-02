@@ -7,32 +7,102 @@ $user = $user ?? [];
 $type = $type ?? 'admin';
 ?>
 
+<style>
+    .gk-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding: 0.9rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid transparent;
+    }
+    .gk-alert-icon {
+        margin-top: 0.15rem;
+        font-size: 1.05rem;
+        line-height: 1;
+    }
+    .gk-alert-title {
+        margin: 0 0 0.25rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        line-height: 1.3;
+    }
+    .gk-alert-text {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.45;
+    }
+    .gk-alert-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        font-size: 0.875rem;
+        line-height: 1.45;
+    }
+    .gk-alert-error {
+        background-color: #fef2f2;
+        border-color: #fecaca;
+        color: #991b1b;
+    }
+    .gk-alert-success {
+        background-color: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #065f46;
+    }
+    .dark .gk-alert-error {
+        background-color: rgba(127, 29, 29, 0.45) !important;
+        border-color: #991b1b !important;
+        color: #fecaca !important;
+    }
+    .dark .gk-alert-success {
+        background-color: rgba(6, 78, 59, 0.55) !important;
+        border-color: #065f46 !important;
+        color: #a7f3d0 !important;
+    }
+    .dark .gk-alert-error,
+    .dark .gk-alert-error * {
+        color: #fecaca !important;
+    }
+    .dark .gk-alert-success,
+    .dark .gk-alert-success * {
+        color: #a7f3d0 !important;
+    }
+</style>
+
 <div class="pt-6 px-4">
-    <!-- Exibir mensagens de erro -->
     <?php if (isset($_SESSION['validation_errors']) && !empty($_SESSION['validation_errors'])): ?>
-        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            <h4 class="font-bold">Erros de Validação:</h4>
-            <ul class="list-disc list-inside">
-                <?php foreach ($_SESSION['validation_errors'] as $error): ?>
-                    <li><?= htmlspecialchars($error) ?></li>
-                <?php endforeach; ?>
-            </ul>
+        <div class="gk-alert gk-alert-error" role="alert">
+            <i class="fas fa-exclamation-circle gk-alert-icon" aria-hidden="true"></i>
+            <div>
+                <p class="gk-alert-title">Erros de validação</p>
+                <ul class="gk-alert-list">
+                    <?php foreach ($_SESSION['validation_errors'] as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
         </div>
         <?php unset($_SESSION['validation_errors']); ?>
     <?php endif; ?>
-    
-    <!-- Exibir mensagens de erro -->
+
     <?php if (isset($_SESSION['error'])): ?>
-        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            <?= htmlspecialchars($_SESSION['error']) ?>
+        <div class="gk-alert gk-alert-error" role="alert">
+            <i class="fas fa-exclamation-circle gk-alert-icon" aria-hidden="true"></i>
+            <div>
+                <p class="gk-alert-title">Não foi possível salvar</p>
+                <p class="gk-alert-text"><?= htmlspecialchars($_SESSION['error']) ?></p>
+            </div>
         </div>
         <?php unset($_SESSION['error']); ?>
     <?php endif; ?>
 
-    <!-- Exibir mensagens de sucesso -->
     <?php if (isset($_SESSION['success'])): ?>
-        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-            <?= htmlspecialchars($_SESSION['success']) ?>
+        <div class="gk-alert gk-alert-success" role="alert">
+            <i class="fas fa-check-circle gk-alert-icon" aria-hidden="true"></i>
+            <div>
+                <p class="gk-alert-title">Perfil atualizado</p>
+                <p class="gk-alert-text"><?= htmlspecialchars($_SESSION['success']) ?></p>
+            </div>
         </div>
         <?php unset($_SESSION['success']); ?>
     <?php endif; ?>
@@ -63,7 +133,7 @@ $type = $type ?? 'admin';
             </h3>
         </div>
 
-        <form method="POST" action="<?= url('perfil/update') ?>" enctype="multipart/form-data" class="p-6" autocomplete="off">
+        <form id="profile-edit-form" method="POST" action="<?= url('perfil/update') ?>" enctype="multipart/form-data" class="p-6" autocomplete="off">
             <?= csrf_field() ?>
             <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
             <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
@@ -255,6 +325,81 @@ document.addEventListener('DOMContentLoaded', function() {
     const photoInput = document.getElementById('photo');
     const photoPreview = document.getElementById('photo-preview');
     const photoInitial = document.getElementById('photo-initial');
+    const form = document.getElementById('profile-edit-form');
+    const maxPhotoBytes = 1024 * 1024;
+    let compressing = false;
+
+    function showProfileAlert(message) {
+        const container = document.querySelector('.pt-6.px-4');
+        if (!container) {
+            return;
+        }
+
+        let alertBox = document.getElementById('profile-client-alert');
+        if (!alertBox) {
+            alertBox = document.createElement('div');
+            alertBox.id = 'profile-client-alert';
+            alertBox.className = 'gk-alert gk-alert-error';
+            alertBox.setAttribute('role', 'alert');
+            container.insertBefore(alertBox, container.firstChild);
+        }
+
+        alertBox.innerHTML = '<i class="fas fa-exclamation-circle gk-alert-icon" aria-hidden="true"></i><div><p class="gk-alert-title">Não foi possível salvar</p><p class="gk-alert-text"></p></div>';
+        alertBox.querySelector('.gk-alert-text').textContent = message;
+        alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function compressImage(file) {
+        return new Promise(function(resolve, reject) {
+            const image = new Image();
+            const objectUrl = URL.createObjectURL(file);
+
+            image.onload = function() {
+                URL.revokeObjectURL(objectUrl);
+                const maxEdge = 1600;
+                let width = image.width;
+                let height = image.height;
+
+                if (width > maxEdge || height > maxEdge) {
+                    const ratio = Math.min(maxEdge / width, maxEdge / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const context = canvas.getContext('2d');
+                if (!context) {
+                    reject(new Error('canvas'));
+                    return;
+                }
+                context.drawImage(image, 0, 0, width, height);
+
+                const qualities = [0.82, 0.7, 0.55, 0.4];
+                (function tryQuality(index) {
+                    canvas.toBlob(function(blob) {
+                        if (!blob) {
+                            reject(new Error('blob'));
+                            return;
+                        }
+                        if (blob.size <= maxPhotoBytes || index === qualities.length - 1) {
+                            resolve(new File([blob], 'perfil.jpg', { type: 'image/jpeg' }));
+                            return;
+                        }
+                        tryQuality(index + 1);
+                    }, 'image/jpeg', qualities[index]);
+                })(0);
+            };
+
+            image.onerror = function() {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error('load'));
+            };
+
+            image.src = objectUrl;
+        });
+    }
     
     if (photoInput) {
         photoInput.addEventListener('change', function(e) {
@@ -269,15 +414,68 @@ document.addEventListener('DOMContentLoaded', function() {
                             photoInitial.style.display = 'none';
                         }
                     } else {
-                        // Criar elemento img se não existir
                         const previewContainer = photoInput.closest('.mb-6').querySelector('.h-20');
                         if (previewContainer) {
-                            previewContainer.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="h-full w-full object-cover" id="photo-preview">';
+                            const preview = document.createElement('img');
+                            preview.src = e.target.result;
+                            preview.alt = 'Preview';
+                            preview.className = 'h-full w-full object-cover';
+                            preview.id = 'photo-preview';
+                            previewContainer.replaceChildren(preview);
                         }
                     }
                 };
                 reader.readAsDataURL(file);
             }
+        });
+    }
+
+    if (form && photoInput) {
+        form.addEventListener('submit', function(e) {
+            if (compressing) {
+                return;
+            }
+
+            const file = photoInput.files && photoInput.files[0];
+            if (!file || file.size <= maxPhotoBytes) {
+                return;
+            }
+
+            if (!file.type || file.type.indexOf('image/') !== 0) {
+                e.preventDefault();
+                showProfileAlert('Use uma imagem JPG, PNG ou GIF de até 2MB.');
+                return;
+            }
+
+            e.preventDefault();
+            compressing = true;
+            const button = form.querySelector('button[type="submit"]');
+            const originalLabel = button ? button.innerHTML : '';
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Otimizando foto...';
+            }
+
+            compressImage(file).then(function(compressed) {
+                if (typeof DataTransfer === 'undefined') {
+                    throw new Error('DataTransfer');
+                }
+                if (compressed.size > 2 * 1024 * 1024) {
+                    throw new Error('size');
+                }
+                const transfer = new DataTransfer();
+                transfer.items.add(compressed);
+                photoInput.files = transfer.files;
+                compressing = false;
+                form.submit();
+            }).catch(function() {
+                compressing = false;
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalLabel;
+                }
+                showProfileAlert('Não foi possível reduzir a foto. Use uma imagem JPG, PNG ou GIF de até 2MB.');
+            });
         });
     }
 });

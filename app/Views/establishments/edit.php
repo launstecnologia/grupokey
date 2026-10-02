@@ -189,7 +189,7 @@ function isProductSelected($productId, $productData) {
             </h3>
         </div>
 
-        <form method="POST" action="<?= url('estabelecimentos/' . ($establishment['id'] ?? '')) ?>" enctype="multipart/form-data" class="p-6" autocomplete="off">
+        <form method="POST" action="<?= url('estabelecimentos/' . ($establishment['id'] ?? '')) ?>" enctype="multipart/form-data" class="p-6 establishment-form" autocomplete="off">
             <?= csrf_field() ?>
             <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
             <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
@@ -479,7 +479,7 @@ function isProductSelected($productId, $productData) {
                 </div>
             </div>
 
-            <div class="mb-8" id="condicoes-comerciais-section">
+            <div class="mb-8 hidden" id="condicoes-comerciais-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-handshake mr-2 text-blue-600"></i>
                     Condições Comerciais
@@ -993,7 +993,7 @@ function isProductSelected($productId, $productData) {
             </div>
 
             <!-- Dados Bancários -->
-            <div id="dados-bancarios-section" class="mb-8 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <div id="dados-bancarios-section" class="mb-8 hidden p-4 border border-gray-200 rounded-lg bg-gray-50">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-university mr-2 text-blue-600"></i>
                     Dados Bancários
@@ -1354,13 +1354,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
     updateRegistrationVisibility();
     
-    // Lista de produtos que NÃO devem mostrar campos bancários
-    // Função para verificar se deve mostrar campos bancários (apenas CDC ou EVO)
-    function verificarCamposBancarios() {
-        const dadosBancariosSection = document.getElementById('dados-bancarios-section');
-        if (dadosBancariosSection) {
-            dadosBancariosSection.classList.remove('hidden');
+    function selectedProductName(checkbox) {
+        const label = checkbox.closest('label');
+        const span = label ? label.querySelector('span') : null;
+        return String((span && span.textContent) || '').trim().toUpperCase();
+    }
+
+    function hasSelectedProductName(needles) {
+        const checked = document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked');
+        for (const checkbox of checked) {
+            const name = selectedProductName(checkbox);
+            if (!name) {
+                continue;
+            }
+            for (const needle of needles) {
+                if (name.includes(needle)) {
+                    return true;
+                }
+            }
         }
+        return false;
+    }
+
+    function toggleFormSection(sectionId, show) {
+        const section = document.getElementById(sectionId);
+        if (!section) {
+            return;
+        }
+        section.classList.toggle('hidden', !show);
+    }
+
+    function verificarCondicoesComerciais() {
+        toggleFormSection('condicoes-comerciais-section', hasSelectedProductName(['PARCELEX', 'UCRED']));
+    }
+
+    function verificarCamposBancarios() {
+        toggleFormSection('dados-bancarios-section', hasSelectedProductName(['UCRED', 'PARCELEX', 'EVO']));
     }
     
     // Mapeamento de IDs de produtos para IDs de configuração
@@ -1424,7 +1453,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 evoPanel.classList.add('hidden');
             }
             
-            // Verificar campos bancários quando produto mudar
+            verificarCondicoesComerciais();
             verificarCamposBancarios();
             syncPagSeguroPjRequired();
             syncDocumentRowsWithSelectedProducts();
@@ -1459,6 +1488,8 @@ document.addEventListener('DOMContentLoaded', function() {
             syncDocumentRowsWithSelectedProducts();
             syncCustomFieldsBySelectedProducts();
             syncPagSeguroPjRequired();
+            verificarCondicoesComerciais();
+            verificarCamposBancarios();
         });
 
         if (checkbox.checked) {
@@ -1477,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Verificar campos bancários ao carregar a página
+    verificarCondicoesComerciais();
     verificarCamposBancarios();
     
     // Máscara de moeda (R$ 0,00) para campos de valor
@@ -2261,10 +2292,41 @@ document.addEventListener('DOMContentLoaded', function() {
 .copy-field-wrapper {
     position: relative;
 }
+.establishment-form input[type="text"],
+.establishment-form input[type="email"],
+.establishment-form input[type="tel"],
+.establishment-form input[type="number"],
+.establishment-form input[type="date"],
+.establishment-form input[type="datetime-local"],
+.establishment-form input[type="search"],
+.establishment-form input[type="url"],
+.establishment-form input[type="password"],
+.establishment-form select {
+    box-sizing: border-box !important;
+    min-height: 2.75rem !important;
+    height: 2.75rem !important;
+    line-height: 1.5 !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+}
+.establishment-form textarea {
+    box-sizing: border-box !important;
+    min-height: 2.75rem !important;
+    line-height: 1.5 !important;
+}
 .copy-field-wrapper > input,
 .copy-field-wrapper > select,
 .copy-field-wrapper > textarea {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
     padding-right: 2.75rem !important;
+    box-sizing: border-box !important;
+    line-height: 1.5 !important;
+}
+.copy-field-wrapper > input,
+.copy-field-wrapper > select {
+    min-height: 2.75rem !important;
+    height: 2.75rem !important;
 }
 .copy-field-button {
     position: absolute;

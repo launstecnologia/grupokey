@@ -104,6 +104,12 @@ class ProfileController
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect(url('perfil/edit'));
         }
+
+        // Foto acima de post_max_size zera $_POST. Nome e e-mail somem e a validação acusa campo obrigatório.
+        if ($this->requestBodyWasDiscarded()) {
+            $_SESSION['error'] = 'A foto é muito grande e o servidor não recebeu o formulário. Use uma imagem JPG, PNG ou GIF de até 2MB.';
+            redirect(url('perfil/edit'));
+        }
         
         $data = $this->validateAndSanitizeInput();
         
@@ -220,21 +226,19 @@ class ProfileController
                 $_SESSION['error'] = 'Erro ao fazer upload da foto. Verifique as permissões do diretório.';
                 redirect(url('perfil/edit'));
             }
-        } else {
-            if (isset($_FILES['photo'])) {
-                error_log('Erro no upload: ' . $_FILES['photo']['error']);
-                $uploadErrors = [
-                    UPLOAD_ERR_INI_SIZE => 'Arquivo excede o tamanho máximo permitido pelo PHP',
-                    UPLOAD_ERR_FORM_SIZE => 'Arquivo excede o tamanho máximo do formulário',
-                    UPLOAD_ERR_PARTIAL => 'Upload parcial do arquivo',
-                    UPLOAD_ERR_NO_FILE => 'Nenhum arquivo foi enviado',
-                    UPLOAD_ERR_NO_TMP_DIR => 'Diretório temporário não encontrado',
-                    UPLOAD_ERR_CANT_WRITE => 'Falha ao escrever arquivo no disco',
-                    UPLOAD_ERR_EXTENSION => 'Upload bloqueado por extensão'
-                ];
-                $errorMsg = $uploadErrors[$_FILES['photo']['error']] ?? 'Erro desconhecido no upload';
-                error_log('Mensagem de erro: ' . $errorMsg);
-            }
+        } elseif (isset($_FILES['photo']) && (int) $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $uploadErrors = [
+                UPLOAD_ERR_INI_SIZE => 'A foto excede o limite do servidor. Use uma imagem de até 2MB.',
+                UPLOAD_ERR_FORM_SIZE => 'A foto excede o tamanho máximo permitido. Use uma imagem de até 2MB.',
+                UPLOAD_ERR_PARTIAL => 'O envio da foto foi interrompido. Tente novamente.',
+                UPLOAD_ERR_NO_TMP_DIR => 'Não foi possível salvar a foto no servidor.',
+                UPLOAD_ERR_CANT_WRITE => 'Não foi possível salvar a foto no servidor.',
+                UPLOAD_ERR_EXTENSION => 'O envio da foto foi bloqueado pelo servidor.',
+            ];
+            $code = (int) $_FILES['photo']['error'];
+            error_log('Erro no upload da foto: ' . $code);
+            $_SESSION['error'] = $uploadErrors[$code] ?? 'Não foi possível enviar a foto.';
+            redirect(url('perfil/edit'));
         }
         
         try {
@@ -460,5 +464,18 @@ class ProfileController
         }
         
         return $data;
+    }
+
+    private function requestBodyWasDiscarded()
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            return false;
+        }
+
+        if (!empty($_POST) || !empty($_FILES)) {
+            return false;
+        }
+
+        return (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0;
     }
 }
