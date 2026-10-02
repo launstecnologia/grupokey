@@ -611,3 +611,145 @@ if (!function_exists('auth_can')) {
         return \App\Core\Auth::can($module, $action);
     }
 }
+
+if (!function_exists('normalize_product_label')) {
+    function normalize_product_label($value): string
+    {
+        $normalized = strtoupper(trim((string) $value));
+        return strtr($normalized, [
+            'Á' => 'A', 'À' => 'A', 'Ã' => 'A', 'Â' => 'A',
+            'É' => 'E', 'Ê' => 'E',
+            'Í' => 'I',
+            'Ó' => 'O', 'Õ' => 'O', 'Ô' => 'O',
+            'Ú' => 'U',
+            'Ç' => 'C',
+        ]);
+    }
+}
+
+if (!function_exists('product_name_is_pagseguro')) {
+    function product_name_is_pagseguro($name): bool
+    {
+        $normalized = normalize_product_label($name);
+        return str_contains($normalized, 'PAGSEGURO') || str_contains($normalized, 'PAGBANK');
+    }
+}
+
+if (!function_exists('field_is_bank_data')) {
+    function field_is_bank_data(array $field): bool
+    {
+        return shared_bank_slot($field) !== null;
+    }
+}
+
+if (!function_exists('shared_bank_slot')) {
+    function shared_bank_slot(array $field): ?string
+    {
+        $haystack = normalize_product_label(($field['field_key'] ?? '') . ' ' . ($field['label'] ?? ''));
+        if ($haystack === '') {
+            return null;
+        }
+        if (str_contains($haystack, 'PIX')) {
+            return 'pix';
+        }
+        if (str_contains($haystack, 'TIPO') && str_contains($haystack, 'CONTA')) {
+            return 'tipo_conta';
+        }
+        if (str_contains($haystack, 'AGENCIA')) {
+            return 'agencia';
+        }
+        if (str_contains($haystack, 'CONTA')) {
+            return 'conta';
+        }
+        if (str_contains($haystack, 'BANCO') || str_contains($haystack, 'DADOS_BANC')) {
+            return 'banco';
+        }
+
+        return null;
+    }
+}
+
+if (!function_exists('product_has_bank_fields')) {
+    function product_has_bank_fields(array $product): bool
+    {
+        foreach ($product['fields'] ?? [] as $field) {
+            if (shared_bank_slot($field) !== null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('shared_bank_form_state')) {
+    function shared_bank_form_state(array $products, array $savedValuesByProduct, $oldShared, array $selectedIds): array
+    {
+        $options = ['banco' => [], 'tipo_conta' => []];
+        $seen = ['banco' => [], 'tipo_conta' => []];
+        $values = [
+            'banco' => '',
+            'agencia' => '',
+            'conta' => '',
+            'pix' => '',
+            'tipo_conta' => '',
+        ];
+        $selectedLookup = [];
+        foreach ($selectedIds as $selectedId) {
+            $selectedLookup[(string) (int) $selectedId] = true;
+        }
+        $visible = false;
+
+        foreach ($products as $product) {
+            $productId = (int) ($product['id'] ?? 0);
+            $saved = $savedValuesByProduct[$productId] ?? $savedValuesByProduct[(string) $productId] ?? [];
+            if (!is_array($saved)) {
+                $saved = [];
+            }
+            $hasBank = false;
+            foreach ($product['fields'] ?? [] as $field) {
+                $slot = shared_bank_slot($field);
+                if ($slot === null) {
+                    continue;
+                }
+                $hasBank = true;
+                if (isset($options[$slot])) {
+                    foreach ($field['options'] ?? [] as $option) {
+                        $optionValue = (string) ($option['option_value'] ?? '');
+                        if ($optionValue === '' || isset($seen[$slot][$optionValue])) {
+                            continue;
+                        }
+                        $seen[$slot][$optionValue] = true;
+                        $options[$slot][] = [
+                            'value' => $optionValue,
+                            'label' => (string) ($option['option_label'] ?? $optionValue),
+                        ];
+                    }
+                }
+                if ($values[$slot] === '') {
+                    $savedValue = trim((string) ($saved[$field['field_key'] ?? ''] ?? ''));
+                    if ($savedValue !== '') {
+                        $values[$slot] = $savedValue;
+                    }
+                }
+            }
+            if ($hasBank && isset($selectedLookup[(string) $productId])) {
+                $visible = true;
+            }
+        }
+
+        if (is_array($oldShared)) {
+            foreach ($values as $slot => $value) {
+                if (array_key_exists($slot, $oldShared)) {
+                    $values[$slot] = (string) $oldShared[$slot];
+                }
+            }
+        }
+
+        return [
+            'options' => $options,
+            'values' => $values,
+            'visible' => $visible,
+        ];
+    }
+}

@@ -1622,6 +1622,16 @@ class EstablishmentController
             }
         }
         
+        // O formulário não envia mais banco/agência/conta/PIX.
+        // Na edição, mantém o que já está salvo para não apagar o histórico.
+        $existingForBank = ($id !== null) ? ($this->establishmentModel->findById((int) $id) ?: []) : [];
+        $keepBank = function (string $column, $postedValue) use ($existingForBank) {
+            if (!array_key_exists($column, $_POST) && array_key_exists($column, $existingForBank)) {
+                return $existingForBank[$column];
+            }
+            return $postedValue;
+        };
+
         // Preparar dados para inserção/atualização
         $data = [
             'registration_type' => $registrationType,
@@ -1639,11 +1649,11 @@ class EstablishmentController
             'bairro' => $bairro,
             'cidade' => $cidade,
             'uf' => strtoupper($uf),
-            'banco' => sanitize_input($_POST['banco'] ?? ''),
-            'agencia' => sanitize_input($_POST['agencia'] ?? ''),
-            'conta' => sanitize_input($_POST['conta'] ?? ''),
-            'tipo_conta' => $this->sanitizeTipoConta($_POST['tipo_conta'] ?? ''),
-            'chave_pix' => sanitize_input($_POST['chave_pix'] ?? ''),
+            'banco' => $keepBank('banco', sanitize_input($_POST['banco'] ?? '')),
+            'agencia' => $keepBank('agencia', sanitize_input($_POST['agencia'] ?? '')),
+            'conta' => $keepBank('conta', sanitize_input($_POST['conta'] ?? '')),
+            'tipo_conta' => $keepBank('tipo_conta', $this->sanitizeTipoConta($_POST['tipo_conta'] ?? '')),
+            'chave_pix' => $keepBank('chave_pix', sanitize_input($_POST['chave_pix'] ?? '')),
             'observacoes' => sanitize_input($_POST['observacoes'] ?? ''),
             'is_filial' => !empty($_POST['is_filial']) ? 1 : 0,
             'mdr' => sanitize_input($_POST['mdr'] ?? ''),
@@ -1853,11 +1863,17 @@ class EstablishmentController
             $result[$productId] = [];
             foreach (($product['fields'] ?? []) as $field) {
                 $fieldKey = $field['field_key'] ?? '';
-                if ($fieldKey === '') {
+                if ($fieldKey === '' || (product_name_is_pagseguro($product['name'] ?? '') && field_is_bank_data($field))) {
                     continue;
                 }
 
-                $value = $fieldValues[$fieldKey] ?? '';
+                $slot = shared_bank_slot($field);
+                if ($slot !== null) {
+                    $sharedValue = $_POST['shared_bank'][$slot] ?? '';
+                    $value = is_array($sharedValue) ? '' : (string) $sharedValue;
+                } else {
+                    $value = $fieldValues[$fieldKey] ?? '';
+                }
                 if (is_array($value)) {
                     $value = '';
                 }
@@ -1878,6 +1894,7 @@ class EstablishmentController
     {
         $rawValues = $_POST['dynamic_values'] ?? [];
         $rawValues = is_array($rawValues) ? $rawValues : [];
+        $this->validateSharedBankFields($dynamicProductIds, $errors);
 
         foreach ($dynamicProductIds as $dynamicProductId) {
             $product = $this->dynamicProductModel->findById((int) $dynamicProductId);
@@ -1891,6 +1908,9 @@ class EstablishmentController
                 if ((int) ($field['is_required'] ?? 0) !== 1) {
                     continue;
                 }
+                if (shared_bank_slot($field) !== null || (product_name_is_pagseguro($product['name'] ?? '') && field_is_bank_data($field))) {
+                    continue;
+                }
 
                 $fieldKey = (string) ($field['field_key'] ?? '');
                 $label = (string) ($field['label'] ?? $fieldKey);
@@ -1898,6 +1918,48 @@ class EstablishmentController
                 if (is_array($value) || trim((string) $value) === '') {
                     $errors[] = 'Campo "' . $label . '" do produto "' . ($product['name'] ?? 'dinâmico') . '" é obrigatório.';
                 }
+            }
+        }
+    }
+
+    private function validateSharedBankFields(array $dynamicProductIds, array &$errors): void
+    {
+        $selectedIds = [];
+        foreach ($dynamicProductIds as $dynamicProductId) {
+            $selectedIds[(int) $dynamicProductId] = true;
+        }
+        if ($selectedIds === []) {
+            return;
+        }
+
+        $requiredSlots = [];
+        $labels = [
+            'banco' => 'Banco',
+            'agencia' => 'Agência',
+            'conta' => 'Conta - dígito',
+            'pix' => 'Chave PIX',
+            'tipo_conta' => 'Tipo de Conta',
+        ];
+        foreach ($this->getAvailableDynamicProducts() as $product) {
+            $productId = (int) ($product['id'] ?? 0);
+            if (!isset($selectedIds[$productId])) {
+                continue;
+            }
+            foreach ($product['fields'] ?? [] as $field) {
+                $slot = shared_bank_slot($field);
+                if ($slot === null || (int) ($field['is_required'] ?? 0) !== 1) {
+                    continue;
+                }
+                $requiredSlots[$slot] = $labels[$slot] ?? ($field['label'] ?? $slot);
+            }
+        }
+
+        $shared = $_POST['shared_bank'] ?? [];
+        $shared = is_array($shared) ? $shared : [];
+        foreach ($requiredSlots as $slot => $label) {
+            $value = $shared[$slot] ?? '';
+            if (is_array($value) || trim((string) $value) === '') {
+                $errors[] = 'Campo "' . $label . '" de Dados Bancários é obrigatório.';
             }
         }
     }
@@ -2589,6 +2651,21 @@ class EstablishmentController
         unset($_SESSION['pending_documents']);
     }
 
+    private function pagSeguroDocumentCodes(string $registrationType): array
+    {
+        $codes = [
+            'DOCUMENTO_FOTO_FRENTE',
+            'DOCUMENTO_FOTO_VERSO',
+            'COMPROVANTE_ENDERECO_RESIDENCIAL',
+            'FOTO_FACHADA',
+        ];
+        if (strtoupper($registrationType) !== 'PF') {
+            $codes[] = 'CONTRATO_SOCIAL';
+        }
+
+        return $codes;
+    }
+
     private function getRequiredDocumentCodes(array $products, array $dynamicProducts, string $registrationType): array
     {
         $map = [];
@@ -2608,7 +2685,10 @@ class EstablishmentController
 
         $codes = [];
         foreach ($keys as $key) {
-            foreach (($map[$key] ?? []) as $code) {
+            $mappedCodes = $key === 'PAGSEGURO'
+                ? $this->pagSeguroDocumentCodes($registrationType)
+                : ($map[$key] ?? []);
+            foreach ($mappedCodes as $code) {
                 $normalized = strtoupper(trim((string) $code));
                 if ($normalized === '') {
                     continue;

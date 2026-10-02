@@ -124,45 +124,41 @@ if (!$hasOtherDocumentType) {
                     <i class="fas fa-info-circle mr-2 text-blue-600"></i>
                     Dados do Estabelecimento
                 </h4>
-                <div id="document-upload-section">
-                    <div id="pj-fields" class="mb-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
-                                <div class="flex gap-2">
-                                    <input type="text" name="cnpj" id="cnpj" value="<?= htmlspecialchars(old('cnpj')) ?>"
-                                           class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="00.000.000/0000-00">
-                                    <button type="button" id="btn-buscar-cnpj" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        <i class="fas fa-search"></i> Buscar
-                                    </button>
-                                </div>
-                                <small class="text-gray-500">Digite o CNPJ e clique em Buscar para preencher automaticamente</small>
+                <div id="document-upload-section" class="grid grid-cols-12 gap-6">
+                    <div id="pj-fields" class="contents">
+                        <div class="pj-only col-span-12 lg:col-span-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
+                            <div class="flex gap-2">
+                                <input type="text" name="cnpj" id="cnpj" value="<?= htmlspecialchars(old('cnpj')) ?>"
+                                       class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="00.000.000/0000-00">
+                                <button type="button" id="btn-buscar-cnpj" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
-                                <input type="text" name="razao_social" value="<?= htmlspecialchars(old('razao_social')) ?>"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="Digite a razão social">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Data de Abertura</label>
-                                <input type="text" name="data_abertura" value="<?= htmlspecialchars(old('data_abertura')) ?>"
-                                       readonly
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="Preenchida automaticamente pelo CNPJ">
-                            </div>
+                            <small class="text-gray-500">Digite o CNPJ e clique em Buscar para preencher automaticamente</small>
                         </div>
                     </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                    <div class="pj-only col-span-12 lg:col-span-6 lg:col-start-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
+                        <input type="text" name="razao_social" value="<?= htmlspecialchars(old('razao_social')) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Digite a razão social">
+                    </div>
+                    <div class="col-span-12 lg:col-span-6">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nome Fantasia *</label>
                         <input type="text" name="nome_fantasia" value="<?= htmlspecialchars(old('nome_fantasia')) ?>" required
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome fantasia">
                     </div>
-                    <div>
+                    <div class="pj-only col-span-12 lg:col-span-2 lg:col-start-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de Abertura</label>
+                        <input type="text" name="data_abertura" value="<?= htmlspecialchars(old('data_abertura')) ?>"
+                               readonly
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Preenchida automaticamente pelo CNPJ">
+                    </div>
+                    <div class="col-span-12 lg:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Segmento *</label>
                         <select name="segmento" id="segmento" required
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -172,20 +168,20 @@ if (!$hasOtherDocumentType) {
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-12 lg:col-span-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Telefone *</label>
                         <input type="tel" name="telefone" value="<?= htmlspecialchars(old('telefone')) ?>" required
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="(00) 00000-0000">
                     </div>
-                    <div>
+                    <div class="col-span-12 lg:col-span-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                         <input type="email" name="email" value="<?= htmlspecialchars(old('email')) ?>" required
                                autocomplete="new-email" autocapitalize="off" spellcheck="false"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="col-span-12">
                         <label class="inline-flex items-center">
                             <input type="checkbox" name="is_filial" value="1" class="h-4 w-4 text-blue-600 border-gray-300 rounded"
                                    <?= old('is_filial') ? 'checked' : '' ?>>
@@ -521,6 +517,7 @@ if (!$hasOtherDocumentType) {
                                    class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dynamic-product-checkbox"
                                    data-target="dyn-prod-<?= $dynamicProductId ?>-config"
                                    data-product-key="DYNAMIC_<?= $dynamicProductId ?>"
+                                   data-requires-bank="<?= product_has_bank_fields($dynamicProduct) ? '1' : '0' ?>"
                                    <?= $selectedDynamic ? 'checked' : '' ?>>
                             <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($dynamicProduct['name'] ?? '') ?></span>
                         </label>
@@ -529,14 +526,39 @@ if (!$hasOtherDocumentType) {
             </div>
             
             <?php if (!empty($dynamicProductsCatalog)): ?>
+            <?php
+                $sharedSavedValues = (isset($_SESSION['old_input']['dynamic_values']) && is_array($_SESSION['old_input']['dynamic_values']))
+                    ? $_SESSION['old_input']['dynamic_values']
+                    : [];
+                $sharedSelectedIds = isset($_SESSION['old_input']['dynamic_products']) ? (array) $_SESSION['old_input']['dynamic_products'] : [];
+                $sharedBankForm = shared_bank_form_state(
+                    $dynamicProductsCatalog,
+                    $sharedSavedValues,
+                    $_SESSION['old_input']['shared_bank'] ?? null,
+                    $sharedSelectedIds
+                );
+            ?>
             <div class="mb-8" id="dynamic-products-section">
                 <div class="space-y-4">
                     <?php foreach ($dynamicProductsCatalog as $dynamicProduct): ?>
-                        <?php $dynamicProductId = (int) ($dynamicProduct['id'] ?? 0); ?>
+                        <?php
+                            $dynamicProductId = (int) ($dynamicProduct['id'] ?? 0);
+                            $visibleDynamicFields = [];
+                            foreach (($dynamicProduct['fields'] ?? []) as $dynamicField) {
+                                $dynamicFieldKey = $dynamicField['field_key'] ?? '';
+                                if ($dynamicFieldKey === '' || shared_bank_slot($dynamicField) !== null) {
+                                    continue;
+                                }
+                                $visibleDynamicFields[] = $dynamicField;
+                            }
+                            if ($visibleDynamicFields === []) {
+                                continue;
+                            }
+                        ?>
                         <div id="dyn-prod-<?= $dynamicProductId ?>-config" class="<?= (isset($_SESSION['old_input']['dynamic_products']) && in_array((string) $dynamicProductId, (array) $_SESSION['old_input']['dynamic_products'], true)) ? '' : 'hidden' ?> p-4 bg-gray-800 rounded-lg border border-gray-700">
                             <h5 class="font-medium text-white mb-3"><?= htmlspecialchars($dynamicProduct['name'] ?? '') ?></h5>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <?php foreach (($dynamicProduct['fields'] ?? []) as $field): ?>
+                                <?php foreach ($visibleDynamicFields as $field): ?>
                                     <?php
                                         $fieldKey = $field['field_key'] ?? '';
                                         if ($fieldKey === '') {
@@ -585,6 +607,7 @@ if (!$hasOtherDocumentType) {
                             </div>
                         </div>
                     <?php endforeach; ?>
+                    <?php include __DIR__ . '/_dados_bancarios.php'; ?>
                 </div>
             </div>
             <?php endif; ?>
@@ -817,92 +840,6 @@ if (!$hasOtherDocumentType) {
                     </div>
                     <?php endif; ?>
                 <?php endforeach; ?>
-            </div>
-
-            <!-- Dados Bancários -->
-            <div id="dados-bancarios-section" class="mb-8 hidden p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-university mr-2 text-blue-600"></i>
-                    Dados Bancários
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Banco -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Banco</label>
-                        <input type="text" name="banco" list="bancos-estabelecimento-create"
-                               value="<?= htmlspecialchars(old('banco')) ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Selecione ou pesquise o banco">
-                        <datalist id="bancos-estabelecimento-create">
-                            <option value="BRADESCO">
-                            <option value="BRASIL">
-                            <option value="INTER">
-                            <option value="NUBANK">
-                            <option value="SICOOB">
-                            <option value="SICREDI">
-                            <option value="ITAÚ">
-                            <option value="PAGSEGURO">
-                            <option value="MERCADO PAGO">
-                            <option value="MERCANTIL">
-                            <option value="CORA">
-                            <option value="PICPAY">
-                            <option value="CAIXA ECONÔMICA">
-                            <option value="SANTANDER">
-                            <option value="BTG PACTUAL">
-                            <option value="C6 BANK">
-                            <option value="BANCO VOTORANTIM">
-                            <option value="BANCO DO NORDESTE">
-                            <option value="SAFRA">
-                            <option value="BANESE">
-                            <option value="BANCO DE BRASÍLIA">
-                            <option value="NEON">
-                            <option value="DÍGIO">
-                            <option value="PORTO">
-                            <option value="INFINITEPAY">
-                            <option value="PAN">
-                            <option value="BMG">
-                            <option value="OUTROS">
-                        </datalist>
-                    </div>
-
-                    <!-- Agência -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Agência</label>
-                        <input type="text" name="agencia" 
-                               value="<?= htmlspecialchars(old('agencia')) ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Digite a agência">
-                    </div>
-
-                    <!-- Conta -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Conta - dígito</label>
-                        <input type="text" name="conta" 
-                               value="<?= htmlspecialchars(old('conta')) ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Digite o número da conta">
-                    </div>
-
-                    <!-- Tipo de Conta -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Conta</label>
-                        <select name="tipo_conta" 
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Selecione o tipo</option>
-                            <option value="conta_corrente" <?= old('tipo_conta') === 'conta_corrente' ? 'selected' : '' ?>>Conta Corrente</option>
-                            <option value="conta_poupanca" <?= old('tipo_conta') === 'conta_poupanca' ? 'selected' : '' ?>>Conta Poupança</option>
-                        </select>
-                    </div>
-
-                    <!-- Chave PIX -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Chave PIX</label>
-                        <input type="text" name="chave_pix" 
-                               value="<?= htmlspecialchars(old('chave_pix')) ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Digite a chave PIX">
-                    </div>
-                </div>
             </div>
 
             <?php if (App\Core\Auth::isAdmin()): ?>
@@ -1195,7 +1132,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (selectedTypeValue === 'PF') {
             pfFields.classList.remove('hidden');
-            pjFields.classList.add('hidden');
+            document.querySelectorAll('.pj-only').forEach(function(el) { el.classList.add('hidden'); });
             if (btnBuscarCep) {
                 btnBuscarCep.classList.remove('hidden');
             }
@@ -1204,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else {
             pfFields.classList.add('hidden');
-            pjFields.classList.remove('hidden');
+            document.querySelectorAll('.pj-only').forEach(function(el) { el.classList.remove('hidden'); });
             if (btnBuscarCep) {
                 btnBuscarCep.classList.add('hidden');
             }
@@ -1262,10 +1199,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function verificarCamposBancarios() {
-        // Banco, agência e conta já ficam dentro do cartão de Ucred, Parcelex e EVO.
-        toggleFormSection('dados-bancarios-section', false);
+        const selected = document.querySelector('input[name="dynamic_products[]"][data-requires-bank="1"]:checked');
+        toggleFormSection('dados-bancarios-section', !!selected);
     }
-    
+
     // Mapeamento de IDs de produtos para IDs de configuração
     const productConfigMap = {
         'prod-brasil-card': 'prod-brasil-card-config',
@@ -1322,7 +1259,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             verificarCondicoesComerciais();
-            verificarCamposBancarios();
             syncPagSeguroRegistrationRules();
             syncDocumentRowsWithSelectedProducts();
             syncCustomFieldsBySelectedProducts();
@@ -1362,11 +1298,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Verificar campos bancários quando o modelo de maquininha mudar (para EVO)
     const modeloSelect = document.querySelector('select[name="modelo_maquininha_prod-pagseguro"]');
     if (modeloSelect) {
         modeloSelect.addEventListener('change', function() {
-            verificarCamposBancarios();
             syncPagSeguroRegistrationRules();
         });
     }
@@ -1777,6 +1711,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }).filter(Boolean);
     }
 
+    function pagSeguroDocumentCodes(isPf) {
+        const codes = [
+            'DOCUMENTO_FOTO_FRENTE',
+            'DOCUMENTO_FOTO_VERSO',
+            'COMPROVANTE_ENDERECO_RESIDENCIAL',
+            'FOTO_FACHADA'
+        ];
+        if (!isPf) {
+            codes.push('CONTRATO_SOCIAL');
+        }
+        return codes;
+    }
+
     function getRequiredDocumentCodesByProducts() {
         const selectedKeys = getSelectedProductKeysForDocuments();
         if (!selectedKeys.length) {
@@ -1785,6 +1732,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const isPf = getCurrentRegistrationType() === 'PF';
         const required = new Set();
         selectedKeys.forEach(function(key) {
+            if (key === 'PAGSEGURO') {
+                pagSeguroDocumentCodes(isPf).forEach(function(code) {
+                    required.add(code);
+                });
+                return;
+            }
             (documentTypeProductMap[key] || []).forEach(function(code) {
                 const normalized = String(code || '').trim().toUpperCase();
                 if (!normalized) {

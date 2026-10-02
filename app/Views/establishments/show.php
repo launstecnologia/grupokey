@@ -539,30 +539,77 @@ $statusLabels = [
 
                         <!-- Produtos Dinâmicos -->
                         <?php if (!empty($dynamicProductData)): ?>
+                        <?php
+                            $sharedBankDisplay = [
+                                'banco' => ['label' => 'BANCO', 'value' => ''],
+                                'agencia' => ['label' => 'AGÊNCIA', 'value' => ''],
+                                'conta' => ['label' => 'CONTA - DÍGITO', 'value' => ''],
+                                'pix' => ['label' => 'CHAVE PIX', 'value' => ''],
+                                'tipo_conta' => ['label' => 'TIPO DE CONTA', 'value' => ''],
+                            ];
+                        ?>
                         <div class="space-y-4 mt-4">
                             <?php foreach ($dynamicProductData as $dynamicProduct): ?>
+                            <?php
+                                $visibleProductRows = [];
+                                foreach (($dynamicProduct['fields'] ?? []) as $field) {
+                                    $fieldKey = $field['field_key'] ?? '';
+                                    $fieldValue = $dynamicProduct['values'][$fieldKey] ?? '';
+                                    if ($fieldValue === '' || $fieldValue === null) {
+                                        continue;
+                                    }
+                                    $bankSlot = shared_bank_slot($field);
+                                    if ($bankSlot !== null) {
+                                        if ($sharedBankDisplay[$bankSlot]['value'] === '') {
+                                            $sharedBankDisplay[$bankSlot]['value'] = (string) $fieldValue;
+                                        }
+                                        continue;
+                                    }
+                                    $visibleProductRows[] = [
+                                        'label' => $field['label'] ?? $fieldKey,
+                                        'value' => (string) $fieldValue,
+                                    ];
+                                }
+                                if ($visibleProductRows === []) {
+                                    continue;
+                                }
+                            ?>
                             <div class="p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-copy-product>
                                 <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                                     <i class="fas fa-layer-group mr-2"></i>
                                     <span class="copyable-title"><?= htmlspecialchars($dynamicProduct['product_name'] ?? 'Produto Dinâmico') ?></span>
                                 </h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                                    <?php foreach (($dynamicProduct['fields'] ?? []) as $field): ?>
-                                        <?php
-                                            $fieldKey = $field['field_key'] ?? '';
-                                            $fieldValue = $dynamicProduct['values'][$fieldKey] ?? '';
-                                            if ($fieldValue === '' || $fieldValue === null) {
-                                                continue;
-                                            }
-                                        ?>
+                                    <?php foreach ($visibleProductRows as $row): ?>
                                         <div>
-                                            <span class="text-gray-600 dark:text-gray-400"><?= htmlspecialchars($field['label'] ?? $fieldKey) ?>:</span>
-                                            <span class="font-medium text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars((string) $fieldValue) ?></span>
+                                            <span class="text-gray-600 dark:text-gray-400"><?= htmlspecialchars($row['label']) ?>:</span>
+                                            <span class="font-medium text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars($row['value']) ?></span>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
                             </div>
                             <?php endforeach; ?>
+                            <?php
+                                $sharedBankRows = array_filter($sharedBankDisplay, function ($row) {
+                                    return trim((string) $row['value']) !== '';
+                                });
+                            ?>
+                            <?php if ($sharedBankRows !== []): ?>
+                            <div class="p-4 bg-gray-50 dark:!bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-copy-product>
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                    <i class="fas fa-university mr-2"></i>
+                                    <span class="copyable-title">Dados Bancários</span>
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                                    <?php foreach ($sharedBankRows as $row): ?>
+                                        <div>
+                                            <span class="text-gray-600 dark:text-gray-400"><?= htmlspecialchars($row['label']) ?>:</span>
+                                            <span class="font-medium text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars($row['value']) ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
                         </div>
                         <?php endif; ?>
                     <?php else: ?>
