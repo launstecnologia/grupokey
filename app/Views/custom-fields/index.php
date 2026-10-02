@@ -68,17 +68,19 @@ $typeLabels = [
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vinculado ao Produto</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Obrigatório</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <?php if (empty($rows)): ?>
                         <tr>
-                            <td colspan="6" class="px-6 py-6 text-center text-gray-500">Nenhum campo dinâmico cadastrado.</td>
+                            <td colspan="7" class="px-6 py-6 text-center text-gray-500">Nenhum campo dinâmico cadastrado.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($rows as $field): ?>
-                            <tr>
+                            <?php $isActive = (int) ($field['is_active'] ?? 0) === 1; ?>
+                            <tr class="<?= $isActive ? '' : 'opacity-60' ?>">
                                 <td class="px-6 py-4">
                                     <div class="font-medium text-gray-900"><?= htmlspecialchars($field['label']) ?></div>
                                     <div class="text-sm text-gray-500"><?= htmlspecialchars($field['help_text'] ?? '') ?></div>
@@ -103,6 +105,15 @@ $typeLabels = [
                                     <?php endif; ?>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-700"><?= (int) ($field['is_required'] ?? 0) === 1 ? 'Sim' : 'Não' ?></td>
+                                <td class="px-6 py-4">
+                                    <form method="POST" action="<?= url('campos-dinamicos/' . $field['id'] . '/toggle-status') ?>" class="inline">
+                                        <?= csrf_field() ?>
+                                        <button type="submit"
+                                                class="px-3 py-1 rounded-full text-xs font-semibold text-white <?= $isActive ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600' ?>">
+                                            <?= $isActive ? 'Ativo' : 'Inativo' ?>
+                                        </button>
+                                    </form>
+                                </td>
                                 <td class="px-6 py-4 text-right">
                                     <a href="<?= url('campos-dinamicos/' . $field['id'] . '/edit') ?>" class="text-blue-600 hover:text-blue-900 mr-3">
                                         <i class="fas fa-edit"></i>

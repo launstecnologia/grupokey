@@ -202,9 +202,9 @@ if (!$hasOtherDocumentType) {
                     <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
                     Endereço Comercial
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-12 gap-6">
                     <!-- CEP -->
-                    <div>
+                    <div class="col-span-12 lg:col-span-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">CEP *</label>
                         <div class="flex gap-2">
                             <input type="text" name="cep" id="cep" value="<?= htmlspecialchars(old('cep')) ?>" required 
@@ -218,7 +218,7 @@ if (!$hasOtherDocumentType) {
                     </div>
 
                     <!-- Logradouro -->
-                    <div>
+                    <div class="col-span-12 lg:col-span-6">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Logradouro *</label>
                         <input type="text" name="logradouro" value="<?= htmlspecialchars(old('logradouro')) ?>" required 
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -226,7 +226,7 @@ if (!$hasOtherDocumentType) {
                     </div>
 
                     <!-- Número -->
-                    <div>
+                    <div class="col-span-12 lg:col-span-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Número *</label>
                         <input type="text" name="numero" value="<?= htmlspecialchars(old('numero')) ?>" required 
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -234,7 +234,7 @@ if (!$hasOtherDocumentType) {
                     </div>
 
                     <!-- Complemento -->
-                    <div>
+                    <div class="col-span-12 lg:col-span-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
                         <input type="text" name="complemento" value="<?= htmlspecialchars(old('complemento')) ?>" 
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -242,7 +242,7 @@ if (!$hasOtherDocumentType) {
                     </div>
 
                     <!-- Bairro -->
-                    <div>
+                    <div class="col-span-12 lg:col-span-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Bairro *</label>
                         <input type="text" name="bairro" value="<?= htmlspecialchars(old('bairro')) ?>" required 
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -250,7 +250,7 @@ if (!$hasOtherDocumentType) {
                     </div>
 
                     <!-- Cidade -->
-                    <div>
+                    <div class="col-span-12 lg:col-span-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Cidade *</label>
                         <input type="text" name="cidade" value="<?= htmlspecialchars(old('cidade')) ?>" required 
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -258,7 +258,7 @@ if (!$hasOtherDocumentType) {
                     </div>
 
                     <!-- UF -->
-                    <div>
+                    <div class="col-span-12 lg:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">UF *</label>
                         <select name="uf" required 
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -1262,7 +1262,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function verificarCamposBancarios() {
-        toggleFormSection('dados-bancarios-section', hasSelectedProductName(['UCRED', 'PARCELEX', 'EVO']));
+        // Banco, agência e conta já ficam dentro do cartão de Ucred, Parcelex e EVO.
+        toggleFormSection('dados-bancarios-section', false);
     }
     
     // Mapeamento de IDs de produtos para IDs de configuração

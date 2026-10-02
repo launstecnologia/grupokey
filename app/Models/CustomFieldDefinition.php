@@ -142,6 +142,17 @@ class CustomFieldDefinition
         return true;
     }
 
+    public function setActive($id, $isActive)
+    {
+        $this->db->query(
+            "UPDATE custom_field_definitions
+             SET is_active = ?, updated_at = NOW()
+             WHERE id = ?",
+            [!empty($isActive) ? 1 : 0, (int) $id]
+        );
+        return true;
+    }
+
     private function encodeOptions(array $options)
     {
         $clean = [];

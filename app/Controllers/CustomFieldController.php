@@ -22,7 +22,7 @@ class CustomFieldController
         Auth::requireAdmin();
 
         try {
-            $all = $this->model->getAll(null, false);
+            $all = $this->model->getAll(null, true);
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Campos dinâmicos indisponíveis. Execute as migrações do banco antes de continuar.';
             $all = [];
@@ -104,7 +104,7 @@ class CustomFieldController
             $_SESSION['error'] = 'Campos dinâmicos indisponíveis. Execute as migrações do banco antes de continuar.';
             redirect(url('campos-dinamicos'));
         }
-        if (!$field || (int) ($field['is_active'] ?? 0) !== 1) {
+        if (!$field) {
             $_SESSION['error'] = 'Campo dinâmico não encontrado.';
             redirect(url('campos-dinamicos'));
         }
@@ -131,7 +131,7 @@ class CustomFieldController
             $_SESSION['error'] = 'Campos dinâmicos indisponíveis. Execute as migrações do banco antes de continuar.';
             redirect(url('campos-dinamicos'));
         }
-        if (!$field || (int) ($field['is_active'] ?? 0) !== 1) {
+        if (!$field) {
             $_SESSION['error'] = 'Campo dinâmico não encontrado.';
             redirect(url('campos-dinamicos'));
         }
@@ -163,6 +163,35 @@ class CustomFieldController
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Erro ao remover campo dinâmico: ' . $e->getMessage();
         }
+
+        redirect(url('campos-dinamicos'));
+    }
+
+    public function toggleStatus($id)
+    {
+        Auth::requireAdmin();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect(url('campos-dinamicos'));
+        }
+
+        try {
+            $field = $this->model->findById((int) $id);
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'Campos dinâmicos indisponíveis. Execute as migrações do banco antes de continuar.';
+            redirect(url('campos-dinamicos'));
+        }
+
+        if (!$field) {
+            $_SESSION['error'] = 'Campo dinâmico não encontrado.';
+            redirect(url('campos-dinamicos'));
+        }
+
+        $isActive = (int) ($field['is_active'] ?? 0) === 1;
+        $this->model->setActive((int) $id, !$isActive);
+        $_SESSION['success'] = $isActive
+            ? 'Campo inativado. Ele não aparece mais no estabelecimento.'
+            : 'Campo ativado. Ele volta a aparecer no estabelecimento.';
 
         redirect(url('campos-dinamicos'));
     }

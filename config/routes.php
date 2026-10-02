@@ -171,6 +171,7 @@ $router->post('/campos-dinamicos', 'CustomFieldController@store');
 $router->get('/campos-dinamicos/{id}/edit', 'CustomFieldController@edit');
 $router->post('/campos-dinamicos/{id}', 'CustomFieldController@update');
 $router->post('/campos-dinamicos/{id}/delete', 'CustomFieldController@destroy');
+$router->post('/campos-dinamicos/{id}/toggle-status', 'CustomFieldController@toggleStatus');
 
 // Rotas da Agenda de Contatos
 $router->get('/agenda', 'AgendaController@index');
