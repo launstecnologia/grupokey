@@ -267,13 +267,13 @@ function isProductSelected($productId, $productData) {
                         <input type="text" name="data_abertura" value="<?= htmlspecialchars((string) $oldField('data_abertura', $establishment['data_abertura'] ?? '')) ?>"
                                readonly
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Preenchida automaticamente pelo CNPJ">
+                               placeholder="Data de Abertura">
                     </div>
-                    <div class="col-span-12 lg:col-span-2">
+                    <div class="field-segmento col-span-12 <?= $isPfRegistration ? 'lg:col-span-3' : 'lg:col-span-2' ?>">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Segmento *</label>
                         <select name="segmento" id="segmento" required
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Selecione o segmento</option>
+                            <option value="">Segmento</option>
                             <?php foreach ($segments as $segment): ?>
                                 <option value="<?= htmlspecialchars($segment['nome']) ?>" <?= ($establishment['segmento'] ?? '') === $segment['nome'] ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($segment['nome']) ?>
@@ -288,7 +288,7 @@ function isProductSelected($productId, $productData) {
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="(00) 00000-0000">
                     </div>
-                    <div class="col-span-12 lg:col-span-3">
+                    <div class="field-email col-span-12 <?= $isPfRegistration ? 'lg:col-span-12 lg:col-start-1' : 'lg:col-span-5' ?>">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                         <input type="email" name="email" required
                                value="<?= htmlspecialchars($establishment['email'] ?? '') ?>"
@@ -377,7 +377,7 @@ function isProductSelected($productId, $productData) {
                     </div>
 
                     <!-- Logradouro -->
-                    <div class="col-span-12 lg:col-span-6">
+                    <div class="field-logradouro col-span-12 <?= $isPfRegistration ? 'lg:col-span-9 lg:col-start-1' : 'lg:col-span-6' ?>">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Logradouro *</label>
                         <input type="text" name="logradouro" required 
                                value="<?= htmlspecialchars($establishment['logradouro'] ?? '') ?>"
@@ -1285,7 +1285,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 cepHelp.classList.add('hidden');
             }
         }
+        applyRegistrationFieldLayout(selectedType.value === 'PF');
         syncPagSeguroPjRequired();
+    }
+
+    function applyRegistrationFieldLayout(isPf) {
+        const segmento = document.querySelector('.field-segmento');
+        const email = document.querySelector('.field-email');
+        const logradouro = document.querySelector('.field-logradouro');
+        if (segmento) {
+            segmento.classList.toggle('lg:col-span-2', !isPf);
+            segmento.classList.toggle('lg:col-span-3', isPf);
+        }
+        if (email) {
+            email.classList.toggle('lg:col-span-5', !isPf);
+            email.classList.toggle('lg:col-span-12', isPf);
+            email.classList.toggle('lg:col-start-1', isPf);
+        }
+        if (logradouro) {
+            logradouro.classList.toggle('lg:col-span-6', !isPf);
+            logradouro.classList.toggle('lg:col-span-9', isPf);
+            logradouro.classList.toggle('lg:col-start-1', isPf);
+        }
     }
 
     registrationTypeInputs.forEach(input => {
@@ -1974,6 +1995,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             documentosContainer.appendChild(clone);
         }
+
+        Array.from(documentosContainer.querySelectorAll('.documento-item')).forEach(function(item) {
+            const select = item.querySelector('select[name="document_type[]"]');
+            const hasType = String(select ? select.value : '').trim() !== '';
+            if (!hasType && documentosContainer.querySelectorAll('.documento-item').length > 1) {
+                item.remove();
+            }
+        });
     }
 
     // Gerenciar campos de documentos
