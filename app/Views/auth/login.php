@@ -116,7 +116,7 @@
                         Faça login na plataforma
                     </h2>
                     <p class="text-gray-600">
-                        Sistema unificado para Administradores e Representantes
+                        Sistema unificado para Administradores e Parceiros
                     </p>
                 </div>
                 

@@ -216,6 +216,7 @@ class BannerController
             $errors[] = 'Tempo do slide deve ser entre 1 e 60 segundos.';
         }
 
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             return [];

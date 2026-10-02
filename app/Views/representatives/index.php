@@ -14,14 +14,14 @@ $filters = $filters ?? [];
         <div>
             <h1 class="text-2xl font-bold text-gray-900">
                 <i class="fas fa-users mr-2"></i>
-                Representantes
+                Parceiros
             </h1>
-            <p class="text-gray-600 mt-1">Gerencie todos os representantes cadastrados</p>
+            <p class="text-gray-600 mt-1">Gerencie todos os parceiros cadastrados</p>
         </div>
         <div>
             <a href="<?= url('representantes/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
                 <i class="fas fa-plus mr-2"></i>
-                Novo Representante
+                Novo Parceiro
             </a>
         </div>
     </div>
@@ -149,26 +149,26 @@ $filters = $filters ?? [];
         </form>
     </div>
 
-    <!-- Lista de Representantes -->
+    <!-- Lista de Parceiros -->
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-gray-900">
                 <i class="fas fa-list mr-2"></i>
-                Lista de Representantes
+                Lista de Parceiros
             </h3>
         </div>
 
         <?php if (empty($representatives)): ?>
             <div class="p-12 text-center">
                 <i class="fas fa-users text-6xl text-gray-300 mb-4"></i>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum representante encontrado</h3>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum parceiro encontrado</h3>
                 <p class="text-gray-500 mb-6">
                     <?php if (!empty($filters) && array_filter($filters)): ?>
-                        Nenhum representante corresponde aos filtros aplicados.<br>
+                        Nenhum parceiro corresponde aos filtros aplicados.<br>
                         Tente ajustar os filtros ou limpar a busca.
                     <?php else: ?>
-                        Ainda não há representantes cadastrados no sistema.<br>
-                        Cadastre o primeiro representante para começar.
+                        Ainda não há parceiros cadastrados no sistema.<br>
+                        Cadastre o primeiro parceiro para começar.
                     <?php endif; ?>
                 </p>
                 <div class="flex justify-center gap-3">
@@ -180,7 +180,7 @@ $filters = $filters ?? [];
                     <?php endif; ?>
                     <a href="<?= url('representantes/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center transition-colors">
                         <i class="fas fa-plus mr-2"></i>
-                        Cadastrar Representante
+                        Cadastrar Parceiro
                     </a>
                 </div>
             </div>
@@ -189,7 +189,7 @@ $filters = $filters ?? [];
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Representante</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parceiro</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contato</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localização</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -294,7 +294,7 @@ document.addEventListener('click', function(e) {
         const id = button.dataset.id;
         const name = button.dataset.name;
         
-        if (confirm(`Tem certeza que deseja excluir o representante "${name}"?`)) {
+        if (confirm(`Tem certeza que deseja excluir o parceiro "${name}"?`)) {
             // Criar formulário para exclusão
             const form = document.createElement('form');
             form.method = 'POST';
@@ -317,7 +317,7 @@ document.addEventListener('click', function(e) {
         const id = button.dataset.id;
         const name = button.dataset.name;
         
-        if (confirm(`Tem certeza que deseja resetar a senha do representante "${name}"?`)) {
+        if (confirm(`Tem certeza que deseja resetar a senha do parceiro "${name}"?`)) {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '<?= url('representantes') ?>/' + id + '/reset-password';
@@ -335,7 +335,7 @@ document.addEventListener('click', function(e) {
         const status = button.dataset.status;
         const action = status === 'ACTIVE' ? 'desativar' : 'ativar';
         
-        if (confirm(`Tem certeza que deseja ${action} o representante "${name}"?`)) {
+        if (confirm(`Tem certeza que deseja ${action} o parceiro "${name}"?`)) {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '<?= url('representantes') ?>/' + id + '/toggle-status';

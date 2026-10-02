@@ -258,7 +258,7 @@ class ProfileController
                 }
                 $_SESSION['success'] = 'Perfil atualizado com sucesso!';
             } else {
-                write_log("Atualizando perfil do representante ID: {$userId}", 'photo_upload.log');
+                write_log("Atualizando perfil do parceiro ID: {$userId}", 'photo_upload.log');
                 write_log("Dados a serem salvos: " . json_encode($data), 'photo_upload.log');
                 
                 $this->representativeModel->update(Auth::representative()['id'], $data);
@@ -358,7 +358,7 @@ class ProfileController
                     // Remover flag de mudança obrigatória
                     $this->representativeModel->clearForcePasswordChange($representativeId);
                     
-                    // Fazer login do representante
+                    // Fazer login do parceiro
                     $representative = $this->representativeModel->findById($representativeId);
                     Auth::loginRepresentative([
                         'id' => $representative['id'],
@@ -411,7 +411,9 @@ class ProfileController
             }
             
             $email = sanitize_input($_POST['email'] ?? '');
-            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Email inválido';
+            } elseif ($email === '') {
                 $errors[] = 'Email válido é obrigatório';
             } else {
                 // Verificar se email já existe (exceto para o próprio usuário)
@@ -423,30 +425,32 @@ class ProfileController
             
             $data = [
                 'name' => $name,
-                'email' => $email
+                'email' => blank_to_null($email)
             ];
             
         } else {
-            // Validações para representante
+            // Validações para parceiro
             $nomeCompleto = sanitize_input($_POST['nome_completo'] ?? '');
             if (empty($nomeCompleto)) {
                 $errors[] = 'Nome completo é obrigatório';
             }
             
             $email = sanitize_input($_POST['email'] ?? '');
-            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Email inválido';
+            } elseif ($email === '') {
                 $errors[] = 'Email válido é obrigatório';
             } else {
-                // Verificar se email já existe (exceto para o próprio representante)
+                // Verificar se email já existe (exceto para o próprio parceiro)
                 $existingRepresentative = $this->representativeModel->findByEmail($email);
                 if ($existingRepresentative && $existingRepresentative['id'] != Auth::representative()['id']) {
-                    $errors[] = 'Este email já está sendo usado por outro representante';
+                    $errors[] = 'Este email já está sendo usado por outro parceiro';
                 }
             }
             
             $data = [
                 'nome_completo' => $nomeCompleto,
-                'email' => $email,
+                'email' => blank_to_null($email),
                 'telefone' => sanitize_input($_POST['telefone'] ?? ''),
                 'cep' => sanitize_input($_POST['cep'] ?? ''),
                 'logradouro' => sanitize_input($_POST['logradouro'] ?? ''),
@@ -458,6 +462,7 @@ class ProfileController
             ];
         }
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             return [];

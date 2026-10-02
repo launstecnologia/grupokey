@@ -13,7 +13,7 @@ $filters = $filters ?? [];
                 <i class="fas fa-images mr-2"></i>
                 Banners
             </h1>
-            <p class="text-gray-600 mt-1">Gerencie os slides exibidos no dashboard do representante.</p>
+            <p class="text-gray-600 mt-1">Gerencie os slides exibidos no dashboard do parceiro.</p>
         </div>
         <a href="<?= url('banners/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
             <i class="fas fa-plus mr-2"></i>Novo Banner

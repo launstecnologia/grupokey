@@ -108,7 +108,7 @@ class Representative
         ];
 
         foreach ($allowedFields as $field) {
-            if (isset($data[$field])) {
+            if (array_key_exists($field, $data)) {
                 $fields[] = "$field = ?";
                 $params[] = $data[$field];
             }
@@ -131,10 +131,10 @@ class Representative
         try {
             $stmt = $this->db->query($sql, $params);
             $rowsAffected = $stmt->rowCount();
-            write_log('UPDATE executado para representante ' . $id . ' - Linhas afetadas: ' . $rowsAffected, 'representatives.log');
+            write_log('UPDATE executado para parceiro ' . $id . ' - Linhas afetadas: ' . $rowsAffected, 'representatives.log');
             return $rowsAffected > 0;
         } catch (\Exception $e) {
-            write_log('ERRO no UPDATE do representante ' . $id . ': ' . $e->getMessage(), 'representatives.log');
+            write_log('ERRO no UPDATE do parceiro ' . $id . ': ' . $e->getMessage(), 'representatives.log');
             throw $e;
         }
     }
@@ -260,7 +260,7 @@ class Representative
     }
 
     /**
-     * Obtém os produtos permitidos para um representante
+     * Obtém os produtos permitidos para um parceiro
      */
     public function getProducts($representativeId)
     {
@@ -268,25 +268,25 @@ class Representative
         $products = $this->db->fetchAll($sql, [$representativeId]);
 
         // Log para debug
-        write_log('getProducts para representante ' . $representativeId . ': ' . json_encode($products), 'representatives.log');
+        write_log('getProducts para parceiro ' . $representativeId . ': ' . json_encode($products), 'representatives.log');
 
         return $products;
     }
 
     /**
-     * Define os produtos permitidos para um representante
+     * Define os produtos permitidos para um parceiro
      */
     public function setProducts($representativeId, $products)
     {
         try {
             // Remover produtos existentes (incluindo os com product_type vazio)
             $this->db->query("DELETE FROM representative_products WHERE representative_id = ?", [$representativeId]);
-            write_log('Produtos antigos removidos para representante ' . $representativeId, 'representatives.log');
+            write_log('Produtos antigos removidos para parceiro ' . $representativeId, 'representatives.log');
 
             // Inserir novos produtos
             if (!empty($products) && is_array($products)) {
                 write_log('=== SETPRODUCTS - INSERINDO PRODUTOS ===', 'representatives.log');
-                write_log('Representante ID: ' . $representativeId, 'representatives.log');
+                write_log('Parceiro ID: ' . $representativeId, 'representatives.log');
                 write_log('Produtos recebidos: ' . json_encode($products), 'representatives.log');
 
                 foreach ($products as $productType) {
@@ -309,7 +309,7 @@ class Representative
                         write_log('Inserindo produto: ' . $productType . ' (tamanho: ' . strlen($productType) . ')', 'representatives.log');
 
                         // Não incluir o campo id, deixar o AUTO_INCREMENT fazer o trabalho
-                        // Primeiro, limpar qualquer registro com product_type vazio para este representante
+                        // Primeiro, limpar qualquer registro com product_type vazio para este parceiro
                         $cleanupSql = "DELETE FROM representative_products WHERE representative_id = ? AND (product_type = '' OR product_type IS NULL)";
                         $this->db->query($cleanupSql, [$representativeId]);
 
@@ -396,11 +396,11 @@ class Representative
 
             return true;
         } catch (\PDOException $e) {
-            write_log('Erro PDO em setProducts para representante ' . $representativeId . ': ' . $e->getMessage(), 'representatives.log');
+            write_log('Erro PDO em setProducts para parceiro ' . $representativeId . ': ' . $e->getMessage(), 'representatives.log');
             write_log('Código do erro: ' . $e->getCode(), 'representatives.log');
             throw new \Exception('Erro ao salvar produtos permitidos: ' . $e->getMessage());
         } catch (\Exception $e) {
-            write_log('Erro em setProducts para representante ' . $representativeId . ': ' . $e->getMessage(), 'representatives.log');
+            write_log('Erro em setProducts para parceiro ' . $representativeId . ': ' . $e->getMessage(), 'representatives.log');
             write_log('Stack trace: ' . $e->getTraceAsString(), 'representatives.log');
             throw new \Exception('Erro ao salvar produtos permitidos: ' . $e->getMessage());
         }

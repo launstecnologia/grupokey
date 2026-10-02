@@ -72,7 +72,7 @@ class Auth
         $_SESSION['user_profile'] = $user['profile'] ?? null;
         $_SESSION['user_permissions'] = Permission::loadByUserId((int) $user['id']);
         
-        // Limpar dados de representante se existirem
+        // Limpar dados de parceiro se existirem
         unset($_SESSION['representative_id']);
         unset($_SESSION['representative_name']);
         unset($_SESSION['representative_email']);

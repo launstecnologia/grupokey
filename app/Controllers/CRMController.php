@@ -214,6 +214,13 @@ class CRMController
             $errors[] = 'Stage é obrigatório';
         }
         
+        $errors = omit_skipped_required_errors($errors);
+        if (empty($_POST['pipeline_id'])) {
+            $errors[] = 'Selecione um pipeline.';
+        }
+        if (empty($_POST['stage_id'])) {
+            $errors[] = 'Selecione um stage.';
+        }
         if (!empty($errors)) {
             $_SESSION['error'] = implode('<br>', $errors);
             redirect(url('crm/deals/create?pipeline_id=' . ($_POST['pipeline_id'] ?? '')));
@@ -280,7 +287,7 @@ class CRMController
             write_log('Erro ao buscar tarefas: ' . $e->getMessage(), 'app.log');
         }
         
-        // Telefone para "Chamar no WhatsApp": estabelecimento ou representante
+        // Telefone para "Chamar no WhatsApp": estabelecimento ou parceiro
         $dealWhatsAppPhone = null;
         if (!empty($deal['establishment_id'])) {
             $establishment = $this->establishmentModel->findById($deal['establishment_id']);
@@ -367,6 +374,7 @@ class CRMController
             $errors[] = 'Título é obrigatório';
         }
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['error'] = implode('<br>', $errors);
             redirect(url('crm/deals/' . $id . '/edit'));
@@ -463,7 +471,7 @@ class CRMController
             redirect(url('crm'));
         }
         
-        if (empty($_POST['activity_type']) || empty($_POST['description'])) {
+        if ((empty($_POST['activity_type']) || empty($_POST['description'])) && !skip_required_requested()) {
             $_SESSION['error'] = 'Tipo e descrição da atividade são obrigatórios';
             redirect(url('crm/deals/' . $dealId));
         }
@@ -522,7 +530,7 @@ class CRMController
     {
         Auth::requireAdmin();
         
-        if (empty($_POST['name']) || trim($_POST['name']) === '') {
+        if ((empty($_POST['name']) || trim($_POST['name']) === '') && !skip_required_requested()) {
             $_SESSION['error'] = 'Nome do pipeline é obrigatório';
             redirect(url('crm/pipelines/create'));
         }
@@ -571,7 +579,7 @@ class CRMController
     {
         Auth::requireAdmin();
         
-        if (empty($_POST['name']) || trim($_POST['name']) === '') {
+        if ((empty($_POST['name']) || trim($_POST['name']) === '') && !skip_required_requested()) {
             $_SESSION['error'] = 'Nome do pipeline é obrigatório';
             redirect(url('crm/pipelines/' . $id . '/edit'));
         }
@@ -660,7 +668,7 @@ class CRMController
     {
         Auth::requireAdmin();
         
-        if (empty($_POST['name']) || trim($_POST['name']) === '') {
+        if ((empty($_POST['name']) || trim($_POST['name']) === '') && !skip_required_requested()) {
             $_SESSION['error'] = 'Nome do stage é obrigatório';
             redirect(url('crm/pipelines/' . $pipelineId . '/stages/create'));
         }
@@ -720,7 +728,7 @@ class CRMController
     {
         Auth::requireAdmin();
         
-        if (empty($_POST['name']) || trim($_POST['name']) === '') {
+        if ((empty($_POST['name']) || trim($_POST['name']) === '') && !skip_required_requested()) {
             $_SESSION['error'] = 'Nome do stage é obrigatório';
             redirect(url('crm/pipelines/' . $pipelineId . '/stages/' . $id . '/edit'));
         }
@@ -797,7 +805,7 @@ class CRMController
             redirect(url('crm'));
         }
         
-        if (empty($_POST['title']) || empty($_POST['scheduled_at'])) {
+        if ((empty($_POST['title']) || empty($_POST['scheduled_at'])) && !skip_required_requested()) {
             $_SESSION['error'] = 'Título e data/hora são obrigatórios';
             redirect(url('crm/deals/' . $dealId));
         }

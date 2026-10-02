@@ -13,7 +13,7 @@ class Permission
             'dashboard' => 'Dashboard',
             'crm' => 'Pipeline/CRM',
             'estabelecimentos' => 'Estabelecimentos',
-            'representantes' => 'Representantes',
+            'representantes' => 'Parceiros',
             'usuarios' => 'Usuários',
             'chamados' => 'Chamados',
             'material' => 'Material de Apoio',

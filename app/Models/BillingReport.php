@@ -431,7 +431,7 @@ try {
                 'razao_fantasia' => $razaoFantasia,
                 'cnpj_cpf' => $cnpj,
                 'conta' => null,
-                'representante' => '',
+                'parceiro' => '',
                 'cidade' => $cidade,
                 'uf' => $uf,
                 'tpv_total' => $faturamento,
@@ -447,7 +447,7 @@ try {
                 'nome' => '',
                 'cnpj_cpf' => '',
                 'conta' => null,
-                'representante' => '',
+                'parceiro' => '',
                 'tpv_total' => 0.0,
                 'markup' => 0.0
             ];
@@ -455,18 +455,18 @@ try {
         
         $nome = $this->cleanValue($row[0] ?? '');
         $cnpjCpf = $this->cleanValue($row[1] ?? '');
-        $representante = $this->cleanValue($row[2] ?? '');
+        $parceiro = $this->cleanValue($row[2] ?? '');
         $tpvTotal = $this->parseCurrency($row[3] ?? '');
         $markup = $this->parseCurrency($row[4] ?? '');
         
-        error_log("Extraindo dados - Nome: '$nome', CNPJ/CPF: '$cnpjCpf', Representante: '$representante'");
+        error_log("Extraindo dados - Nome: '$nome', CNPJ/CPF: '$cnpjCpf', Parceiro: '$parceiro'");
         
         return [
             'nome' => $nome,
             'razao_fantasia' => null,
             'cnpj_cpf' => $cnpjCpf,
             'conta' => null, // Campo mantido para compatibilidade, mas não usado
-            'representante' => $representante, // Coluna REPRESENTANTE
+            'parceiro' => $parceiro, // Coluna REPRESENTANTE
             'cidade' => null,
             'uf' => null,
             'tpv_total' => $tpvTotal,
@@ -624,7 +624,7 @@ try {
         // Tentar encontrar estabelecimento pelo CPF/CNPJ
         $establishmentId = $this->findEstablishmentByDocument($rowData['cnpj_cpf']);
         
-        $sql = "INSERT INTO billing_data (report_id, establishment_id, nome, razao_fantasia, cnpj_cpf, conta, representante, cidade, uf, tpv_total, markup, created_at) 
+        $sql = "INSERT INTO billing_data (report_id, establishment_id, nome, razao_fantasia, cnpj_cpf, conta, parceiro, cidade, uf, tpv_total, markup, created_at) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         
         $this->db->query($sql, [
@@ -634,7 +634,7 @@ try {
             $rowData['razao_fantasia'] ?? null,
             $rowData['cnpj_cpf'],
             $rowData['conta'],
-            $rowData['representante'],
+            $rowData['parceiro'],
             $rowData['cidade'] ?? null,
             $rowData['uf'] ?? null,
             $rowData['tpv_total'],

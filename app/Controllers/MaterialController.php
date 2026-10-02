@@ -639,6 +639,7 @@ class MaterialController
         $color = trim($_POST['color'] ?? '#007bff');
         $sortOrder = (int)($_POST['sort_order'] ?? 0);
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             return [];
@@ -675,6 +676,7 @@ class MaterialController
         $description = trim($_POST['description'] ?? '');
         $sortOrder = (int)($_POST['sort_order'] ?? 0);
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             return [];
@@ -716,7 +718,8 @@ class MaterialController
                 $errors[] = 'Informe um link válido começando com http:// ou https://';
             }
 
-            if (!empty($errors)) {
+            $errors = omit_skipped_required_errors($errors);
+        if (!empty($errors)) {
                 $_SESSION['validation_errors'] = $errors;
                 return [];
             }
@@ -758,7 +761,8 @@ class MaterialController
                 }
             }
 
-            if (!empty($errors)) {
+            $errors = omit_skipped_required_errors($errors);
+        if (!empty($errors)) {
                 $_SESSION['validation_errors'] = $errors;
                 return [];
             }
@@ -922,7 +926,7 @@ class MaterialController
                 ]);
             }
         } catch (\Throwable $e) {
-            write_log('Falha ao notificar representantes sobre novo material: ' . $e->getMessage(), 'app.log');
+            write_log('Falha ao notificar parceiros sobre novo material: ' . $e->getMessage(), 'app.log');
         }
     }
 
@@ -993,7 +997,7 @@ class MaterialController
                     }
                 }
             } catch (\Throwable $e) {
-                write_log('Falha ao mapear produtos dinâmicos do representante: ' . $e->getMessage(), 'app.log');
+                write_log('Falha ao mapear produtos dinâmicos do parceiro: ' . $e->getMessage(), 'app.log');
             }
         }
 

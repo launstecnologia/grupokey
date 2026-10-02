@@ -32,7 +32,7 @@ class RepresentativeModalController
         ];
 
         view('representative-modals/index', [
-            'title' => 'Modais Representante',
+            'title' => 'Modais Parceiro',
             'currentPage' => 'modais-representante',
             'modals' => $this->model->getAll($filters),
             'filters' => $filters,
@@ -239,12 +239,13 @@ class RepresentativeModalController
         }
 
         if ($audienceType === 'selected' && empty($selectedRepIds)) {
-            $errors[] = 'Selecione ao menos um representante.';
+            $errors[] = 'Selecione ao menos um parceiro.';
         }
         if (!in_array($audienceType, ['all', 'selected'], true)) {
             $audienceType = 'all';
         }
 
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             return [];

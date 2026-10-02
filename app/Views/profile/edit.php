@@ -205,7 +205,7 @@ $type = $type ?? 'admin';
                     </div>
                 </div>
             <?php else: ?>
-                <!-- Campos para Representante -->
+                <!-- Campos para Parceiro -->
                 <div class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>

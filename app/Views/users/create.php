@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const emailValue = emailInput.value.trim();
             emailHiddenInput.value = emailValue;
 
-            if (!emailValue) {
+            if (!emailValue && createUserForm.dataset.skipRequired !== '1') {
                 e.preventDefault();
                 emailInput.focus();
                 alert('Informe um e-mail válido.');

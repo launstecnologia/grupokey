@@ -120,9 +120,9 @@ $cities = $cities ?? [];
                         </div>
                     </div>
 
-                    <!-- Representantes -->
+                    <!-- Parceiros -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Representantes</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Parceiros</h2>
                         <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 max-h-64 overflow-y-auto bg-gray-50 dark:bg-gray-900">
                             <div class="space-y-2">
                                 <?php foreach ($representatives as $rep): ?>

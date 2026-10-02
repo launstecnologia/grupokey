@@ -23,7 +23,7 @@ $product_establishment_counts = $product_establishment_counts ?? [];
             </a>
             <a href="<?= url('representantes/create') ?>" class="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
                 <i class="fas fa-user-plus mr-2"></i>
-                Novo Representante
+                Novo Parceiro
             </a>
             <a href="<?= url('usuarios/create') ?>" class="flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
                 <i class="fas fa-user-shield mr-2"></i>
@@ -98,14 +98,14 @@ $product_establishment_counts = $product_establishment_counts ?? [];
             </div>
         </div>
 
-        <!-- Representantes Ativos Card -->
+        <!-- Parceiros Ativos Card -->
         <div class="bg-white shadow rounded-lg mb-4 p-4 sm:p-6 h-full">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <span class="text-2xl sm:text-3xl leading-none font-bold text-gray-900">
                         <?= $representative_stats['total'] ?? 0 ?>
                     </span>
-                    <h3 class="text-base font-normal text-gray-500">Representantes Ativos</h3>
+                    <h3 class="text-base font-normal text-gray-500">Parceiros Ativos</h3>
                 </div>
                 <div class="ml-5 w-0 flex items-center justify-end flex-1 text-green-500 text-base font-bold">
                     <?= $representative_stats['ativos'] ?? 0 ?>

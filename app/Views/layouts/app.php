@@ -653,7 +653,7 @@
                                     <?php if (App\Core\Auth::isAdmin()): ?>
                                         <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Admin</span>
                                     <?php else: ?>
-                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Representante</span>
+                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Parceiro</span>
                                     <?php endif; ?>
                                 </div>
                                 <div class="ml-3 relative">
@@ -744,12 +744,12 @@
                         <?php if (App\Core\Auth::isAdmin()): ?>
                             <?php if (auth_can('dashboard', 'view')): ?><li><a href="<?= url('dashboard') ?>" class="text-base text-white font-normal rounded-lg flex items-center p-2 hover:bg-gray-600 group <?= $currentPage === 'dashboard' ? 'bg-gray-600' : '' ?>"><span class="ml-3">Dashboard</span></a></li><?php endif; ?>
                             <?php if (auth_can('estabelecimentos', 'view')): ?><li><a href="<?= url('estabelecimentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'estabelecimentos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Estabelecimentos</span></a></li><?php endif; ?>
-                            <?php if (auth_can('representantes', 'view')): ?><li><a href="<?= url('representantes') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'representantes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Representantes</span></a></li><?php endif; ?>
+                            <?php if (auth_can('representantes', 'view')): ?><li><a href="<?= url('representantes') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'representantes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Parceiros</span></a></li><?php endif; ?>
                             <?php if (auth_can('usuarios', 'view')): ?><li><a href="<?= url('usuarios') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'usuarios' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Usuários</span></a></li><?php endif; ?>
                             <?php if (auth_can('chamados', 'view')): ?><li><a href="<?= url('chamados') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'chamados' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Chamados</span></a></li><?php endif; ?>
                             <?php if (auth_can('material', 'view')): ?><li><a href="<?= url('material') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'material' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Material de Apoio</span></a></li><?php endif; ?>
                             <li><a href="<?= url('banners') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'banners' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Banners</span></a></li>
-                            <li><a href="<?= url('modais-representante') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'modais-representante' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Modais Representante</span></a></li>
+                            <li><a href="<?= url('modais-representante') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'modais-representante' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Modais Parceiro</span></a></li>
                             <?php if (auth_can('segmentos', 'view')): ?><li><a href="<?= url('segmentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'segmentos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Segmentos</span></a></li><?php endif; ?>
                             <li><a href="<?= url('tipos-documentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'tipos-documentos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Tipos de Documento</span></a></li>
                             <?php if (auth_can('produtos_dinamicos', 'view')): ?><li><a href="<?= url('produtos-dinamicos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'produtos-dinamicos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Produtos Dinâmicos</span></a></li><?php endif; ?>
@@ -1221,6 +1221,59 @@
         return div.innerHTML;
     }
     
+    <?php if (\App\Core\Auth::isAdmin()): ?>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form').forEach(function(form) {
+            const method = (form.getAttribute('method') || 'get').toLowerCase();
+            if (method !== 'post') {
+                return;
+            }
+            const action = (form.getAttribute('action') || '').toLowerCase();
+            if (/senha|password|reprovar|excluir|delete|change-password/.test(action)) {
+                return;
+            }
+            const submit = form.querySelector('button[type="submit"], input[type="submit"]');
+            if (!submit || form.querySelector('.btn-salvar-sem-obrigatorios')) {
+                return;
+            }
+            const label = ((submit.innerText || submit.value || '') + ' ' + action).toLowerCase();
+            const isSave = /salvar|cadastrar|atualizar|continuar|criar|gravar/.test(label);
+            if (!isSave && !form.querySelector('[required]')) {
+                return;
+            }
+            if (/excluir|deletar|remover|filtrar|buscar|entrar/.test(label) && !isSave) {
+                return;
+            }
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn-salvar-sem-obrigatorios px-6 py-2 border border-amber-500 text-amber-300 rounded-md hover:bg-amber-500/10 transition-colors';
+            button.innerHTML = '<i class="fas fa-unlock mr-2"></i>Salvar sem obrigatórios';
+            button.addEventListener('click', function() {
+                form.dataset.skipRequired = '1';
+                form.noValidate = true;
+                form.querySelectorAll('[required]').forEach(function(field) {
+                    field.removeAttribute('required');
+                });
+                let input = form.querySelector('input[name="skip_required"]');
+                if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'skip_required';
+                    form.appendChild(input);
+                }
+                input.value = '1';
+                if (typeof form.requestSubmit === 'function') {
+                    form.requestSubmit(submit);
+                } else {
+                    form.submit();
+                }
+            });
+            submit.insertAdjacentElement('beforebegin', button);
+        });
+    });
+    <?php endif; ?>
+
     function formatDate(dateString) {
         const date = new Date(dateString);
         const now = new Date();

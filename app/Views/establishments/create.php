@@ -132,7 +132,7 @@ if (!$hasOtherDocumentType) {
                                 <input type="text" name="cnpj" id="cnpj" value="<?= htmlspecialchars(old('cnpj')) ?>"
                                        class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                        placeholder="00.000.000/0000-00">
-                                <button type="button" id="btn-buscar-cnpj" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button type="button" id="btn-buscar-cnpj" class="btn-buscar mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <i class="fas fa-search"></i> Buscar
                                 </button>
                             </div>
@@ -206,7 +206,7 @@ if (!$hasOtherDocumentType) {
                             <input type="text" name="cep" id="cep" value="<?= htmlspecialchars(old('cep')) ?>" required 
                                    class="mt-1 block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="00000-000">
-                            <button type="button" id="btn-buscar-cep" class="mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 hidden">
+                            <button type="button" id="btn-buscar-cep" class="btn-buscar mt-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 hidden">
                                 <i class="fas fa-search"></i> Buscar
                             </button>
                         </div>
@@ -2104,6 +2104,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (formEstabelecimento && btnSalvar) {
         formEstabelecimento.addEventListener('submit', function(e) {
+            if (formEstabelecimento.dataset.skipRequired === '1') {
+                btnSalvar.disabled = true;
+                btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
+                if (loadingModal) {
+                    loadingModal.classList.remove('hidden');
+                }
+                return;
+            }
             markRequiredDocumentInputs();
             const requiredCodes = getRequiredDocumentCodesByProducts();
             const pendingTypes = getPendingDocumentTypes();
@@ -2160,6 +2168,16 @@ document.addEventListener('DOMContentLoaded', function() {
     line-height: 1.5 !important;
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
+}
+.establishment-form .btn-buscar {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.establishment-form .btn-buscar.hidden {
+    display: none !important;
 }
 .establishment-form textarea {
     box-sizing: border-box !important;

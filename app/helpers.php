@@ -65,6 +65,38 @@ if (!function_exists('csrf_field')) {
     }
 }
 
+if (!function_exists('skip_required_requested')) {
+    function skip_required_requested()
+    {
+        return \App\Core\Auth::isAdmin() && (string) ($_POST['skip_required'] ?? '') === '1';
+    }
+}
+
+if (!function_exists('omit_skipped_required_errors')) {
+    function omit_skipped_required_errors(array $errors)
+    {
+        if (!skip_required_requested()) {
+            return $errors;
+        }
+
+        return array_values(array_filter($errors, function ($message) {
+            return stripos((string) $message, 'obrigat') === false;
+        }));
+    }
+}
+
+if (!function_exists('blank_to_null')) {
+    function blank_to_null($value)
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+        return $value === '' ? null : $value;
+    }
+}
+
 if (!function_exists('csrf_verify')) {
     function csrf_verify()
     {
@@ -303,7 +335,7 @@ if (!function_exists('get_status_badge')) {
         
         // Mapeamento de status para classes e textos
         $statusMap = [
-            // Status de Representantes/Usuários
+            // Status de Parceiros/Usuários
             'ACTIVE' => ['class' => 'bg-success', 'text' => 'Ativo'],
             'INACTIVE' => ['class' => 'bg-danger', 'text' => 'Inativo'],
             'BLOCKED' => ['class' => 'bg-warning', 'text' => 'Bloqueado'],

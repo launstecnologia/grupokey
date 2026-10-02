@@ -84,11 +84,11 @@ class DashboardController
             ];
         }
         
-        // Estatísticas de usuários e representantes
+        // Estatísticas de usuários e parceiros
         $userStats = $this->userModel->getStats();
         $representativeStatsRaw = $this->representativeModel->getStats();
         
-        // Mapear os dados dos representantes para o formato esperado
+        // Mapear os dados dos parceiros para o formato esperado
         $representativeStats = [
             'total' => $representativeStatsRaw['total'] ?? 0,
             'ativos' => $representativeStatsRaw['ativos'] ?? 0
@@ -147,7 +147,7 @@ class DashboardController
     {
         $representative = Auth::representative();
         
-        // KPIs do representante
+        // KPIs do parceiro
         $representativeStats = $this->representativeModel->getRepresentativeStats($representative['id']);
         
         // Mapear para o formato esperado pela view
@@ -159,7 +159,7 @@ class DashboardController
             'cadastros_ultimo_mes' => $representativeStats['establishments_last_month']
         ];
         
-        // Clientes do representante
+        // Clientes do parceiro
         $recentClients = $this->establishmentModel->getAll([
             'representative_id' => $representative['id'],
             'limit' => 10
@@ -183,7 +183,7 @@ class DashboardController
         $monthlyEvolution = $this->establishmentModel->getMonthlyEvolutionByRepresentative((int) $representative['id'], 6);
         
         $data = [
-            'title' => 'Dashboard Representante',
+            'title' => 'Dashboard Parceiro',
             'representative' => $representative,
             'client_stats' => $clientStats,
             'recent_clients' => $recentClients,
@@ -269,12 +269,15 @@ class DashboardController
             return '';
         }
 
-        $name = trim((string) ($representative['nome_completo'] ?? $representative['name'] ?? 'Representante'));
+        $name = trim((string) ($representative['nome_completo'] ?? $representative['name'] ?? 'Parceiro'));
         $email = trim((string) ($representative['email'] ?? ''));
         $currentDate = date('d/m/Y');
 
+        $displayName = $name !== '' ? $name : 'Parceiro';
         return strtr($message, [
-            '{nome_representante}' => $name !== '' ? $name : 'Representante',
+            '{nome_parceiro}' => $displayName,
+            '{nome_representante}' => $displayName,
+            '{email_parceiro}' => $email,
             '{email_representante}' => $email,
             '{data_atual}' => $currentDate,
         ]);

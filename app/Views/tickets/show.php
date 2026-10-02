@@ -79,7 +79,7 @@ ob_start();
                     
                     <?php if (Auth::isAdmin()): ?>
                     <div class="col-md-6 mb-3">
-                        <strong class="text-gray-800">Representante:</strong><br>
+                        <strong class="text-gray-800">Parceiro:</strong><br>
                         <span class="text-muted"><?= htmlspecialchars($chamado['representative_nome']) ?></span>
                     </div>
                     
@@ -131,7 +131,7 @@ ob_start();
                                                 <?php if ($resposta['user_type'] === 'admin'): ?>
                                                     <span class="badge bg-primary ms-2">Admin</span>
                                                 <?php else: ?>
-                                                    <span class="badge bg-secondary ms-2">Representante</span>
+                                                    <span class="badge bg-secondary ms-2">Parceiro</span>
                                                 <?php endif; ?>
                                             </h6>
                                             <small class="text-muted"><?= format_datetime($resposta['created_at']) ?></small>

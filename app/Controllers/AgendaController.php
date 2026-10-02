@@ -60,12 +60,12 @@ class AgendaController
         $email = trim($_POST['email'] ?? '');
         $notes = trim($_POST['notes'] ?? '');
 
-        if (empty($name) || empty($phone)) {
+        if ((empty($name) || empty($phone)) && !skip_required_requested()) {
             $_SESSION['error'] = 'Nome e telefone são obrigatórios.';
             redirect(url('agenda/create'));
         }
 
-        if (strlen($phone) < 10) {
+        if ($phone !== '' && strlen($phone) < 10) {
             $_SESSION['error'] = 'Informe um telefone válido com DDD.';
             redirect(url('agenda/create'));
         }
@@ -131,12 +131,12 @@ class AgendaController
         $email = trim($_POST['email'] ?? '');
         $notes = trim($_POST['notes'] ?? '');
 
-        if (empty($name) || empty($phone)) {
+        if ((empty($name) || empty($phone)) && !skip_required_requested()) {
             $_SESSION['error'] = 'Nome e telefone são obrigatórios.';
             redirect(url('agenda/' . $id . '/edit'));
         }
 
-        if (strlen($phone) < 10) {
+        if ($phone !== '' && strlen($phone) < 10) {
             $_SESSION['error'] = 'Informe um telefone válido com DDD.';
             redirect(url('agenda/' . $id . '/edit'));
         }

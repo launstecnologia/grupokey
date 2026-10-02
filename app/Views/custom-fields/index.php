@@ -7,7 +7,7 @@ $productTargetLabelMap = $productTargetLabelMap ?? [];
 
 $entityLabels = [
     'establishment' => 'Estabelecimentos',
-    'representative' => 'Representantes'
+    'representative' => 'Parceiros'
 ];
 
 $typeLabels = [
@@ -32,7 +32,7 @@ $typeLabels = [
                 <i class="fas fa-list-alt mr-2"></i>
                 Campos Dinâmicos
             </h1>
-            <p class="text-gray-600 mt-1">Crie campos extras para estabelecimento e representante sem alterar código.</p>
+            <p class="text-gray-600 mt-1">Crie campos extras para estabelecimento e parceiro sem alterar código.</p>
         </div>
         <a href="<?= url('campos-dinamicos/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
             <i class="fas fa-plus mr-2"></i>

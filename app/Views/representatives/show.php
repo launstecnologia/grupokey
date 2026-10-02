@@ -24,7 +24,7 @@ $statusLabels = [
                 <i class="fas fa-user mr-2"></i>
                 <?= htmlspecialchars($representative['nome_completo']) ?>
             </h1>
-            <p class="text-gray-600 mt-1">Detalhes do representante</p>
+            <p class="text-gray-600 mt-1">Detalhes do parceiro</p>
             <div class="mt-2">
                 <?php 
                 $status = $representative['status'] ?? 'ACTIVE';
@@ -208,7 +208,7 @@ $statusLabels = [
                     <div class="mb-4 rounded-lg border border-blue-100 bg-blue-50 p-3">
                         <p class="text-xs font-medium text-blue-800">Fontes de alteração do cadastro</p>
                         <p class="mt-1 text-xs text-blue-700">
-                            Use <strong>Editar</strong> para dados cadastrais. Use as ações abaixo para acesso ao sistema e status do representante.
+                            Use <strong>Editar</strong> para dados cadastrais. Use as ações abaixo para acesso ao sistema e status do parceiro.
                         </p>
                     </div>
 
@@ -220,7 +220,7 @@ $statusLabels = [
                                 <i class="fas fa-key mr-2"></i>
                                 Resetar Senha
                             </button>
-                            <p class="mt-2 text-xs text-yellow-800">Altera somente a senha de acesso deste representante.</p>
+                            <p class="mt-2 text-xs text-yellow-800">Altera somente a senha de acesso deste parceiro.</p>
                         </div>
 
                         <div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
@@ -402,7 +402,7 @@ document.addEventListener('click', function(e) {
         const id = button.dataset.id;
         const name = button.dataset.name;
         
-        if (confirm(`Tem certeza que deseja excluir o representante "${name}"?`)) {
+        if (confirm(`Tem certeza que deseja excluir o parceiro "${name}"?`)) {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '<?= url('representantes') ?>/' + id;
@@ -435,7 +435,7 @@ document.addEventListener('click', function(e) {
         const status = button.dataset.status;
         const action = status === 'ACTIVE' ? 'desativar' : 'ativar';
         
-        if (confirm(`Tem certeza que deseja ${action} o representante "${name}"?`)) {
+        if (confirm(`Tem certeza que deseja ${action} o parceiro "${name}"?`)) {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '<?= url('representantes') ?>/' + id + '/toggle-status';

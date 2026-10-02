@@ -14,9 +14,9 @@ ob_start();
         <div>
             <h1 class="text-2xl font-bold text-gray-900">
                 <i class="fas fa-user-edit mr-2"></i>
-                Editar Representante
+                Editar Parceiro
             </h1>
-            <p class="text-gray-600 mt-1">Atualize os dados do representante</p>
+            <p class="text-gray-600 mt-1">Atualize os dados do parceiro</p>
         </div>
         <div>
             <a href="<?= url('representantes/' . $representative['id']) ?>" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
@@ -31,7 +31,7 @@ ob_start();
         <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-gray-900">
                 <i class="fas fa-user mr-2"></i>
-                Dados do Representante
+                Dados do Parceiro
             </h3>
         </div>
         <form method="POST" action="<?= url('representantes/' . $representative['id']) ?>" class="p-6" autocomplete="off">
@@ -358,7 +358,7 @@ ob_start();
                     <i class="fas fa-box mr-2 text-blue-600"></i>
                     Produtos Permitidos
                 </h4>
-                <p class="text-sm text-gray-600 mb-4">Selecione quais produtos este representante poderá cadastrar nos estabelecimentos:</p>
+                <p class="text-sm text-gray-600 mb-4">Selecione quais produtos este parceiro poderá cadastrar nos estabelecimentos:</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <?php
                     $allowedProducts = $allowedProducts ?? [];
@@ -393,7 +393,7 @@ ob_start();
                         </label>
                     <?php endforeach; ?>
                 </div>
-                <p class="mt-2 text-xs text-gray-500">Se nenhum produto for selecionado, o representante poderá cadastrar todos os produtos.</p>
+                <p class="mt-2 text-xs text-gray-500">Se nenhum produto for selecionado, o parceiro poderá cadastrar todos os produtos.</p>
             </div>
 
             <!-- Acesso ao Sistema -->
@@ -424,11 +424,11 @@ ob_start();
                 </div>
             </div>
 
-            <!-- Informações do Representante -->
+            <!-- Informações do Parceiro -->
             <div class="mb-8">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-info-circle mr-2 text-blue-600"></i>
-                    Informações do Representante
+                    Informações do Parceiro
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-gray-50 border border-gray-200 rounded-md p-4">
@@ -464,7 +464,7 @@ ob_start();
                             <div class="mt-2 text-sm text-gray-300">
                                 <ul class="list-disc list-inside space-y-1">
                                     <li>Deixe a senha em branco para manter a atual</li>
-                                    <li>Representantes bloqueados não podem fazer login</li>
+                                    <li>Parceiros bloqueados não podem fazer login</li>
                                     <li>Alterações são salvas automaticamente</li>
                                     <li>Verifique todos os dados antes de salvar</li>
                                 </ul>

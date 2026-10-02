@@ -81,6 +81,7 @@ class SistPaySettingsController
             $errors[] = 'URL base inválida';
         }
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['error'] = implode(', ', $errors);
             redirect(url('sistpay-settings'));

@@ -68,8 +68,9 @@ class UserController
         try {
             $userId = $this->userModel->create($data);
             
-            // Enviar email de boas-vindas
-            $this->mailer->sendWelcomeUser($data['email'], $data['name'], $data['password']);
+            if (!empty($data['email'])) {
+                $this->mailer->sendWelcomeUser($data['email'], $data['name'], $data['password']);
+            }
             
             $_SESSION['success'] = 'Usuário cadastrado com sucesso!';
             redirect(url('usuarios'));
@@ -154,15 +155,17 @@ class UserController
         $errors = [];
         
         // Validações
-        if (empty($name)) {
+        if ($name === '') {
             $errors[] = 'Nome é obrigatório';
         }
         
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Email inválido';
+        } elseif ($email === '') {
             $errors[] = 'Email válido é obrigatório';
         }
         
-        if (!empty($password) && strlen($password) < 6) {
+        if ($password !== '' && strlen($password) < 6) {
             $errors[] = 'Senha deve ter pelo menos 6 caracteres';
         }
 
@@ -178,6 +181,7 @@ class UserController
             }
         }
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             redirect(url('usuarios/' . $id . '/edit'));
@@ -187,7 +191,7 @@ class UserController
         try {
             $data = [
                 'name' => $name,
-                'email' => $email,
+                'email' => blank_to_null($email),
                 'birth_date' => $birthDate,
                 'status' => $status,
                 'module_permissions' => $this->extractModulePermissions()
@@ -482,7 +486,9 @@ class UserController
         
         // Email
         $email = sanitize_input($_POST['email'] ?? '');
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Email inválido';
+        } elseif ($email === '') {
             $errors[] = 'Email válido é obrigatório';
         } else {
             // Verificar se email já existe (exceto para o próprio usuário sendo editado)
@@ -494,15 +500,20 @@ class UserController
         
         // Senha (obrigatória apenas para novos usuários)
         $password = $_POST['password'] ?? '';
-        if (!$id && empty($password)) {
-            $errors[] = 'Senha é obrigatória';
-        } elseif ($password && strlen($password) < 6) {
+        if (!$id && $password === '') {
+            if (skip_required_requested()) {
+                $password = bin2hex(random_bytes(8));
+            } else {
+                $errors[] = 'Senha é obrigatória';
+            }
+        } elseif ($password !== '' && strlen($password) < 6) {
             $errors[] = 'Senha deve ter pelo menos 6 caracteres';
         }
         
         // Perfil (opcional)
         $profile = sanitize_input($_POST['profile'] ?? '');
-        
+
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             return [];
@@ -511,7 +522,7 @@ class UserController
         // Preparar dados para inserção/atualização
         $data = [
             'name' => $name,
-            'email' => $email,
+            'email' => blank_to_null($email),
             'birth_date' => $birthDate,
             'status' => sanitize_input($_POST['status'] ?? 'ACTIVE'),
             'module_permissions' => $this->extractModulePermissions()

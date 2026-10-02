@@ -31,7 +31,7 @@ if (isset($old['selected_representative_ids']) && is_array($old['selected_repres
     <div class="flex justify-between items-center mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900"><i class="fas fa-window-maximize mr-2"></i><?= $isEdit ? 'Editar Modal' : 'Novo Modal' ?></h1>
-            <p class="text-gray-600 mt-1">Programe quando o representante verá esta mensagem.</p>
+            <p class="text-gray-600 mt-1">Programe quando o parceiro verá esta mensagem.</p>
         </div>
         <a href="<?= url('modais-representante') ?>" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">Voltar</a>
     </div>
@@ -61,14 +61,14 @@ if (isset($old['selected_representative_ids']) && is_array($old['selected_repres
                     <button type="button" data-editor-cmd="insertUnorderedList" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Lista</button>
                     <select id="rep-modal-metadata-select" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-gray-900">
                         <option value="">Inserir metadado...</option>
-                        <option value="{nome_representante}">Nome do representante</option>
-                        <option value="{email_representante}">E-mail do representante</option>
+                        <option value="{nome_parceiro}">Nome do parceiro</option>
+                        <option value="{email_parceiro}">E-mail do parceiro</option>
                         <option value="{data_atual}">Data atual</option>
                     </select>
                 </div>
                 <div id="rep-modal-editor" contenteditable="true" class="w-full min-h-[140px] px-3 py-2 border border-gray-300 rounded-md bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"><?= $initialMessageValue ?></div>
                 <textarea id="rep-modal-message-input" name="message" rows="4" required class="hidden"></textarea>
-                <p class="text-xs text-gray-500 mt-1">Use metadados como {nome_representante}, {email_representante} e {data_atual}.</p>
+                <p class="text-xs text-gray-500 mt-1">Use metadados como {nome_parceiro}, {email_parceiro} e {data_atual}.</p>
             </div>
 
             <div>
@@ -94,7 +94,7 @@ if (isset($old['selected_representative_ids']) && is_array($old['selected_repres
                 <select id="trigger_type" name="trigger_type" class="w-full px-3 py-2 border border-gray-300 rounded-md">
                     <option value="custom_date" <?= $triggerType === 'custom_date' ? 'selected' : '' ?>>Data específica</option>
                     <option value="commemorative_date" <?= $triggerType === 'commemorative_date' ? 'selected' : '' ?>>Data comemorativa (anual)</option>
-                    <option value="birthday" <?= $triggerType === 'birthday' ? 'selected' : '' ?>>Aniversário representante</option>
+                    <option value="birthday" <?= $triggerType === 'birthday' ? 'selected' : '' ?>>Aniversário parceiro</option>
                     <option value="platform_anniversary" <?= $triggerType === 'platform_anniversary' ? 'selected' : '' ?>>Aniversário de plataforma</option>
                     <option value="establishment_milestone" <?= $triggerType === 'establishment_milestone' ? 'selected' : '' ?>>Meta de cadastros</option>
                 </select>
@@ -158,8 +158,8 @@ if (isset($old['selected_representative_ids']) && is_array($old['selected_repres
                 <label class="block text-sm font-medium text-gray-700 mb-1">Público</label>
                 <?php $audienceType = (string) $value('audience_type', 'all'); ?>
                 <select name="audience_type" id="audience_type" class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="all" <?= $audienceType === 'all' ? 'selected' : '' ?>>Todos representantes</option>
-                    <option value="selected" <?= $audienceType === 'selected' ? 'selected' : '' ?>>Representantes específicos</option>
+                    <option value="all" <?= $audienceType === 'all' ? 'selected' : '' ?>>Todos parceiros</option>
+                    <option value="selected" <?= $audienceType === 'selected' ? 'selected' : '' ?>>Parceiros específicos</option>
                 </select>
             </div>
             <div>
@@ -172,7 +172,7 @@ if (isset($old['selected_representative_ids']) && is_array($old['selected_repres
             </div>
 
             <div id="selected_representatives_group" class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Representantes</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Parceiros</label>
                 <div class="max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 grid grid-cols-1 md:grid-cols-2 gap-2">
                     <?php foreach ($representatives as $rep): ?>
                         <?php $repId = (int) ($rep['id'] ?? 0); ?>
@@ -328,8 +328,10 @@ document.addEventListener('DOMContentLoaded', function() {
         previewTitle.textContent = title || 'Sem título';
         previewTitle.classList.toggle('hidden', !title);
         const previewResolved = message
-            .split('{nome_representante}').join('Nome do Representante')
-            .split('{email_representante}').join('representante@exemplo.com')
+            .split('{nome_parceiro}').join('Nome do Parceiro')
+            .split('{nome_representante}').join('Nome do Parceiro')
+            .split('{email_parceiro}').join('parceiro@exemplo.com')
+            .split('{email_representante}').join('parceiro@exemplo.com')
             .split('{data_atual}').join(new Date().toLocaleDateString('pt-BR'));
         previewMessage.innerHTML = previewResolved || 'Sem texto informado.';
 

@@ -158,9 +158,9 @@ $representatives = $representatives ?? [];
             
             <?php if (App\Core\Auth::isAdmin()): ?>
             <div class="col-md-3">
-                <label for="representative_id" class="form-label">Representante</label>
+                <label for="representative_id" class="form-label">Parceiro</label>
                 <select class="form-select" id="representative_id" name="representative_id">
-                    <option value="">Todos os representantes</option>
+                    <option value="">Todos os parceiros</option>
                     <?php foreach ($representatives as $rep): ?>
                     <option value="<?= $rep['id'] ?>" <?= ($filters['representative_id'] ?? '') == $rep['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($rep['nome_completo']) ?>

@@ -21,7 +21,7 @@ class TicketController
     {
         $filters = $this->getFilters();
         
-        // Se for representante, mostrar apenas seus chamados
+        // Se for parceiro, mostrar apenas seus chamados
         if (Auth::isRepresentative()) {
             $representativeId = Auth::representative()['id'];
             $chamados = $this->ticketModel->getChamadosByRepresentative($representativeId, $filters);
@@ -95,7 +95,7 @@ class TicketController
             redirect(url('chamados'));
         }
         
-        // Verificar se o representante pode ver este chamado
+        // Verificar se o parceiro pode ver este chamado
         if (Auth::isRepresentative() && $chamado['created_by_representative_id'] != Auth::representative()['id']) {
             $_SESSION['error'] = 'Você não tem permissão para ver este chamado';
             redirect(url('chamados'));
@@ -124,7 +124,7 @@ class TicketController
             redirect(url('chamados'));
         }
         
-        // Apenas o representante que criou pode editar (e apenas se estiver aberto)
+        // Apenas o parceiro que criou pode editar (e apenas se estiver aberto)
         if (Auth::isRepresentative()) {
             if ($chamado['created_by_representative_id'] != Auth::representative()['id']) {
                 $_SESSION['error'] = 'Você não tem permissão para editar este chamado';
@@ -204,7 +204,7 @@ class TicketController
             redirect(url('chamados'));
         }
         
-        // Apenas o representante que criou pode deletar (e apenas se estiver aberto)
+        // Apenas o parceiro que criou pode deletar (e apenas se estiver aberto)
         if (Auth::isRepresentative()) {
             if ($chamado['created_by_representative_id'] != Auth::representative()['id']) {
                 $_SESSION['error'] = 'Você não tem permissão para excluir este chamado';
@@ -252,7 +252,7 @@ class TicketController
         
         $mensagem = trim($_POST['mensagem'] ?? '');
         
-        if (empty($mensagem)) {
+        if (empty($mensagem) && !skip_required_requested()) {
             $_SESSION['error'] = 'Mensagem é obrigatória';
             redirect(url('chamados/' . $id));
         }
@@ -334,6 +334,7 @@ class TicketController
             $errors[] = 'Produto inválido';
         }
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             return [];

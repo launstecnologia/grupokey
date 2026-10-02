@@ -30,7 +30,7 @@ $selectedProductTargets = isset($oldInput['product_targets']) && is_array($oldIn
                 <i class="fas fa-sliders-h mr-2"></i>
                 <?= $isEdit ? 'Editar Campo Dinâmico' : 'Novo Campo Dinâmico' ?>
             </h1>
-            <p class="text-gray-600 mt-1">Defina campos extras para os cadastros de estabelecimento e representante.</p>
+            <p class="text-gray-600 mt-1">Defina campos extras para os cadastros de estabelecimento e parceiro.</p>
         </div>
         <a href="<?= url('campos-dinamicos') ?>" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
             <i class="fas fa-arrow-left mr-2"></i>Voltar
@@ -66,7 +66,7 @@ $selectedProductTargets = isset($oldInput['product_targets']) && is_array($oldIn
                     <label class="block text-sm font-medium text-gray-700 mb-1">Entidade *</label>
                     <select name="entity_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
                         <option value="establishment" <?= $entityValue === 'establishment' ? 'selected' : '' ?>>Estabelecimento</option>
-                        <option value="representative" <?= $entityValue === 'representative' ? 'selected' : '' ?>>Representante</option>
+                        <option value="representative" <?= $entityValue === 'representative' ? 'selected' : '' ?>>Parceiro</option>
                     </select>
                 </div>
                 <div>

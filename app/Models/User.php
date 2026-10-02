@@ -154,7 +154,7 @@ class User
             $params[] = $data['name'];
         }
         
-        if (isset($data['email'])) {
+        if (array_key_exists('email', $data)) {
             $fields[] = "email = ?";
             $params[] = $data['email'];
         }

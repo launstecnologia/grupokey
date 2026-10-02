@@ -116,7 +116,7 @@ $activities = $activities ?? [];
 
                     <?php if (!empty($deal['representative_name'])): ?>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Representante</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Parceiro</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                                 <?= htmlspecialchars($deal['representative_name']) ?>
                             </dd>

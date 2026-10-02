@@ -8,8 +8,8 @@ $filters = $filters ?? [];
 <div class="pt-6 px-4">
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900"><i class="fas fa-window-maximize mr-2"></i>Modais Representante</h1>
-            <p class="text-gray-600 mt-1">Mensagens programadas que abrem para representantes no acesso ao sistema.</p>
+            <h1 class="text-2xl font-bold text-gray-900"><i class="fas fa-window-maximize mr-2"></i>Modais Parceiro</h1>
+            <p class="text-gray-600 mt-1">Mensagens programadas que abrem para parceiros no acesso ao sistema.</p>
         </div>
         <a href="<?= url('modais-representante/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center">Novo Modal</a>
     </div>

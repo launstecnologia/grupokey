@@ -221,7 +221,7 @@ $statusColumnIndex = $isOtherProductsLayout ? 5 : 6;
                                         <div class="text-sm text-gray-900"><?= htmlspecialchars($data['cnpj_cpf'] ?? '') ?></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900"><?= htmlspecialchars($data['representante'] ?? '') ?></div>
+                                        <div class="text-sm text-gray-900"><?= htmlspecialchars($data['parceiro'] ?? '') ?></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">R$ <?= number_format($data['tpv_total'], 2, ',', '.') ?></div>

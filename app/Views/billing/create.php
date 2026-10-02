@@ -103,7 +103,7 @@ $productScopes = $productScopes ?? [];
                                 <tr>
                                     <td>João Silva</td>
                                     <td>123.456.789-00</td>
-                                    <td>Nome do Representante</td>
+                                    <td>Nome do Parceiro</td>
                                     <td>R$ 1.000,00</td>
                                     <td>R$ 10,00</td>
                                 </tr>

@@ -38,7 +38,7 @@ class RepresentativeController
         $stats = $this->representativeModel->getStats($filters);
         
         $data = [
-            'title' => 'Representantes',
+            'title' => 'Parceiros',
             'currentPage' => 'representantes',
             'representatives' => $representatives,
             'stats' => $stats,
@@ -54,7 +54,7 @@ class RepresentativeController
         $productOptions = $this->getRepresentativeProductOptions();
         
         $data = [
-            'title' => 'Novo Representante',
+            'title' => 'Novo Parceiro',
             'currentPage' => 'representantes',
             'productOptions' => $productOptions,
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('representative')
@@ -240,12 +240,12 @@ class RepresentativeController
             
             // Enviar email de boas-vindas apenas se configurado
             // Usar a senha original (antes do hash) para enviar no email
-            if (isset($_ENV['MAIL_USER']) && !empty($_ENV['MAIL_USER'])) {
+            if (isset($_ENV['MAIL_USER']) && !empty($_ENV['MAIL_USER']) && !empty($data['email']) && $senhaOriginal !== '') {
                 $this->mailer = new Mailer();
                 $this->mailer->sendWelcomeRepresentative($data['email'], $data['nome_completo'], $senhaOriginal);
             }
             
-            $_SESSION['success'] = 'Representante cadastrado com sucesso!';
+            $_SESSION['success'] = 'Parceiro cadastrado com sucesso!';
             redirect(url('representantes/' . $representativeId));
             
         } catch (\Exception $e) {
@@ -262,16 +262,16 @@ class RepresentativeController
         $representative = $this->representativeModel->findById($id);
         
         if (!$representative) {
-            $_SESSION['error'] = 'Representante não encontrado';
+            $_SESSION['error'] = 'Parceiro não encontrado';
             redirect(url('representantes'));
         }
         
-        // Buscar estabelecimentos do representante
+        // Buscar estabelecimentos do parceiro
         $establishments = $this->representativeModel->getEstablishments($id);
         $stats = $this->representativeModel->getRepresentativeStats($id);
         
         $data = [
-            'title' => 'Detalhes do Representante',
+            'title' => 'Detalhes do Parceiro',
             'currentPage' => 'representantes',
             'representative' => $representative,
             'establishments' => $establishments,
@@ -288,7 +288,7 @@ class RepresentativeController
         $representative = $this->representativeModel->findById($id);
         
         if (!$representative) {
-            $_SESSION['error'] = 'Representante não encontrado';
+            $_SESSION['error'] = 'Parceiro não encontrado';
             redirect(url('representantes'));
         }
         
@@ -300,7 +300,7 @@ class RepresentativeController
             $result = $this->processEditForm($id, $representative);
             
             $data = [
-                'title' => 'Editar Representante',
+                'title' => 'Editar Parceiro',
                 'currentPage' => 'representantes',
                 'representative' => $representative,
                 'form_result' => $result,
@@ -319,11 +319,11 @@ class RepresentativeController
         
         // Log para debug
         write_log('=== PRODUTOS CARREGADOS NO EDIT ===', 'representatives.log');
-        write_log('Representante ID: ' . $id, 'representatives.log');
+        write_log('Parceiro ID: ' . $id, 'representatives.log');
         write_log('Produtos do banco: ' . json_encode($allowedProducts), 'representatives.log');
         
         $data = [
-            'title' => 'Editar Representante',
+            'title' => 'Editar Parceiro',
             'currentPage' => 'representantes',
             'representative' => $representative,
             'productOptions' => $productOptions,
@@ -403,14 +403,14 @@ class RepresentativeController
             
             if (empty($changes) && !$updateResult) {
                 $result['success'] = true;
-                $result['message'] = 'Representante atualizado com sucesso! (Nenhuma alteração foi necessária)';
+                $result['message'] = 'Parceiro atualizado com sucesso! (Nenhuma alteração foi necessária)';
             } else {
                 $result['success'] = true;
-                $result['message'] = 'Representante atualizado com sucesso' . (!empty($changes) ? '! Alterações: ' . implode(', ', $changes) : '!');
+                $result['message'] = 'Parceiro atualizado com sucesso' . (!empty($changes) ? '! Alterações: ' . implode(', ', $changes) : '!');
             }
             
         } catch (\Exception $e) {
-            $result['errors'][] = 'Erro ao atualizar representante: ' . $e->getMessage();
+            $result['errors'][] = 'Erro ao atualizar parceiro: ' . $e->getMessage();
             $_SESSION['old_input'] = $_POST;
         }
         
@@ -426,7 +426,7 @@ class RepresentativeController
         write_log('=== MÉTODO UPDATE CHAMADO ===', 'representatives.log');
         write_log('========================================', 'representatives.log');
         write_log('Timestamp: ' . date('Y-m-d H:i:s'), 'representatives.log');
-        write_log('Representante ID: ' . $id, 'representatives.log');
+        write_log('Parceiro ID: ' . $id, 'representatives.log');
         write_log('REQUEST_METHOD: ' . ($_SERVER['REQUEST_METHOD'] ?? 'N/A'), 'representatives.log');
         write_log('POST _method: ' . ($_POST['_method'] ?? 'N/A'), 'representatives.log');
         write_log('POST completo: ' . json_encode($_POST, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), 'representatives.log');
@@ -455,15 +455,15 @@ class RepresentativeController
             redirect(url('representantes/' . $id . '/edit'));
         }
         
-        write_log('--- Buscando representante no banco ---', 'representatives.log');
+        write_log('--- Buscando parceiro no banco ---', 'representatives.log');
         $representative = $this->representativeModel->findById($id);
         
         if (!$representative) {
-            write_log('❌ Representante não encontrado no banco', 'representatives.log');
-            $_SESSION['error'] = 'Representante não encontrado';
+            write_log('❌ Parceiro não encontrado no banco', 'representatives.log');
+            $_SESSION['error'] = 'Parceiro não encontrado';
             redirect(url('representantes'));
         }
-        write_log('✅ Representante encontrado: ' . json_encode($representative, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), 'representatives.log');
+        write_log('✅ Parceiro encontrado: ' . json_encode($representative, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), 'representatives.log');
         
         write_log('--- Validando e sanitizando dados de entrada ---', 'representatives.log');
         $data = $this->validateAndSanitizeInput($id);
@@ -485,7 +485,7 @@ class RepresentativeController
             $updateResult = $this->representativeModel->update($id, $data);
             
             write_log('Resultado do update: ' . ($updateResult ? '✅ SUCESSO' : '❌ FALHOU'), 'representatives.log');
-            write_log($updateResult ? '✅ Dados do representante atualizados com sucesso' : 'ℹ️ Nenhuma alteração nos dados principais', 'representatives.log');
+            write_log($updateResult ? '✅ Dados do parceiro atualizados com sucesso' : 'ℹ️ Nenhuma alteração nos dados principais', 'representatives.log');
             
             // Salvar produtos permitidos
             write_log('--- Processando produtos permitidos ---', 'representatives.log');
@@ -528,19 +528,19 @@ class RepresentativeController
                         $productNames = array_map(function($p) {
                             return $p['product_type'] ?? $p;
                         }, $savedProducts);
-                        $_SESSION['success'] = "Representante atualizado com sucesso! {$productsCount} produto(s) permitido(s) salvo(s): " . implode(', ', $productNames);
+                        $_SESSION['success'] = "Parceiro atualizado com sucesso! {$productsCount} produto(s) permitido(s) salvo(s): " . implode(', ', $productNames);
                         write_log('✅ SUCESSO: Produtos salvos corretamente', 'representatives.log');
                     } else {
                         $_SESSION['error'] = "Aviso: Foram selecionados {$productsCount} produto(s), mas apenas {$savedCount} foram salvos. Verifique os logs.";
                         write_log('⚠️ AVISO: Contagem de produtos não confere (esperado: ' . $productsCount . ', salvo: ' . $savedCount . ')', 'representatives.log');
                     }
                 } else {
-                    $_SESSION['success'] = 'Representante atualizado com sucesso! Nenhum produto específico selecionado (representante poderá cadastrar todos os produtos).';
+                    $_SESSION['success'] = 'Parceiro atualizado com sucesso! Nenhum produto específico selecionado (parceiro poderá cadastrar todos os produtos).';
                     write_log('✅ SUCESSO: Nenhum produto selecionado (todos permitidos)', 'representatives.log');
                 }
             } catch (\Exception $e) {
-                $_SESSION['error'] = 'Representante atualizado, mas houve erro ao salvar produtos permitidos: ' . $e->getMessage();
-                write_log('❌ ERRO ao salvar produtos do representante ' . $id . ': ' . $e->getMessage(), 'representatives.log');
+                $_SESSION['error'] = 'Parceiro atualizado, mas houve erro ao salvar produtos permitidos: ' . $e->getMessage();
+                write_log('❌ ERRO ao salvar produtos do parceiro ' . $id . ': ' . $e->getMessage(), 'representatives.log');
                 write_log('Stack trace: ' . $e->getTraceAsString(), 'representatives.log');
                 $_SESSION['old_input'] = $_POST;
             }
@@ -561,7 +561,7 @@ class RepresentativeController
             redirect(url('representantes/' . $id . '/edit'));
             
         } catch (\Exception $e) {
-            write_log('❌ ERRO FATAL ao atualizar representante ' . $id . ': ' . $e->getMessage(), 'representatives.log');
+            write_log('❌ ERRO FATAL ao atualizar parceiro ' . $id . ': ' . $e->getMessage(), 'representatives.log');
             write_log('Stack trace: ' . $e->getTraceAsString(), 'representatives.log');
             write_log('========================================', 'representatives.log');
             write_log('', 'representatives.log');
@@ -579,23 +579,23 @@ class RepresentativeController
         $representative = $this->representativeModel->findById($id);
         
         if (!$representative) {
-            $_SESSION['error'] = 'Representante não encontrado';
+            $_SESSION['error'] = 'Parceiro não encontrado';
             redirect(url('representantes'));
         }
         
-        // Verificar se o representante tem estabelecimentos
+        // Verificar se o parceiro tem estabelecimentos
         $establishments = $this->representativeModel->getEstablishments($id);
         if (!empty($establishments)) {
-            $_SESSION['error'] = 'Não é possível excluir representante que possui estabelecimentos cadastrados';
+            $_SESSION['error'] = 'Não é possível excluir parceiro que possui estabelecimentos cadastrados';
             redirect(url('representantes'));
         }
         
         try {
             $this->representativeModel->delete($id);
-            $_SESSION['success'] = 'Representante excluído com sucesso!';
+            $_SESSION['success'] = 'Parceiro excluído com sucesso!';
             
         } catch (\Exception $e) {
-            $_SESSION['error'] = 'Erro ao excluir representante: ' . $e->getMessage();
+            $_SESSION['error'] = 'Erro ao excluir parceiro: ' . $e->getMessage();
         }
         
         redirect(url('representantes'));
@@ -613,7 +613,7 @@ class RepresentativeController
         $representative = $this->representativeModel->findById($id);
         
         if (!$representative) {
-            $_SESSION['error'] = 'Representante não encontrado';
+            $_SESSION['error'] = 'Parceiro não encontrado';
             redirect(url('representantes'));
         }
         
@@ -670,7 +670,7 @@ class RepresentativeController
         $representative = $this->representativeModel->findById($id);
         
         if (!$representative) {
-            $_SESSION['error'] = 'Representante não encontrado';
+            $_SESSION['error'] = 'Parceiro não encontrado';
             redirect(url('representantes'));
         }
         
@@ -679,7 +679,7 @@ class RepresentativeController
             $this->representativeModel->updateStatus($id, $newStatus);
             
             $statusText = $newStatus === 'ACTIVE' ? 'ativado' : 'desativado';
-            $_SESSION['success'] = "Representante {$statusText} com sucesso!";
+            $_SESSION['success'] = "Parceiro {$statusText} com sucesso!";
             
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Erro ao alterar status: ' . $e->getMessage();
@@ -700,7 +700,7 @@ class RepresentativeController
         $representative = $this->representativeModel->findById($id);
 
         if (!$representative) {
-            $_SESSION['error'] = 'Representante não encontrado';
+            $_SESSION['error'] = 'Parceiro não encontrado';
             redirect(url('representantes'));
         }
 
@@ -740,36 +740,39 @@ class RepresentativeController
     private function validateAndSanitizeInput($id = null)
     {
         $errors = [];
+        $skipRequired = skip_required_requested();
         
         // Nome completo
         $nomeCompleto = sanitize_input($_POST['nome_completo'] ?? '');
-        if (empty($nomeCompleto)) {
-            $errors[] = 'Informe o nome completo do representante.';
+        if ($nomeCompleto === '' && !$skipRequired) {
+            $errors[] = 'Informe o nome completo do parceiro.';
         }
         
         // Email
         $email = sanitize_input($_POST['email'] ?? '');
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Informe um e-mail válido.';
-        } else {
-            // Verificar se email já existe (exceto para o próprio representante sendo editado)
+        } elseif ($email === '' && !$skipRequired) {
+            $errors[] = 'Informe um e-mail válido.';
+        } elseif ($email !== '') {
+            // Verificar se email já existe (exceto para o próprio parceiro sendo editado)
             $existingRepresentative = $this->representativeModel->findByEmail($email);
             if ($existingRepresentative && (!$id || $existingRepresentative['id'] != $id)) {
-                $errors[] = 'Já existe um representante cadastrado com este e-mail.';
+                $errors[] = 'Já existe um parceiro cadastrado com este e-mail.';
             }
         }
         
         // Telefone
         $telefone = sanitize_input($_POST['telefone'] ?? '');
-        if (empty($telefone)) {
-            $errors[] = 'Informe o telefone do representante.';
+        if ($telefone === '' && !$skipRequired) {
+            $errors[] = 'Informe o telefone do parceiro.';
         }
         
         // CPF
         $cpf = sanitize_input($_POST['cpf'] ?? '');
-        if (empty($cpf)) {
-            $errors[] = 'Informe o CPF do representante.';
-        } elseif (!$this->validateCPF($cpf)) {
+        if ($cpf === '' && !$skipRequired) {
+            $errors[] = 'Informe o CPF do parceiro.';
+        } elseif ($cpf !== '' && !$this->validateCPF($cpf)) {
             $errors[] = 'CPF inválido. Confira os números digitados.';
         }
 
@@ -780,7 +783,7 @@ class RepresentativeController
         
         // CEP
         $cep = sanitize_input($_POST['cep'] ?? '');
-        if (empty($cep)) {
+        if ($cep === '' && !$skipRequired) {
             $errors[] = 'Informe o CEP.';
         }
         
@@ -791,23 +794,28 @@ class RepresentativeController
         $cidade = sanitize_input($_POST['cidade'] ?? '');
         $uf = sanitize_input($_POST['uf'] ?? '');
         
-        if (empty($logradouro)) { $errors[] = 'Informe o logradouro.'; }
-        if (empty($numero)) { $errors[] = 'Informe o número do endereço.'; }
-        if (empty($bairro)) { $errors[] = 'Informe o bairro.'; }
-        if (empty($cidade)) { $errors[] = 'Informe a cidade.'; }
-        if (empty($uf)) { $errors[] = 'Selecione a UF.'; }
+        if ($logradouro === '' && !$skipRequired) { $errors[] = 'Informe o logradouro.'; }
+        if ($numero === '' && !$skipRequired) { $errors[] = 'Informe o número do endereço.'; }
+        if ($bairro === '' && !$skipRequired) { $errors[] = 'Informe o bairro.'; }
+        if ($cidade === '' && !$skipRequired) { $errors[] = 'Informe a cidade.'; }
+        if ($uf === '' && !$skipRequired) { $errors[] = 'Selecione a UF.'; } elseif ($uf !== '' && strlen($uf) !== 2) { $errors[] = 'UF inválida.'; }
         
-        // Senha (obrigatória apenas para novos representantes)
+        // Senha (obrigatória apenas para novos parceiros)
         $senha = $_POST['senha'] ?? '';
-        if (!$id && empty($senha)) {
-            $errors[] = 'Defina uma senha para o representante.';
-        } elseif ($senha && strlen($senha) < 6) {
+        if (!$id && $senha === '') {
+            if ($skipRequired) {
+                $senha = bin2hex(random_bytes(8));
+            } else {
+                $errors[] = 'Defina uma senha para o parceiro.';
+            }
+        } elseif ($senha !== '' && strlen($senha) < 6) {
             $errors[] = 'A senha deve ter no mínimo 6 caracteres.';
         }
 
         $customFieldDefinitions = $this->getSafeCustomFieldDefinitions('representative');
         $customFieldValues = $this->collectCustomFieldValues('representative', $customFieldDefinitions, $errors);
-        
+
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             $_SESSION['old_input'] = $_POST;
@@ -817,9 +825,9 @@ class RepresentativeController
         // Preparar dados para inserção/atualização
         $data = [
             'nome_completo' => $nomeCompleto,
-            'email' => $email,
+            'email' => blank_to_null($email),
             'telefone' => $telefone,
-            'cpf' => $cpf,
+            'cpf' => blank_to_null($cpf),
             'birth_date' => $birthDate,
             'cep' => $cep,
             'logradouro' => $logradouro,
@@ -1035,15 +1043,15 @@ class RepresentativeController
         $lower = strtolower($msg);
 
         if (strpos($lower, 'duplicate entry') !== false && strpos($lower, 'email') !== false) {
-            return 'Já existe um representante cadastrado com este e-mail. Verifique e tente novamente.';
+            return 'Já existe um parceiro cadastrado com este e-mail. Verifique e tente novamente.';
         }
         if (strpos($lower, 'duplicate entry') !== false && strpos($lower, 'cpf') !== false) {
-            return 'Já existe um representante cadastrado com este CPF. Verifique e tente novamente.';
+            return 'Já existe um parceiro cadastrado com este CPF. Verifique e tente novamente.';
         }
         if (strpos($lower, 'duplicate entry') !== false) {
             return 'Já existe um cadastro com estes dados. Revise os campos e tente novamente.';
         }
 
-        return "Não foi possível {$action} o representante. Revise os dados e tente novamente.";
+        return "Não foi possível {$action} o parceiro. Revise os dados e tente novamente.";
     }
 }

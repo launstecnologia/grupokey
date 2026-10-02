@@ -95,6 +95,7 @@ class EmailMarketingController
             $errors[] = 'Conteúdo do e-mail é obrigatório. Certifique-se de preencher o campo de conteúdo.';
         }
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['error'] = implode('<br>', $errors);
             redirect(url('email-marketing/create'));
@@ -250,6 +251,7 @@ class EmailMarketingController
             $errors[] = 'Conteúdo do e-mail é obrigatório';
         }
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['error'] = implode('<br>', $errors);
             redirect(url('email-marketing/' . $id . '/edit'));
@@ -368,7 +370,7 @@ class EmailMarketingController
             }
         }
         
-        // Representantes
+        // Parceiros
         if (!empty($_POST['representative_ids'])) {
             $representativeIds = is_array($_POST['representative_ids']) ? $_POST['representative_ids'] : explode(',', $_POST['representative_ids']);
             foreach ($representativeIds as $repId) {

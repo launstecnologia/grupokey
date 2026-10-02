@@ -13,9 +13,9 @@ ob_start();
         <div>
             <h1 class="text-2xl font-bold text-gray-900">
                 <i class="fas fa-user-plus mr-2"></i>
-                Novo Representante
+                Novo Parceiro
             </h1>
-            <p class="text-gray-600 mt-1">Cadastre um novo representante no sistema</p>
+            <p class="text-gray-600 mt-1">Cadastre um novo parceiro no sistema</p>
         </div>
         <div>
             <a href="<?= url('representantes') ?>" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors">
@@ -30,7 +30,7 @@ ob_start();
         <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-gray-900">
                 <i class="fas fa-user mr-2"></i>
-                Dados do Representante
+                Dados do Parceiro
             </h3>
         </div>
         <form method="POST" action="<?= url('representantes') ?>" class="p-6" autocomplete="off">
@@ -298,7 +298,7 @@ ob_start();
                     <i class="fas fa-box mr-2 text-blue-600"></i>
                     Produtos Permitidos
                 </h4>
-                <p class="text-sm text-gray-600 mb-4">Selecione quais produtos este representante poderá cadastrar nos estabelecimentos:</p>
+                <p class="text-sm text-gray-600 mb-4">Selecione quais produtos este parceiro poderá cadastrar nos estabelecimentos:</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <?php $selectedProducts = (array)($oldInput['allowed_products'] ?? []); ?>
                     <?php foreach ($productOptions as $option): ?>
@@ -320,7 +320,7 @@ ob_start();
                         </label>
                     <?php endforeach; ?>
                 </div>
-                <p class="mt-2 text-xs text-gray-500">Se nenhum produto for selecionado, o representante poderá cadastrar todos os produtos.</p>
+                <p class="mt-2 text-xs text-gray-500">Se nenhum produto for selecionado, o parceiro poderá cadastrar todos os produtos.</p>
             </div>
 
             <!-- Acesso ao Sistema -->
@@ -367,7 +367,7 @@ ob_start();
                                 <ul class="list-disc list-inside space-y-1">
                                     <li>O email será usado para login no sistema</li>
                                     <li>A senha será enviada por email</li>
-                                    <li>Representantes ativos podem fazer login</li>
+                                    <li>Parceiros ativos podem fazer login</li>
                                     <li>Use senhas seguras com pelo menos 6 caracteres</li>
                                     <li>Verifique todos os dados antes de salvar</li>
                                 </ul>
@@ -384,7 +384,7 @@ ob_start();
                 </a>
                 <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
                     <i class="fas fa-save mr-2"></i>
-                    Cadastrar Representante
+                    Cadastrar Parceiro
                 </button>
             </div>
         </form>

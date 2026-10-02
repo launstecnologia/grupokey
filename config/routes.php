@@ -37,7 +37,7 @@ $router->put('/banners/{id}', 'BannerController@update');
 $router->delete('/banners/{id}', 'BannerController@destroy');
 $router->get('/banners/{id}/image', 'BannerController@image');
 
-// Rotas de modais para representantes (apenas admin)
+// Rotas de modais para parceiros (apenas admin)
 $router->get('/modais-representante', 'RepresentativeModalController@index');
 $router->get('/modais-representante/create', 'RepresentativeModalController@create');
 $router->post('/modais-representante', 'RepresentativeModalController@store');
@@ -80,7 +80,7 @@ $router->get('/estabelecimentos/{id}', 'EstablishmentController@show');
 $router->put('/estabelecimentos/{id}', 'EstablishmentController@update');
 $router->delete('/estabelecimentos/{id}', 'EstablishmentController@destroy');
 
-// Rotas de representantes (apenas admin)
+// Rotas de parceiros (apenas admin)
 $router->get('/representantes', 'RepresentativeController@index');
 $router->get('/representantes/create', 'RepresentativeController@create');
 $router->post('/representantes', 'RepresentativeController@store');

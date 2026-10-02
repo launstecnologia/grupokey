@@ -176,6 +176,7 @@ class DynamicProductController
             $errors[] = 'Adicione pelo menos um campo para o produto.';
         }
 
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['validation_errors'] = $errors;
             return [];

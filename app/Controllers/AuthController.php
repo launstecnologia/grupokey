@@ -36,7 +36,7 @@ class AuthController
     
     public function showLogin()
     {
-        // Verificar se está autenticado E se a sessão é válida (admin ou representante)
+        // Verificar se está autenticado E se a sessão é válida (admin ou parceiro)
         if (Auth::check() && (Auth::isAdmin() || Auth::isRepresentative())) {
             redirect(url('dashboard'));
         }
@@ -69,7 +69,7 @@ class AuthController
             return $this->authenticateUser($user, $password);
         }
         
-        // Verificar se é representante
+        // Verificar se é parceiro
         $representative = $this->representativeModel->findByEmail($email);
         if ($representative) {
             return $this->authenticateRepresentative($representative, $password);
@@ -201,7 +201,7 @@ class AuthController
             redirect(url('forgot-password'));
         }
         
-        // Verificar se email existe (usuário ou representante)
+        // Verificar se email existe (usuário ou parceiro)
         $user = $this->userModel->findByEmail($email);
         $representative = $this->representativeModel->findByEmail($email);
         
@@ -294,7 +294,7 @@ class AuthController
                 if ($representative) {
                     $this->representativeModel->updatePassword($representative['id'], $password);
                 } else {
-                    throw new \Exception('Representante não encontrado');
+                    throw new \Exception('Parceiro não encontrado');
                 }
             }
             

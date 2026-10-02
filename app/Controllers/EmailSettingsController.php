@@ -83,6 +83,7 @@ class EmailSettingsController
             $errors[] = 'Email remetente é obrigatório';
         }
         
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             $_SESSION['error'] = implode(', ', $errors);
             redirect(url('email-settings'));

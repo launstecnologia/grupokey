@@ -657,7 +657,7 @@ class BillingController
             } else {
                 $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['nome'] ?? '') . '</Data></Cell>' . "\n";
                 $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['cnpj_cpf'] ?? '') . '</Data></Cell>' . "\n";
-                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['representante'] ?? '') . '</Data></Cell>' . "\n";
+                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['parceiro'] ?? '') . '</Data></Cell>' . "\n";
                 $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($data['tpv_total'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
                 $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($data['markup'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
             }

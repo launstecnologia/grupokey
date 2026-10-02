@@ -63,7 +63,7 @@ class SegmentController
         $descricao = sanitize_input($_POST['descricao'] ?? '');
         $status = sanitize_input($_POST['status'] ?? 'ACTIVE');
         
-        if (empty($nome)) {
+        if (empty($nome) && !skip_required_requested()) {
             $_SESSION['error'] = 'Nome do segmento é obrigatório';
             redirect(url('segmentos/create'));
         }
@@ -123,7 +123,7 @@ class SegmentController
         $descricao = sanitize_input($_POST['descricao'] ?? '');
         $status = sanitize_input($_POST['status'] ?? 'ACTIVE');
         
-        if (empty($nome)) {
+        if (empty($nome) && !skip_required_requested()) {
             $_SESSION['error'] = 'Nome do segmento é obrigatório';
             redirect(url('segmentos/' . $id . '/edit'));
         }

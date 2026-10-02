@@ -269,8 +269,8 @@ class EstablishmentController
                 $this->emailAdminsAboutRepresentativeEstablishment((int) $establishmentId, $data);
             }
 
-            // Enviar confirmação para o representante vinculado sempre que houver vínculo,
-            // mesmo quando o cadastro for feito por um admin em nome do representante.
+            // Enviar confirmação para o parceiro vinculado sempre que houver vínculo,
+            // mesmo quando o cadastro for feito por um admin em nome do parceiro.
             $representativeIdForConfirmation = (int) ($data['created_by_representative_id'] ?? 0);
             if ($representativeIdForConfirmation > 0) {
                 $this->emailRepresentativeAboutOwnEstablishmentRegistration(
@@ -358,7 +358,7 @@ class EstablishmentController
                 return;
             }
 
-            $representativeName = Auth::representative()['name'] ?? 'Representante';
+            $representativeName = Auth::representative()['name'] ?? 'Parceiro';
             $establishmentName = $data['nome_fantasia'] ?? $data['nome_completo'] ?? 'Novo estabelecimento';
 
             foreach ($admins as $admin) {
@@ -391,18 +391,18 @@ class EstablishmentController
 
             $mailer = new Mailer();
             $representative = Auth::representative();
-            $representativeName = $representative['name'] ?? 'Representante';
+            $representativeName = $representative['name'] ?? 'Parceiro';
             $establishmentName = $data['nome_fantasia'] ?? $data['nome_completo'] ?? 'Novo estabelecimento';
             $establishmentEmail = $data['email'] ?? '-';
             $establishmentPhone = $data['telefone'] ?? '-';
             $detailsUrl = absolute_url('estabelecimentos/' . $establishmentId);
 
-            $subject = 'Novo estabelecimento cadastrado por representante';
+            $subject = 'Novo estabelecimento cadastrado por parceiro';
             $body = sprintf(
                 '<h2>Novo estabelecimento cadastrado</h2>
-                <p>Um representante realizou um novo cadastro no sistema.</p>
+                <p>Um parceiro realizou um novo cadastro no sistema.</p>
                 <ul>
-                    <li><strong>Representante:</strong> %s</li>
+                    <li><strong>Parceiro:</strong> %s</li>
                     <li><strong>Estabelecimento:</strong> %s</li>
                     <li><strong>Email:</strong> %s</li>
                     <li><strong>Telefone:</strong> %s</li>
@@ -492,7 +492,7 @@ class EstablishmentController
         }
         
         // Não permitir edição de estabelecimentos aprovados para perfis sem regra específica.
-        // Representante pode editar aprovado apenas com as travas de campo aplicadas no update.
+        // Parceiro pode editar aprovado apenas com as travas de campo aplicadas no update.
         if ($establishment['status'] === 'APPROVED' && !Auth::isAdmin() && !Auth::isRepresentative()) {
             $_SESSION['error'] = 'Não é possível editar estabelecimentos aprovados';
             redirect(url('estabelecimentos/' . $id));
@@ -849,7 +849,7 @@ class EstablishmentController
                 'related_id' => $establishmentId
             ]);
         } catch (\Throwable $e) {
-            write_log('Falha ao notificar representante sobre reprovação de estabelecimento: ' . $e->getMessage(), 'app.log');
+            write_log('Falha ao notificar parceiro sobre reprovação de estabelecimento: ' . $e->getMessage(), 'app.log');
         }
     }
 
@@ -871,13 +871,13 @@ class EstablishmentController
                 return;
             }
 
-            $representativeName = (string) ($representative['nome_completo'] ?? 'Representante');
+            $representativeName = (string) ($representative['nome_completo'] ?? 'Parceiro');
             $establishmentName = (string) ($establishment['nome_fantasia'] ?? $establishment['nome_completo'] ?? 'Estabelecimento');
 
             $mailer = new Mailer();
             $mailer->sendClientApprovalNotification($email, $representativeName, $establishmentName, 'reproved');
         } catch (\Throwable $e) {
-            write_log('Falha ao enviar e-mail de reprovação para representante: ' . $e->getMessage(), 'app.log');
+            write_log('Falha ao enviar e-mail de reprovação para parceiro: ' . $e->getMessage(), 'app.log');
         }
     }
 
@@ -885,23 +885,23 @@ class EstablishmentController
     {
         try {
             if ($representativeId <= 0) {
-                write_log('Confirmação de cadastro para representante ignorada: representative_id inválido.', 'app.log');
+                write_log('Confirmação de cadastro para parceiro ignorada: representative_id inválido.', 'app.log');
                 return;
             }
 
             $representative = $this->representativeModel->findById($representativeId);
             if (empty($representative)) {
-                write_log('Confirmação de cadastro para representante ignorada: representante não encontrado (ID ' . $representativeId . ').', 'app.log');
+                write_log('Confirmação de cadastro para parceiro ignorada: parceiro não encontrado (ID ' . $representativeId . ').', 'app.log');
                 return;
             }
 
             $email = trim((string) ($representative['email'] ?? ''));
             if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                write_log('Confirmação de cadastro para representante ignorada: e-mail inválido (ID ' . $representativeId . ').', 'app.log');
+                write_log('Confirmação de cadastro para parceiro ignorada: e-mail inválido (ID ' . $representativeId . ').', 'app.log');
                 return;
             }
 
-            $representativeName = (string) ($representative['nome_completo'] ?? 'Representante');
+            $representativeName = (string) ($representative['nome_completo'] ?? 'Parceiro');
             $establishmentName = (string) ($data['nome_fantasia'] ?? $data['nome_completo'] ?? 'Estabelecimento');
             $detailsUrl = absolute_url('estabelecimentos/' . $establishmentId);
 
@@ -925,9 +925,9 @@ class EstablishmentController
 
             $mailer = new Mailer();
             $mailer->send($email, $subject, $body);
-            write_log('E-mail de confirmação de novo cadastro enviado ao representante ID ' . $representativeId . ' (' . $email . ').', 'app.log');
+            write_log('E-mail de confirmação de novo cadastro enviado ao parceiro ID ' . $representativeId . ' (' . $email . ').', 'app.log');
         } catch (\Throwable $e) {
-            write_log('Falha ao enviar e-mail de confirmação para representante (novo cadastro): ' . $e->getMessage(), 'app.log');
+            write_log('Falha ao enviar e-mail de confirmação para parceiro (novo cadastro): ' . $e->getMessage(), 'app.log');
         }
     }
 
@@ -964,7 +964,7 @@ class EstablishmentController
                 return;
             }
 
-            $representativeName = (string) ($representative['nome_completo'] ?? 'Representante');
+            $representativeName = (string) ($representative['nome_completo'] ?? 'Parceiro');
             $body = sprintf(
                 '<h2>Atualização no seu estabelecimento</h2>
                 <p>Olá, <strong>%s</strong>.</p>
@@ -982,7 +982,7 @@ class EstablishmentController
             $mailer = new Mailer();
             $mailer->send($email, $emailSubject, $body);
         } catch (\Throwable $e) {
-            write_log('Falha ao notificar representante sobre alteração administrativa: ' . $e->getMessage(), 'app.log');
+            write_log('Falha ao notificar parceiro sobre alteração administrativa: ' . $e->getMessage(), 'app.log');
         }
     }
     
@@ -1171,7 +1171,7 @@ class EstablishmentController
         $filters['page'] = isset($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
         $filters['per_page'] = 15;
         
-        // Se for representante, filtrar apenas seus estabelecimentos
+        // Se for parceiro, filtrar apenas seus estabelecimentos
         if (Auth::isRepresentative()) {
             $filters['representative_id'] = Auth::representative()['id'];
         }
@@ -1461,7 +1461,9 @@ class EstablishmentController
             $errors[] = 'Telefone é obrigatório';
         }
         
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Email inválido';
+        } elseif ($email === '') {
             $errors[] = 'Email válido é obrigatório';
         }
         
@@ -1488,7 +1490,7 @@ class EstablishmentController
         }
         $dynamicProducts = array_values(array_unique($dynamicProducts));
 
-        if (empty($products) && empty($dynamicProducts)) {
+        if (empty($products) && empty($dynamicProducts) && !skip_required_requested()) {
             $errors[] = 'Selecione pelo menos um produto (PagSeguro ou produto dinâmico).';
             error_log('ERRO: Nenhum produto selecionado');
         } else {
@@ -1515,8 +1517,10 @@ class EstablishmentController
             $errors[] = 'Cidade é obrigatória';
         }
         
-        if (empty($uf) || strlen($uf) !== 2) {
+        if ($uf === '') {
             $errors[] = 'UF é obrigatória';
+        } elseif (strlen($uf) !== 2) {
+            $errors[] = 'UF inválida';
         }
         
         // Validações específicas por tipo de registro
@@ -1589,7 +1593,8 @@ class EstablishmentController
         $this->validateDynamicProductRequiredFields($dynamicProducts, $errors);
         $this->validateUploadedDocumentRows($errors);
         $this->validateRequiredDocuments($products, $dynamicProducts, $registrationType, $id, $errors);
-        
+
+        $errors = omit_skipped_required_errors($errors);
         if (!empty($errors)) {
             error_log('ERROS DE VALIDAÇÃO: ' . json_encode($errors));
             $this->persistUploadedDocumentsToSession();
@@ -1701,7 +1706,7 @@ class EstablishmentController
             $data['created_by_representative_id'] = $representative ? $representative['id'] : null;
         }
 
-        // Representante só pode adicionar produto/documento e, como exceção,
+        // Parceiro só pode adicionar produto/documento e, como exceção,
         // converter PF -> PJ preenchendo CNPJ/Razão Social (+ dados exigidos do responsável).
         if (Auth::isRepresentative() && $id !== null) {
             $currentEstablishment = $this->establishmentModel->findById((int) $id);
@@ -1720,7 +1725,7 @@ class EstablishmentController
         $requestedRegistrationType = strtoupper((string) ($data['registration_type'] ?? $currentRegistrationType));
         $isPfToPjUpgrade = $currentRegistrationType === 'PF' && $requestedRegistrationType === 'PJ';
 
-        // Campos gerais do estabelecimento ficam bloqueados para representante.
+        // Campos gerais do estabelecimento ficam bloqueados para parceiro.
         $lockedFields = [
             'nome_completo',
             'nome_fantasia',
@@ -2769,13 +2774,13 @@ class EstablishmentController
             'PAGBANK' => 'PAGSEGURO',
         ];
         
-        // Se for representante, filtrar apenas produtos permitidos
+        // Se for parceiro, filtrar apenas produtos permitidos
         if (Auth::isRepresentative()) {
             $representative = Auth::representative();
             $allowedProducts = $this->representativeModel->getProducts($representative['id']);
             $allowedProductTypes = array_column($allowedProducts, 'product_type');
             
-            // Se o representante tem produtos permitidos definidos, filtrar
+            // Se o parceiro tem produtos permitidos definidos, filtrar
             // Se não tiver nenhum produto definido, pode cadastrar todos
             if (!empty($allowedProductTypes)) {
                 $products = array_filter($products, function($key) use ($allowedProductTypes) {
