@@ -15,6 +15,9 @@ $documentTypeLabels = $document_type_labels ?? [];
 $representatives = $representatives ?? [];
 $segments = $segments ?? [];
 $oldInput = $_SESSION['old_input'] ?? [];
+$establishmentValidationErrors = (isset($_SESSION['validation_errors']) && is_array($_SESSION['validation_errors']))
+    ? array_values($_SESSION['validation_errors'])
+    : [];
 $isRepresentative = \App\Core\Auth::isRepresentative();
 $currentRegistrationType = strtoupper((string) ($establishment['registration_type'] ?? 'PF'));
 $hasExistingCnpj = trim((string) ($establishment['cnpj'] ?? '')) !== '';
@@ -189,7 +192,7 @@ function isProductSelected($productId, $productData) {
             </h3>
         </div>
 
-        <form method="POST" action="<?= url('estabelecimentos/' . ($establishment['id'] ?? '')) ?>" enctype="multipart/form-data" class="p-6 establishment-form" autocomplete="off">
+        <form method="POST" action="<?= url('estabelecimentos/' . ($establishment['id'] ?? '')) ?>" enctype="multipart/form-data" class="p-6 establishment-form" autocomplete="off" novalidate>
             <?= csrf_field() ?>
             <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
             <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
@@ -689,6 +692,7 @@ function isProductSelected($productId, $productData) {
                                    class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dynamic-product-checkbox"
                                    data-target="dyn-prod-<?= $dynamicProductId ?>-config"
                                    data-product-key="DYNAMIC_<?= $dynamicProductId ?>"
+                                   data-product-name="<?= htmlspecialchars((string) ($dynamicProduct['name'] ?? '')) ?>"
                                    data-requires-bank="<?= product_has_bank_fields($dynamicProduct) ? '1' : '0' ?>"
                                    <?= $selectedDynamic ? 'checked' : '' ?>>
                             <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($dynamicProduct['name'] ?? '') ?></span>
@@ -1813,9 +1817,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    function productSkipsDocumentFields(input) {
+        const key = String(input.dataset.productKey || '').trim().toUpperCase();
+        if (key === 'PAGSEGURO') {
+            return false;
+        }
+        const name = String(input.dataset.productName || (input.nextElementSibling ? input.nextElementSibling.textContent : '') || '');
+        const haystack = (name + ' ' + key).toUpperCase().replace(/[^A-Z0-9]+/g, ' ');
+        if (haystack.indexOf('GOOGLE') !== -1) {
+            return true;
+        }
+        return /(^| )EVO( |$)/.test(haystack);
+    }
+
     function getSelectedProductKeysForDocuments() {
         const keys = [];
         document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked').forEach(function(input) {
+            if (productSkipsDocumentFields(input)) {
+                return;
+            }
             const key = String(input.dataset.productKey || '').trim().toUpperCase();
             if (key && !keys.includes(key)) {
                 keys.push(key);
@@ -1943,6 +1963,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const hasSelectedProducts = hasAnySelectedProductsForDocuments();
         if (documentUploadSection) {
             documentUploadSection.classList.toggle('hidden', !hasSelectedProducts);
+        }
+
+        const selectedProducts = Array.from(document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked'));
+        const hideDocumentFields = selectedProducts.length > 0 && selectedProducts.every(productSkipsDocumentFields);
+        const documentosSection = document.getElementById('documentos-section');
+        if (documentosSection) {
+            documentosSection.classList.toggle('hidden', hideDocumentFields);
+        }
+        if (hideDocumentFields) {
+            if (documentosSection) {
+                documentosSection.querySelectorAll('input, select, textarea').forEach(function(field) {
+                    field.removeAttribute('required');
+                });
+            }
+            return;
         }
 
         const requiredCodes = getRequiredDocumentCodesByProducts();
@@ -2111,6 +2146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnSalvarTexto = document.getElementById('btn-salvar-texto');
     
     if (formEstabelecimento && btnSalvar) {
+        <?php include __DIR__ . '/_required_field_feedback.php'; ?>
         formEstabelecimento.addEventListener('submit', function(e) {
             // Validar formulário antes de mostrar mensagem
             if (formEstabelecimento.checkValidity()) {

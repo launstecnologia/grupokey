@@ -18,6 +18,7 @@ use App\Models\Notification;
 use App\Models\DocumentType;
 use App\Core\FileUpload;
 use App\Core\Mailer;
+use App\Services\LgpdTermDocument;
 use App\Services\SistPayApi;
 
 class EstablishmentController
@@ -744,7 +745,13 @@ class EstablishmentController
                 'Seu estabelecimento foi aprovado',
                 'Parabéns! Seu estabelecimento foi aprovado pelo administrador.'
             );
-            $_SESSION['success'] = 'Estabelecimento aprovado com sucesso!';
+            $lgpdWarning = $this->emailEstablishmentLgpdTerm($establishment);
+            $_SESSION['success'] = $lgpdWarning === null
+                ? 'Estabelecimento aprovado com sucesso! O termo LGPD foi enviado para o e-mail do estabelecimento.'
+                : 'Estabelecimento aprovado com sucesso!';
+            if ($lgpdWarning !== null) {
+                $_SESSION['warning'] = $lgpdWarning;
+            }
             
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Erro ao aprovar estabelecimento: ' . $e->getMessage();
@@ -851,6 +858,135 @@ class EstablishmentController
         } catch (\Throwable $e) {
             write_log('Falha ao notificar parceiro sobre reprovação de estabelecimento: ' . $e->getMessage(), 'app.log');
         }
+    }
+
+    private function emailEstablishmentLgpdTerm(array $establishment): ?string
+    {
+        $email = trim((string) ($establishment['email'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            write_log('Termo LGPD não enviado: estabelecimento sem e-mail válido (ID ' . (int) ($establishment['id'] ?? 0) . ').', 'app.log');
+            return 'O termo LGPD não foi enviado porque o estabelecimento não tem um e-mail válido.';
+        }
+
+        $contractor = $this->lgpdContractor($establishment);
+        $date = (new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')))->format('d/m/Y');
+        $documentPath = null;
+
+        try {
+            $documentPath = (new LgpdTermDocument())->generate(
+                $contractor['name'],
+                $contractor['document_label'],
+                $contractor['document_number'],
+                $date
+            );
+
+            $displayName = trim((string) ($establishment['nome_fantasia'] ?? ''));
+            if ($displayName === '') {
+                $displayName = $contractor['name'];
+            }
+
+            $subject = 'Termo de Adesão e LGPD - ' . $displayName;
+            $body = $this->lgpdTermEmailBody($displayName, $contractor, $date);
+            $attachmentName = 'Termo LGPD - ' . $this->lgpdAttachmentName($displayName) . '.docx';
+
+            $mailer = new Mailer();
+            $mailer->send($email, $subject, $body, null, [
+                ['path' => $documentPath, 'name' => $attachmentName],
+            ]);
+
+            write_log('Termo LGPD enviado para ' . $email . ' (estabelecimento ID ' . (int) ($establishment['id'] ?? 0) . ').', 'app.log');
+            return null;
+        } catch (\Throwable $e) {
+            write_log('Falha ao enviar termo LGPD para ' . $email . ': ' . $e->getMessage(), 'app.log');
+            return 'O estabelecimento foi aprovado, mas não foi possível enviar o termo LGPD por e-mail.';
+        } finally {
+            if (is_string($documentPath) && is_file($documentPath)) {
+                @unlink($documentPath);
+            }
+        }
+    }
+
+    private function lgpdContractor(array $establishment): array
+    {
+        $type = strtoupper(trim((string) ($establishment['registration_type'] ?? 'PJ')));
+        $fantasia = trim((string) ($establishment['nome_fantasia'] ?? ''));
+        $razao = trim((string) ($establishment['razao_social'] ?? ''));
+        $completo = trim((string) ($establishment['nome_completo'] ?? ''));
+
+        if ($type === 'PF') {
+            $name = $completo !== '' ? $completo : $fantasia;
+            $documentLabel = 'CPF';
+            $documentNumber = trim((string) ($establishment['cpf'] ?? ''));
+        } else {
+            $name = $razao !== '' ? $razao : $fantasia;
+            if ($name !== '' && $fantasia !== '' && strcasecmp($name, $fantasia) !== 0) {
+                $name .= ' (' . $fantasia . ')';
+            }
+            $documentLabel = 'CNPJ';
+            $documentNumber = trim((string) ($establishment['cnpj'] ?? ''));
+        }
+
+        if ($name === '') {
+            $name = $completo !== '' ? $completo : 'Estabelecimento';
+        }
+
+        return [
+            'name' => $name,
+            'document_label' => $documentLabel,
+            'document_number' => $documentNumber,
+        ];
+    }
+
+    private function lgpdTermEmailBody(string $displayName, array $contractor, string $date): string
+    {
+        $safeDisplay = htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8');
+        $safeContractor = htmlspecialchars($contractor['name'], ENT_QUOTES, 'UTF-8');
+        $safeDocument = htmlspecialchars(
+            trim($contractor['document_label'] . ($contractor['document_number'] !== '' ? ': ' . $contractor['document_number'] : '')),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        $safeDate = htmlspecialchars($date, ENT_QUOTES, 'UTF-8');
+
+        return "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <title>Termo de Adesão e LGPD</title>
+        </head>
+        <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+            <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                <div style='text-align:center; margin-bottom: 20px;'>
+                    <img src='cid:welcome-logo' alt='Grupo Key' style='max-width: 320px; width: 100%; height: auto;'>
+                </div>
+                <p>Olá,</p>
+                <p>O estabelecimento <strong>{$safeDisplay}</strong> foi aprovado.</p>
+                <p>Segue em anexo o Termo de Adesão e Prestação de Serviços, com a cláusula de proteção de dados (LGPD), preenchido em nome do estabelecimento:</p>
+                <div style='background-color: #f8f9fa; padding: 16px 20px; border-radius: 5px; margin: 20px 0;'>
+                    <p style='margin: 0 0 8px 0;'><strong>Contratante:</strong> {$safeContractor}</p>
+                    <p style='margin: 0 0 8px 0;'><strong>{$safeDocument}</strong></p>
+                    <p style='margin: 0;'><strong>Data:</strong> {$safeDate}</p>
+                </div>
+                <p>O documento completo está anexado a este e-mail.</p>
+                <hr style='margin: 30px 0; border: none; border-top: 1px solid #eee;'>
+                <p style='font-size: 12px; color: #666;'>Este é um e-mail automático do Grupo Key.</p>
+            </div>
+        </body>
+        </html>";
+    }
+
+    private function lgpdAttachmentName(string $name): string
+    {
+        $clean = preg_replace('/[^\p{L}\p{N} _-]+/u', '', $name);
+        $clean = trim((string) preg_replace('/\s+/', ' ', (string) $clean));
+        if ($clean === '') {
+            return 'Estabelecimento';
+        }
+        if (function_exists('mb_substr')) {
+            return mb_substr($clean, 0, 80);
+        }
+        return substr($clean, 0, 80);
     }
 
     private function emailRepresentativeAboutReprovedEstablishment(array $establishment): void
@@ -2656,6 +2792,21 @@ class EstablishmentController
         unset($_SESSION['pending_documents']);
     }
 
+    private function productSkipsRequiredDocuments(string $name, string $slug = ''): bool
+    {
+        $normalized = strtoupper($name . ' ' . $slug);
+        $normalized = preg_replace('/[^A-Z0-9]+/', ' ', $normalized) ?? '';
+        $normalized = trim($normalized);
+        if ($normalized === '') {
+            return false;
+        }
+        if (strpos($normalized, 'GOOGLE') !== false) {
+            return true;
+        }
+
+        return (bool) preg_match('/(^| )EVO( |$)/', $normalized);
+    }
+
     private function pagSeguroDocumentCodes(string $registrationType): array
     {
         $codes = [
@@ -2685,6 +2836,12 @@ class EstablishmentController
             $keys[] = 'PAGSEGURO';
         }
         foreach ($dynamicProducts as $dynamicProductId) {
+            $dynamicProduct = $this->dynamicProductModel->findById((int) $dynamicProductId);
+            $productName = (string) ($dynamicProduct['name'] ?? '');
+            $productSlug = (string) ($dynamicProduct['slug'] ?? '');
+            if ($this->productSkipsRequiredDocuments($productName, $productSlug)) {
+                continue;
+            }
             $keys[] = 'DYNAMIC_' . (int) $dynamicProductId;
         }
 

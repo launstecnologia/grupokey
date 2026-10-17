@@ -13,6 +13,9 @@ $segments = $segments ?? [];
 $oldCustomFieldValues = isset($_SESSION['old_input']['custom_fields']) && is_array($_SESSION['old_input']['custom_fields'])
     ? $_SESSION['old_input']['custom_fields']
     : [];
+$establishmentValidationErrors = (isset($_SESSION['validation_errors']) && is_array($_SESSION['validation_errors']))
+    ? array_values($_SESSION['validation_errors'])
+    : [];
 
 // Garantir opção "OUTROS DOCUMENTOS" para anexos extras não obrigatórios por produto.
 $hasOtherDocumentType = false;
@@ -96,7 +99,7 @@ if (!$hasOtherDocumentType) {
             </h3>
         </div>
 
-        <form method="POST" action="<?= url('estabelecimentos') ?>" enctype="multipart/form-data" class="p-6 establishment-form" autocomplete="off">
+        <form method="POST" action="<?= url('estabelecimentos') ?>" enctype="multipart/form-data" class="p-6 establishment-form" autocomplete="off" novalidate>
             <?= csrf_field() ?>
             <input type="text" name="fake_username" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
             <input type="password" name="fake_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
@@ -517,6 +520,7 @@ if (!$hasOtherDocumentType) {
                                    class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dynamic-product-checkbox"
                                    data-target="dyn-prod-<?= $dynamicProductId ?>-config"
                                    data-product-key="DYNAMIC_<?= $dynamicProductId ?>"
+                                   data-product-name="<?= htmlspecialchars((string) ($dynamicProduct['name'] ?? '')) ?>"
                                    data-requires-bank="<?= product_has_bank_fields($dynamicProduct) ? '1' : '0' ?>"
                                    <?= $selectedDynamic ? 'checked' : '' ?>>
                             <span class="text-gray-700 hover:text-white"><?= htmlspecialchars($dynamicProduct['name'] ?? '') ?></span>
@@ -886,7 +890,7 @@ if (!$hasOtherDocumentType) {
             <?php endif; ?>
 
             <!-- Upload de Documentos -->
-            <div class="mb-8">
+            <div class="mb-8" id="documentos-section">
                 <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-file-upload mr-2 text-blue-600"></i>
                     Documentos
@@ -1669,9 +1673,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    function productSkipsDocumentFields(input) {
+        const key = String(input.dataset.productKey || '').trim().toUpperCase();
+        if (key === 'PAGSEGURO') {
+            return false;
+        }
+        const name = String(input.dataset.productName || (input.nextElementSibling ? input.nextElementSibling.textContent : '') || '');
+        const haystack = (name + ' ' + key).toUpperCase().replace(/[^A-Z0-9]+/g, ' ');
+        if (haystack.indexOf('GOOGLE') !== -1) {
+            return true;
+        }
+        return /(^| )EVO( |$)/.test(haystack);
+    }
+
     function getSelectedProductKeysForDocuments() {
         const keys = [];
         document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked').forEach(function(input) {
+            if (productSkipsDocumentFields(input)) {
+                return;
+            }
             const key = String(input.dataset.productKey || '').trim().toUpperCase();
             if (key && !keys.includes(key)) {
                 keys.push(key);
@@ -1841,6 +1861,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const hasSelectedProducts = hasAnySelectedProductsForDocuments();
         if (documentUploadSection) {
             documentUploadSection.classList.toggle('hidden', !hasSelectedProducts);
+        }
+
+        const selectedProducts = Array.from(document.querySelectorAll('input[name="products[]"]:checked, input[name="dynamic_products[]"]:checked'));
+        const hideDocumentFields = selectedProducts.length > 0 && selectedProducts.every(productSkipsDocumentFields);
+        const documentosSection = document.getElementById('documentos-section');
+        if (documentosSection) {
+            documentosSection.classList.toggle('hidden', hideDocumentFields);
+        }
+        if (hideDocumentFields) {
+            if (documentosSection) {
+                documentosSection.querySelectorAll('input, select, textarea').forEach(function(field) {
+                    field.removeAttribute('required');
+                });
+            }
+            return;
         }
 
         const requiredCodes = getRequiredDocumentCodesByProducts();
@@ -2103,6 +2138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingModal = document.getElementById('submit-loading-modal');
     
     if (formEstabelecimento && btnSalvar) {
+        <?php include __DIR__ . '/_required_field_feedback.php'; ?>
         formEstabelecimento.addEventListener('submit', function(e) {
             if (formEstabelecimento.dataset.skipRequired === '1') {
                 btnSalvar.disabled = true;

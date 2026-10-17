@@ -7,8 +7,8 @@
     <meta property="og:title" content="<?= htmlspecialchars($title ?? 'Grupo Key') ?>">
     <meta property="og:site_name" content="Grupo Key">
     <meta property="og:description" content="Plataforma Grupo Key">
-    <meta property="og:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>">
-    <meta property="og:image:secure_url" content="<?= absolute_url('public/images/og-grupokey.png') ?>">
+    <meta property="og:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>?v=20261017">
+    <meta property="og:image:secure_url" content="<?= absolute_url('public/images/og-grupokey.png') ?>?v=20261017">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -16,7 +16,7 @@
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?= htmlspecialchars($title ?? 'Grupo Key') ?>">
-    <meta name="twitter:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>">
+    <meta name="twitter:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>?v=20261017">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="<?= url('public/images/favicon.png') ?>">
