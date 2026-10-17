@@ -299,7 +299,7 @@ function isProductSelected($productId, $productData) {
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
-                    <div class="col-span-12">
+                    <div class="col-span-12 hidden" id="filial-field">
                         <label class="inline-flex items-center">
                             <input type="checkbox" name="is_filial" value="1" class="h-4 w-4 text-blue-600 border-gray-300 rounded"
                                    <?= !empty($establishment['is_filial']) ? 'checked' : '' ?>>
@@ -462,7 +462,7 @@ function isProductSelected($productId, $productData) {
                                placeholder="000.000.000-00">
                     </div>
                     <div id="pj-pagseguro-cpf-field">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF do Sócio *</label>
                         <input type="text" name="cpf_pj" id="cpf-pj"
                                value="<?= htmlspecialchars($establishment['cpf'] ?? '') ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -1209,6 +1209,36 @@ document.addEventListener('DOMContentLoaded', function() {
         return isPagSeguroSelected() || isEvoSelected();
     }
 
+    const socioSection = document.getElementById('socio-section');
+    const establishmentSection = document.getElementById('documents-section');
+    const socioAnchor = document.createComment('socio-section-anchor');
+    if (socioSection && socioSection.parentNode) {
+        socioSection.parentNode.insertBefore(socioAnchor, socioSection);
+    }
+
+    function syncPagSeguroPfSocioPosition() {
+        if (!socioSection || !socioAnchor || !socioAnchor.parentNode) {
+            return;
+        }
+        const selectedType = document.querySelector('input[name="registration_type"][type="radio"]:checked');
+        const selectedTypeValue = selectedType ? selectedType.value : 'PJ';
+        const moveAboveEstablishment = isPagSeguroSelected() && selectedTypeValue === 'PF' && establishmentSection && establishmentSection.parentNode;
+        if (moveAboveEstablishment) {
+            if (socioSection.nextElementSibling !== establishmentSection) {
+                establishmentSection.parentNode.insertBefore(socioSection, establishmentSection);
+            }
+            return;
+        }
+        if (socioSection.previousSibling === socioAnchor) {
+            return;
+        }
+        if (socioAnchor.nextSibling) {
+            socioAnchor.parentNode.insertBefore(socioSection, socioAnchor.nextSibling);
+        } else {
+            socioAnchor.parentNode.appendChild(socioSection);
+        }
+    }
+
     function syncRegistrationTypeAvailability() {
         const showType = isPagSeguroOrEvoSelected();
         if (registrationTypeSection) {
@@ -1274,6 +1304,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 dataNasc.removeAttribute('required');
             }
         }
+        syncPagSeguroPfSocioPosition();
+        syncDuplicateSocioCpf();
     }
 
     function updateRegistrationVisibility() {
@@ -1480,6 +1512,49 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
     }
 
+    function isRegistrationPj() {
+        const selectedType = document.querySelector('input[name="registration_type"][type="radio"]:checked');
+        return !selectedType || selectedType.value !== 'PF';
+    }
+
+    function syncDuplicateSocioCpf() {
+        if (!document.body.dataset.socioCpfBound) {
+            document.body.dataset.socioCpfBound = '1';
+            document.addEventListener('input', function(event) {
+                if (event.target && event.target.getAttribute('name') === 'socios[0][cpf]') {
+                    syncDuplicateSocioCpf();
+                }
+            });
+        }
+        const titular = document.getElementById('socio-cpf-titular');
+        const titularInput = titular ? titular.querySelector('input[name="socios[0][cpf]"]') : null;
+        const pagseguroWrap = document.getElementById('pj-pagseguro-cpf-field');
+        const pagseguroInput = document.querySelector('input[name="cpf_pj"]');
+        const showTitular = hasSelectedTitularCpfProduct();
+        const showPagseguro = isPagSeguroSelected() && isRegistrationPj();
+        const duplicate = showTitular && showPagseguro;
+
+        if (pagseguroWrap) {
+            pagseguroWrap.classList.toggle('hidden', !showPagseguro || duplicate);
+        }
+        if (!pagseguroInput) {
+            return;
+        }
+        if (duplicate && titularInput) {
+            if (!String(titularInput.value || '').trim() && String(pagseguroInput.value || '').trim()) {
+                titularInput.value = pagseguroInput.value;
+            }
+            pagseguroInput.value = titularInput.value;
+            pagseguroInput.removeAttribute('required');
+            return;
+        }
+        if (showPagseguro) {
+            pagseguroInput.setAttribute('required', 'required');
+        } else {
+            pagseguroInput.removeAttribute('required');
+        }
+    }
+
     function syncUcredSocioFields() {
         bindUcredSocioActions();
         const ucred = hasSelectedProductName(['UCRED']);
@@ -1527,6 +1602,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const visibleItem = customSection.querySelector('.custom-field-item:not(.hidden)');
             customSection.classList.toggle('hidden', !visibleItem);
         }
+        syncDuplicateSocioCpf();
     }
 
     function bindUcredSocioActions() {
@@ -1581,8 +1657,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function syncFilialField() {
+        const fieldWrap = document.getElementById('filial-field');
+        if (!fieldWrap) {
+            return;
+        }
+        const show = hasSelectedProductName(['PARCELEX', 'UCRED']);
+        fieldWrap.classList.toggle('hidden', !show);
+        if (!show) {
+            fieldWrap.querySelectorAll('input[name="is_filial"]').forEach(function(field) {
+                field.checked = false;
+            });
+        }
+    }
+
     function verificarCondicoesComerciais() {
         toggleFormSection('condicoes-comerciais-section', hasSelectedProductName(['PARCELEX', 'UCRED']));
+        syncFilialField();
         syncMdrComercialField();
         syncParcelexRequiredFields();
         syncUcredSocioFields();
@@ -2259,7 +2350,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 select.value = requiredCodes[i];
             }
             if (removeBtn) {
-                removeBtn.classList.remove('hidden');
+                removeBtn.classList.add('hidden');
             }
             documentosContainer.appendChild(clone);
         }
@@ -2270,6 +2361,44 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!hasType && documentosContainer.querySelectorAll('.documento-item').length > 1) {
                 item.remove();
             }
+        });
+
+        syncDocumentRemoveButtons();
+    }
+
+    function documentTypeCounts() {
+        const counts = {};
+        if (!documentosContainer) {
+            return counts;
+        }
+        documentosContainer.querySelectorAll('.documento-item').forEach(function(item) {
+            const select = item.querySelector('select[name="document_type[]"]');
+            const code = String(select ? select.value : '').trim().toUpperCase();
+            if (!code) {
+                return;
+            }
+            counts[code] = (counts[code] || 0) + 1;
+        });
+        return counts;
+    }
+
+    function syncDocumentRemoveButtons() {
+        if (!documentosContainer) {
+            return;
+        }
+        const requiredCodes = getRequiredDocumentCodesByProducts();
+        const counts = documentTypeCounts();
+        const items = Array.from(documentosContainer.querySelectorAll('.documento-item'));
+        items.forEach(function(item) {
+            const removeBtn = item.querySelector('.remove-documento');
+            if (!removeBtn) {
+                return;
+            }
+            const select = item.querySelector('select[name="document_type[]"]');
+            const code = String(select ? select.value : '').trim().toUpperCase();
+            const isRequired = code !== '' && requiredCodes.indexOf(code) !== -1;
+            const allow = items.length > 1 && (!isRequired || (counts[code] || 0) > 1);
+            removeBtn.classList.toggle('hidden', !allow);
         });
     }
 
@@ -2291,12 +2420,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 novoDocumento.querySelectorAll('.document-dropzone').forEach(function(dropzone) {
                     delete dropzone.dataset.dropzoneReady;
                 });
-                novoDocumento.querySelector('.remove-documento').classList.remove('hidden');
+                const removeBtn = novoDocumento.querySelector('.remove-documento');
+                if (removeBtn) {
+                    removeBtn.classList.add('hidden');
+                }
+                novoDocumento.dataset.extraDoc = '1';
                 documentosContainer.appendChild(novoDocumento);
                 refreshDocumentDropzones(novoDocumento);
 
                 // Atualizar event listeners para remover
                 atualizarEventListenersDocumentos();
+                syncDocumentRemoveButtons();
             }
         });
     }
@@ -2309,11 +2443,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function removeDocumentoHandler(e) {
-        const items = document.querySelectorAll('.documento-item');
-        if (items.length > 1) {
-            e.target.closest('.documento-item').remove();
-            atualizarEventListenersDocumentos();
+        const item = e.target.closest('.documento-item');
+        const items = Array.from(document.querySelectorAll('.documento-item'));
+        if (!item || items.length <= 1) {
+            return;
         }
+        const select = item.querySelector('select[name="document_type[]"]');
+        const code = String(select ? select.value : '').trim().toUpperCase();
+        const requiredCodes = getRequiredDocumentCodesByProducts();
+        const counts = documentTypeCounts();
+        if (code && requiredCodes.indexOf(code) !== -1 && (counts[code] || 0) <= 1) {
+            return;
+        }
+        item.remove();
+        atualizarEventListenersDocumentos();
+        syncDocumentRemoveButtons();
     }
     
     atualizarEventListenersDocumentos();

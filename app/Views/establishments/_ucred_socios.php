@@ -93,7 +93,7 @@ $ucredHiddenClass = $ucredSocioOpen ? '' : 'hidden';
 $titularCpfHiddenClass = $titularCpfOpen ? '' : 'hidden';
 ?>
 <div id="socio-cpf-titular" class="<?= $titularCpfHiddenClass ?>">
-    <label class="block text-sm font-medium text-gray-700 mb-1">CPF titular *</label>
+    <label class="block text-sm font-medium text-gray-700 mb-1">CPF do Sócio *</label>
     <input type="text" name="socios[0][cpf]" value="<?= htmlspecialchars($ucredFirstCpf) ?>"
            maxlength="14" inputmode="numeric" class="mask-cpf <?= $ucredFieldClass ?>"
            placeholder="000.000.000-00" <?= $titularCpfOpen ? 'required' : '' ?>>

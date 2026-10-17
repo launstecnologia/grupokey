@@ -362,6 +362,7 @@ $establishmentValidationErrors = (isset($establishmentValidationErrors) && is_ar
                 [/Cidade/i, 'cidade'],
                 [/\bUF\b/i, 'uf'],
                 [/CPF do respons[áa]vel/i, 'cpf_pj'],
+                [/CPF do S[óo]cio/i, 'socios[0][cpf]'],
                 [/s[óo]cio adicional/i, 'extra-socio'],
                 [/CPF titular/i, 'socios[0][cpf]'],
                 [/Data de nascimento do titular/i, 'socios[0][data_nascimento]'],

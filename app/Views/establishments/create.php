@@ -184,7 +184,7 @@ if (!$hasOtherDocumentType) {
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o email">
                     </div>
-                    <div class="col-span-12">
+                    <div class="col-span-12 hidden" id="filial-field">
                         <label class="inline-flex items-center">
                             <input type="checkbox" name="is_filial" value="1" class="h-4 w-4 text-blue-600 border-gray-300 rounded"
                                    <?= old('is_filial') ? 'checked' : '' ?>>
@@ -315,7 +315,7 @@ if (!$hasOtherDocumentType) {
                                placeholder="000.000.000-00">
                     </div>
                     <div id="pj-pagseguro-cpf-field">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF do responsável *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF do Sócio *</label>
                         <input type="text" name="cpf_pj" id="cpf-pj" value="<?= htmlspecialchars(old('cpf_pj', old('cpf'))) ?>"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="000.000.000-00">
@@ -1077,6 +1077,35 @@ document.addEventListener('DOMContentLoaded', function() {
         return isPagSeguroSelected() || isEvoSelected();
     }
 
+    const socioSection = document.getElementById('socio-section');
+    const establishmentSection = document.getElementById('documents-section');
+    const socioAnchor = document.createComment('socio-section-anchor');
+    if (socioSection && socioSection.parentNode) {
+        socioSection.parentNode.insertBefore(socioAnchor, socioSection);
+    }
+
+    function syncPagSeguroPfSocioPosition() {
+        if (!socioSection || !socioAnchor || !socioAnchor.parentNode) {
+            return;
+        }
+        const selectedTypeValue = registrationTypeSelect ? (registrationTypeSelect.value || 'PJ') : 'PJ';
+        const moveAboveEstablishment = isPagSeguroSelected() && selectedTypeValue === 'PF' && establishmentSection && establishmentSection.parentNode;
+        if (moveAboveEstablishment) {
+            if (socioSection.nextElementSibling !== establishmentSection) {
+                establishmentSection.parentNode.insertBefore(socioSection, establishmentSection);
+            }
+            return;
+        }
+        if (socioSection.previousSibling === socioAnchor) {
+            return;
+        }
+        if (socioAnchor.nextSibling) {
+            socioAnchor.parentNode.insertBefore(socioSection, socioAnchor.nextSibling);
+        } else {
+            socioAnchor.parentNode.appendChild(socioSection);
+        }
+    }
+
     function syncRegistrationTypeAvailability() {
         const showType = isPagSeguroOrEvoSelected();
         if (registrationTypeSection) {
@@ -1140,6 +1169,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 dataNasc.removeAttribute('required');
             }
         }
+        syncPagSeguroPfSocioPosition();
+        syncDuplicateSocioCpf();
     }
 
     function updateRegistrationVisibility() {
@@ -1343,6 +1374,49 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
     }
 
+    function isRegistrationPj() {
+        const selectedTypeValue = registrationTypeSelect ? (registrationTypeSelect.value || 'PJ') : 'PJ';
+        return selectedTypeValue !== 'PF';
+    }
+
+    function syncDuplicateSocioCpf() {
+        if (!document.body.dataset.socioCpfBound) {
+            document.body.dataset.socioCpfBound = '1';
+            document.addEventListener('input', function(event) {
+                if (event.target && event.target.getAttribute('name') === 'socios[0][cpf]') {
+                    syncDuplicateSocioCpf();
+                }
+            });
+        }
+        const titular = document.getElementById('socio-cpf-titular');
+        const titularInput = titular ? titular.querySelector('input[name="socios[0][cpf]"]') : null;
+        const pagseguroWrap = document.getElementById('pj-pagseguro-cpf-field');
+        const pagseguroInput = document.querySelector('input[name="cpf_pj"]');
+        const showTitular = hasSelectedTitularCpfProduct();
+        const showPagseguro = isPagSeguroSelected() && isRegistrationPj();
+        const duplicate = showTitular && showPagseguro;
+
+        if (pagseguroWrap) {
+            pagseguroWrap.classList.toggle('hidden', !showPagseguro || duplicate);
+        }
+        if (!pagseguroInput) {
+            return;
+        }
+        if (duplicate && titularInput) {
+            if (!String(titularInput.value || '').trim() && String(pagseguroInput.value || '').trim()) {
+                titularInput.value = pagseguroInput.value;
+            }
+            pagseguroInput.value = titularInput.value;
+            pagseguroInput.removeAttribute('required');
+            return;
+        }
+        if (showPagseguro) {
+            pagseguroInput.setAttribute('required', 'required');
+        } else {
+            pagseguroInput.removeAttribute('required');
+        }
+    }
+
     function syncUcredSocioFields() {
         bindUcredSocioActions();
         const ucred = hasSelectedProductName(['UCRED']);
@@ -1390,6 +1464,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const visibleItem = customSection.querySelector('.custom-field-item:not(.hidden)');
             customSection.classList.toggle('hidden', !visibleItem);
         }
+        syncDuplicateSocioCpf();
     }
 
     function bindUcredSocioActions() {
@@ -1444,8 +1519,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function syncFilialField() {
+        const fieldWrap = document.getElementById('filial-field');
+        if (!fieldWrap) {
+            return;
+        }
+        const show = hasSelectedProductName(['PARCELEX', 'UCRED']);
+        fieldWrap.classList.toggle('hidden', !show);
+        if (!show) {
+            fieldWrap.querySelectorAll('input[name="is_filial"]').forEach(function(field) {
+                field.checked = false;
+            });
+        }
+    }
+
     function verificarCondicoesComerciais() {
         toggleFormSection('condicoes-comerciais-section', hasSelectedProductName(['PARCELEX', 'UCRED']));
+        syncFilialField();
         syncMdrComercialField();
         syncParcelexRequiredFields();
         syncUcredSocioFields();
@@ -2075,6 +2165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         item.dataset.autoDoc = isAuto ? '1' : '0';
+        item.dataset.extraDoc = isAuto ? '0' : '1';
         if (selectedCode) {
             item.dataset.docCode = String(selectedCode).trim().toUpperCase();
         } else {
@@ -2082,7 +2173,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (removeBtn) {
-            removeBtn.classList.remove('hidden');
+            removeBtn.classList.add('hidden');
         }
 
         return item;
@@ -2228,6 +2319,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 select.setAttribute('required', 'required');
             }
         });
+        syncDocumentRemoveButtons();
+    }
+
+    function documentTypeCounts() {
+        const counts = {};
+        const add = function(code) {
+            const normalized = String(code || '').trim().toUpperCase();
+            if (!normalized) {
+                return;
+            }
+            counts[normalized] = (counts[normalized] || 0) + 1;
+        };
+        if (documentosContainer) {
+            documentosContainer.querySelectorAll('.documento-item').forEach(function(item) {
+                const select = item.querySelector('select[name="document_type[]"]');
+                add(select ? select.value : '');
+            });
+        }
+        document.querySelectorAll('.pending-document-item').forEach(function(item) {
+            add(item.dataset.pendingType || '');
+        });
+        return counts;
+    }
+
+    function syncDocumentRemoveButtons() {
+        const requiredCodes = getRequiredDocumentCodesByProducts();
+        const counts = documentTypeCounts();
+        const canRemoveCode = function(code) {
+            const normalized = String(code || '').trim().toUpperCase();
+            if (!normalized || requiredCodes.indexOf(normalized) === -1) {
+                return true;
+            }
+            return (counts[normalized] || 0) > 1;
+        };
+
+        if (documentosContainer) {
+            const items = Array.from(documentosContainer.querySelectorAll('.documento-item'));
+            items.forEach(function(item) {
+                const removeBtn = item.querySelector('.remove-documento');
+                if (!removeBtn) {
+                    return;
+                }
+                const select = item.querySelector('select[name="document_type[]"]');
+                const code = String(select ? select.value : '').trim().toUpperCase();
+                const allow = items.length > 1 && canRemoveCode(code);
+                removeBtn.classList.toggle('hidden', !allow);
+            });
+        }
+
+        document.querySelectorAll('.pending-document-item').forEach(function(item) {
+            const removeBtn = item.querySelector('.remove-pending-document');
+            if (!removeBtn) {
+                return;
+            }
+            removeBtn.classList.toggle('hidden', !canRemoveCode(item.dataset.pendingType || ''));
+        });
     }
 
     // Gerenciar campos de documentos
@@ -2251,6 +2398,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Atualizar event listeners para remover
                 atualizarEventListenersDocumentos();
+                syncDocumentRemoveButtons();
             }
         });
     }
@@ -2264,15 +2412,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function removeDocumentoHandler(e) {
         const item = e.target.closest('.documento-item');
-        if (item) {
-            const select = item.querySelector('select[name="document_type[]"]');
-            const code = String(select ? select.value : '').trim().toUpperCase();
-            if (item.dataset.autoDoc === '1' && code) {
-                removedAutoDocumentCodes.add(code);
-            }
-            item.remove();
-            atualizarEventListenersDocumentos();
+        if (!item || !documentosContainer) {
+            return;
         }
+        const items = Array.from(documentosContainer.querySelectorAll('.documento-item'));
+        if (items.length <= 1) {
+            return;
+        }
+        const select = item.querySelector('select[name="document_type[]"]');
+        const code = String(select ? select.value : '').trim().toUpperCase();
+        const requiredCodes = getRequiredDocumentCodesByProducts();
+        const counts = documentTypeCounts();
+        if (code && requiredCodes.indexOf(code) !== -1 && (counts[code] || 0) <= 1) {
+            return;
+        }
+        if (item.dataset.autoDoc === '1' && code && requiredCodes.indexOf(code) === -1) {
+            removedAutoDocumentCodes.add(code);
+        }
+        item.remove();
+        atualizarEventListenersDocumentos();
+        syncDocumentRemoveButtons();
     }
     
     atualizarEventListenersDocumentos();
@@ -2280,6 +2439,12 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const token = String(this.dataset.token || '');
             const item = this.closest('.pending-document-item');
+            const pendingCode = String(item ? item.dataset.pendingType : '').trim().toUpperCase();
+            const requiredCodes = getRequiredDocumentCodesByProducts();
+            const counts = documentTypeCounts();
+            if (pendingCode && requiredCodes.indexOf(pendingCode) !== -1 && (counts[pendingCode] || 0) <= 1) {
+                return;
+            }
             if (token) {
                 const input = document.createElement('input');
                 input.type = 'hidden';
@@ -2295,6 +2460,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             markRequiredDocumentInputs();
             syncDocumentRowsWithSelectedProducts();
+            syncDocumentRemoveButtons();
         });
     });
     syncDocumentRowsWithSelectedProducts();
@@ -2346,7 +2512,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const item = e.target.closest('.documento-item');
             if (item) {
                 item.dataset.docCode = String(e.target.value || '').trim().toUpperCase();
+                if (String(e.target.value || '').trim() === '') {
+                    item.dataset.extraDoc = '1';
+                    item.dataset.autoDoc = '0';
+                }
             }
+            syncDocumentRemoveButtons();
         }
         if (e.target && e.target.matches('input[name="documents[]"]')) {
             const documentoItem = e.target.closest('.documento-item');

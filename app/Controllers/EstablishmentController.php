@@ -613,6 +613,9 @@ class EstablishmentController
             error_log('Dados para atualização: ' . json_encode($data));
 
             $data['pending_product_tags'] = $this->resolvePendingProductTags($establishment, $data);
+            if (!isset($data['status']) || $data['status'] === '' || $data['status'] === null) {
+                $data['status'] = $establishment['status'] ?? 'PENDING';
+            }
             
             // Teste simples primeiro - apenas atualizar dados básicos
             $result = $this->establishmentModel->update($id, $data);
