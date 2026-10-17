@@ -2207,7 +2207,6 @@ class EstablishmentController
 
         $required = [
             'complemento' => 'Complemento é obrigatório',
-            'observacoes' => 'Observações são obrigatórias',
             'adesao' => 'Adesão é obrigatória',
             'valor_adesao' => 'Valor da adesão é obrigatório',
             'mdr' => 'MDR é obrigatório',

@@ -1268,7 +1268,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!name || field.disabled) {
             return true;
         }
-        if (name === 'is_filial' || name === 'fake_username' || name === 'fake_password' || name === 'csrf_token' || name === '_token' || name === '_method' || name === 'registration_type' || name === 'document_type[]' || name === 'documents[]' || name.indexOf('remove_pending') === 0) {
+        if (name === 'is_filial' || name === 'observacoes' || name === 'fake_username' || name === 'fake_password' || name === 'csrf_token' || name === '_token' || name === '_method' || name === 'registration_type' || name === 'document_type[]' || name === 'documents[]' || name.indexOf('remove_pending') === 0) {
             return true;
         }
         if (field.closest('#ucred-socio-fields, #socios-extras, #socio-cpf-titular')) {
