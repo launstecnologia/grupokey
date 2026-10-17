@@ -7,16 +7,16 @@
     <meta property="og:title" content="<?= htmlspecialchars($title ?? 'Grupo Key') ?>">
     <meta property="og:site_name" content="Grupo Key">
     <meta property="og:description" content="Plataforma Grupo Key">
-    <meta property="og:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>?v=20261017">
-    <meta property="og:image:secure_url" content="<?= absolute_url('public/images/og-grupokey.png') ?>?v=20261017">
+    <meta property="og:image" content="<?= absolute_url('public/images/og-grupokey-sq.png') ?>?v=20261017b">
+    <meta property="og:image:secure_url" content="<?= absolute_url('public/images/og-grupokey-sq.png') ?>?v=20261017b">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:height" content="1200">
     <meta property="og:image:alt" content="Grupo Key">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?= htmlspecialchars($title ?? 'Grupo Key') ?>">
-    <meta name="twitter:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>?v=20261017">
+    <meta name="twitter:image" content="<?= absolute_url('public/images/og-grupokey-sq.png') ?>?v=20261017b">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="<?= url('public/images/favicon.png') ?>">
@@ -742,20 +742,21 @@
                     </div>
                     <ul class="space-y-2 pb-2">
                         <?php if (App\Core\Auth::isAdmin()): ?>
+                            <li class="px-2 pt-2 pb-1 text-xs font-semibold tracking-wide text-white/70">MENU</li>
                             <?php if (auth_can('dashboard', 'view')): ?><li><a href="<?= url('dashboard') ?>" class="text-base text-white font-normal rounded-lg flex items-center p-2 hover:bg-gray-600 group <?= $currentPage === 'dashboard' ? 'bg-gray-600' : '' ?>"><span class="ml-3">Dashboard</span></a></li><?php endif; ?>
                             <?php if (auth_can('estabelecimentos', 'view')): ?><li><a href="<?= url('estabelecimentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'estabelecimentos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Estabelecimentos</span></a></li><?php endif; ?>
-                            <?php if (auth_can('representantes', 'view')): ?><li><a href="<?= url('representantes') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'representantes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Parceiros</span></a></li><?php endif; ?>
+                            <?php if (auth_can('representantes', 'view')): ?><li><a href="<?= url('representantes') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'representantes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1">Representantes (Parceiros)</span></a></li><?php endif; ?>
                             <?php if (auth_can('usuarios', 'view')): ?><li><a href="<?= url('usuarios') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'usuarios' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Usuários</span></a></li><?php endif; ?>
-                            <?php if (auth_can('chamados', 'view')): ?><li><a href="<?= url('chamados') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'chamados' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Chamados</span></a></li><?php endif; ?>
                             <?php if (auth_can('material', 'view')): ?><li><a href="<?= url('material') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'material' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Material de Apoio</span></a></li><?php endif; ?>
+                            <?php if (auth_can('segmentos', 'view')): ?><li><a href="<?= url('segmentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'segmentos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Incluir Segmentos</span></a></li><?php endif; ?>
                             <li><a href="<?= url('banners') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'banners' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Banners</span></a></li>
-                            <li><a href="<?= url('modais-representante') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'modais-representante' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Modais Parceiro</span></a></li>
-                            <?php if (auth_can('segmentos', 'view')): ?><li><a href="<?= url('segmentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'segmentos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Segmentos</span></a></li><?php endif; ?>
+                            <li><a href="<?= url('modais-representante') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'modais-representante' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Modais Parceiros</span></a></li>
                             <li><a href="<?= url('tipos-documentos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'tipos-documentos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Tipos de Documento</span></a></li>
                             <?php if (auth_can('produtos_dinamicos', 'view')): ?><li><a href="<?= url('produtos-dinamicos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'produtos-dinamicos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Produtos Dinâmicos</span></a></li><?php endif; ?>
                             <?php if (auth_can('campos_dinamicos', 'view')): ?><li><a href="<?= url('campos-dinamicos') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'campos-dinamicos' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Campos Dinâmicos</span></a></li><?php endif; ?>
-                            <?php if (auth_can('billing', 'view')): ?><li><a href="<?= url('billing') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'billing' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Faturamento</span></a></li><?php endif; ?>
                             <?php if (auth_can('email_marketing', 'view')): ?><li><a href="<?= url('email-marketing') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'email-marketing' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">E-mail Marketing</span></a></li><?php endif; ?>
+                            <?php if (auth_can('chamados', 'view')): ?><li><a href="<?= url('chamados') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'chamados' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Chamados</span></a></li><?php endif; ?>
+                            <?php if (auth_can('billing', 'view')): ?><li><a href="<?= url('billing') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'billing' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Faturamento</span></a></li><?php endif; ?>
                             <?php if (auth_can('email_settings', 'view')): ?><li><a href="<?= url('email-settings') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'configuracoes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">Configurações Email</span></a></li><?php endif; ?>
                             <?php if (auth_can('sistpay_settings', 'view')): ?><li><a href="<?= url('sistpay-settings') ?>" class="text-base text-white font-normal rounded-lg hover:bg-gray-600 flex items-center p-2 group <?= $currentPage === 'configuracoes' ? 'bg-gray-600' : '' ?>"><span class="ml-3 flex-1 whitespace-nowrap">API SistPay</span></a></li><?php endif; ?>
                         <?php else: ?>

@@ -7,16 +7,16 @@
     <meta property="og:title" content="Grupo Key">
     <meta property="og:site_name" content="Grupo Key">
     <meta property="og:description" content="Plataforma Grupo Key">
-    <meta property="og:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>?v=20261017">
-    <meta property="og:image:secure_url" content="<?= absolute_url('public/images/og-grupokey.png') ?>?v=20261017">
+    <meta property="og:image" content="<?= absolute_url('public/images/og-grupokey-sq.png') ?>?v=20261017b">
+    <meta property="og:image:secure_url" content="<?= absolute_url('public/images/og-grupokey-sq.png') ?>?v=20261017b">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:height" content="1200">
     <meta property="og:image:alt" content="Grupo Key">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Grupo Key">
-    <meta name="twitter:image" content="<?= absolute_url('public/images/og-grupokey.png') ?>?v=20261017">
+    <meta name="twitter:image" content="<?= absolute_url('public/images/og-grupokey-sq.png') ?>?v=20261017b">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -307,6 +307,7 @@ if (!$hasOtherDocumentType) {
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Digite o nome completo">
                     </div>
+                    <?php include __DIR__ . '/_ucred_socios.php'; ?>
                     <div id="pf-fields" class="hidden">
                         <label class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
                         <input type="text" name="cpf" value="<?= htmlspecialchars(old('cpf')) ?>"
@@ -330,41 +331,18 @@ if (!$hasOtherDocumentType) {
                 </div>
             </div>
 
-            <!-- Condições comerciais -->
-            <div class="mb-8 hidden" id="condicoes-comerciais-section">
-                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-handshake mr-2 text-blue-600"></i>
-                    Condições Comerciais
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Adesão</label>
-                        <select name="adesao" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <?php $selectedAdesao = (string) old('adesao'); ?>
-                            <option value="">Selecione o meio</option>
-                            <option value="a_vista" <?= $selectedAdesao === 'a_vista' ? 'selected' : '' ?>>À Vista</option>
-                            <option value="cartao" <?= $selectedAdesao === 'cartao' ? 'selected' : '' ?>>Cartão</option>
-                            <option value="criacao" <?= $selectedAdesao === 'criacao' ? 'selected' : '' ?>>Criação</option>
-                            <option value="isento" <?= $selectedAdesao === 'isento' ? 'selected' : '' ?>>Isento</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Valor</label>
-                        <input type="text" name="valor_adesao" value="<?= htmlspecialchars(old('valor_adesao')) ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="R$ 0,00" data-mask="currency">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">MDR (%)</label>
-                        <input type="text" name="mdr" value="<?= htmlspecialchars(old('mdr')) ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Ex: 1,99">
-                    </div>
-                </div>
-            </div>
-
             <?php if (!empty($customFieldDefinitions)): ?>
-            <div class="mb-8" id="custom-fields-section">
+            <?php
+                $hasCustomFieldOutsideUcred = false;
+                foreach ($customFieldDefinitions as $customFieldCheck) {
+                    $customFieldCheckKey = (string) ($customFieldCheck['field_key'] ?? '');
+                    if ($customFieldCheckKey !== '' && !in_array($customFieldCheckKey, ['cpf', 'data_de_nacimento', 'rg'], true)) {
+                        $hasCustomFieldOutsideUcred = true;
+                        break;
+                    }
+                }
+            ?>
+            <div class="mb-8<?= (!empty($titularCpfOpen) && !$hasCustomFieldOutsideUcred) ? ' hidden' : '' ?>" id="custom-fields-section">
                 <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-sliders-h mr-2 text-blue-600"></i>
                     Campos Adicionais
@@ -373,9 +351,10 @@ if (!$hasOtherDocumentType) {
                     <?php foreach ($customFieldDefinitions as $customField): ?>
                         <?php
                             $fieldKey = $customField['field_key'] ?? '';
-                            if ($fieldKey === '') {
+                            if ($fieldKey === '' || in_array($fieldKey, ['data_de_nacimento', 'rg'], true)) {
                                 continue;
                             }
+                            $hideUcredCustomField = $fieldKey === 'cpf' && !empty($titularCpfOpen);
                             $fieldType = $customField['field_type'] ?? 'text';
                             $fieldLabel = $customField['label'] ?? $fieldKey;
                             $fieldRequired = (int) ($customField['is_required'] ?? 0) === 1;
@@ -388,7 +367,7 @@ if (!$hasOtherDocumentType) {
                             $fieldTargets = (array) ($customField['product_targets'] ?? []);
                             $fieldTargetsJson = htmlspecialchars(json_encode(array_values($fieldTargets), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
                         ?>
-                        <div class="<?= $fieldType === 'textarea' ? 'md:col-span-2' : '' ?> custom-field-item" data-product-targets="<?= $fieldTargetsJson ?>">
+                        <div class="<?= $fieldType === 'textarea' ? 'md:col-span-2' : '' ?> custom-field-item<?= !empty($hideUcredCustomField) ? ' hidden' : '' ?>" data-field-key="<?= htmlspecialchars($fieldKey) ?>" data-product-targets="<?= $fieldTargetsJson ?>">
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 <?= htmlspecialchars($fieldLabel) ?><?= $fieldRequired ? ' *' : '' ?>
                             </label>
@@ -615,6 +594,38 @@ if (!$hasOtherDocumentType) {
                 </div>
             </div>
             <?php endif; ?>
+
+            <div class="mb-8 hidden" id="condicoes-comerciais-section">
+                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-handshake mr-2 text-blue-600"></i>
+                    Condições Comerciais
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Adesão</label>
+                        <select name="adesao" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <?php $selectedAdesao = (string) old('adesao'); ?>
+                            <option value="">Selecione o meio</option>
+                            <option value="a_vista" <?= $selectedAdesao === 'a_vista' ? 'selected' : '' ?>>À Vista</option>
+                            <option value="cartao" <?= $selectedAdesao === 'cartao' ? 'selected' : '' ?>>Cartão</option>
+                            <option value="criacao" <?= $selectedAdesao === 'criacao' ? 'selected' : '' ?>>Criação</option>
+                            <option value="isento" <?= $selectedAdesao === 'isento' ? 'selected' : '' ?>>Isento</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Valor</label>
+                        <input type="text" name="valor_adesao" value="<?= htmlspecialchars(old('valor_adesao')) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="R$ 0,00" data-mask="currency">
+                    </div>
+                    <div id="mdr-comercial-field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">MDR (%)</label>
+                        <input type="text" name="mdr" value="<?= htmlspecialchars(old('mdr')) ?>"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Ex: 1,99">
+                    </div>
+                </div>
+            </div>
 
             <!-- Configurações dos Produtos -->
             <!-- Forçar atualização do cache - v2 -->
@@ -1156,6 +1167,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         applyRegistrationFieldLayout(selectedTypeValue === 'PF');
         syncPagSeguroRegistrationRules();
+        syncParcelexRequiredFields();
     }
 
     function applyRegistrationFieldLayout(isPf) {
@@ -1219,13 +1231,230 @@ document.addEventListener('DOMContentLoaded', function() {
         section.classList.toggle('hidden', !show);
     }
 
+    function parcelexFieldBlocked(field) {
+        const type = String(field.getAttribute('type') || '').toLowerCase();
+        const name = field.getAttribute('name') || '';
+        if (!name || field.disabled) {
+            return true;
+        }
+        if (name === 'is_filial' || name === 'fake_username' || name === 'fake_password' || name === 'csrf_token' || name === '_token' || name === '_method' || name === 'registration_type' || name === 'document_type[]' || name === 'documents[]' || name.indexOf('remove_pending') === 0) {
+            return true;
+        }
+        if (field.closest('#ucred-socio-fields, #socios-extras, #socio-cpf-titular')) {
+            return true;
+        }
+        if (type === 'hidden' || type === 'file' || type === 'checkbox' || type === 'radio' || type === 'button' || type === 'submit' || type === 'password') {
+            return true;
+        }
+        return !!field.closest('.documento-item, .pending-document-item, .hidden, [hidden]');
+    }
+
+    function parcelexFieldLabel(field) {
+        const container = field.closest('div');
+        if (!container) {
+            return null;
+        }
+        const label = container.querySelector('label');
+        if (!label || label.querySelector('input, select, textarea')) {
+            return null;
+        }
+        return label;
+    }
+
+    function markParcelexLabel(field, required) {
+        const label = parcelexFieldLabel(field);
+        if (!label) {
+            return;
+        }
+        const star = label.querySelector('.parcelex-required-star');
+        if (required) {
+            if (!star && label.textContent.indexOf('*') === -1) {
+                const node = document.createElement('span');
+                node.className = 'parcelex-required-star';
+                node.textContent = ' *';
+                label.appendChild(node);
+            }
+            return;
+        }
+        if (star) {
+            star.remove();
+        }
+    }
+
+    function clearParcelexRequired(field) {
+        if (field.dataset.parcelexRequired === '1') {
+            field.removeAttribute('required');
+            delete field.dataset.parcelexRequired;
+            markParcelexLabel(field, false);
+        }
+        if (field.dataset.parcelexReadonly === '1') {
+            field.setAttribute('readonly', 'readonly');
+            field.classList.add('bg-gray-50');
+            delete field.dataset.parcelexReadonly;
+        }
+    }
+
+    function syncParcelexRequiredFields() {
+        const form = document.querySelector('form.establishment-form');
+        if (!form) {
+            return;
+        }
+        const force = hasSelectedProductName(['PARCELEX']);
+        form.querySelectorAll('input, select, textarea').forEach(function(field) {
+            if (!force || parcelexFieldBlocked(field)) {
+                clearParcelexRequired(field);
+                return;
+            }
+            if (!field.hasAttribute('required')) {
+                field.dataset.parcelexRequired = '1';
+                field.setAttribute('required', 'required');
+                markParcelexLabel(field, true);
+            }
+            if (field.getAttribute('name') === 'data_abertura' && field.hasAttribute('readonly')) {
+                field.dataset.parcelexReadonly = '1';
+                field.removeAttribute('readonly');
+                field.classList.remove('bg-gray-50');
+            }
+        });
+    }
+
+    function nextSocioIndex() {
+        let max = 0;
+        document.querySelectorAll('#socios-extras [name^="socios["]').forEach(function(input) {
+            const match = String(input.name || '').match(/^socios\[(\d+)\]/);
+            if (match) {
+                max = Math.max(max, parseInt(match[1], 10));
+            }
+        });
+        return max + 1;
+    }
+
+    function hasSelectedTitularCpfProduct() {
+        const checked = document.querySelectorAll('input[name="dynamic_products[]"]:checked');
+        for (const checkbox of checked) {
+            const name = String(checkbox.dataset.productName || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+            if (!name) {
+                continue;
+            }
+            if (name.indexOf('PARCELEX') !== -1 || name.indexOf('UCRED') !== -1 || /(^| )EVO( |$)/.test(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function syncUcredSocioFields() {
+        bindUcredSocioActions();
+        const ucred = hasSelectedProductName(['UCRED']);
+        const titularCpf = hasSelectedTitularCpfProduct();
+        const titular = document.getElementById('socio-cpf-titular');
+        if (titular) {
+            titular.classList.toggle('hidden', !titularCpf);
+            titular.querySelectorAll('input, select, textarea').forEach(function(field) {
+                if (titularCpf) {
+                    field.setAttribute('required', 'required');
+                } else {
+                    field.removeAttribute('required');
+                }
+            });
+        }
+        ['ucred-socio-fields', 'socios-extras', 'add-socio-wrap'].forEach(function(id) {
+            const section = document.getElementById(id);
+            if (section) {
+                section.classList.toggle('hidden', !ucred);
+            }
+        });
+        document.querySelectorAll('#ucred-socio-fields input, #ucred-socio-fields select, #socios-extras input, #socios-extras select').forEach(function(field) {
+            if (ucred) {
+                field.setAttribute('required', 'required');
+            } else {
+                field.removeAttribute('required');
+            }
+        });
+        document.querySelectorAll('.custom-field-item[data-field-key="cpf"]').forEach(function(wrapper) {
+            if (titularCpf) {
+                wrapper.classList.add('hidden');
+            }
+            wrapper.querySelectorAll('input, select, textarea').forEach(function(field) {
+                if (titularCpf) {
+                    field.removeAttribute('required');
+                    return;
+                }
+                if (field.getAttribute('data-base-required') === '1' && !wrapper.classList.contains('hidden')) {
+                    field.setAttribute('required', 'required');
+                }
+            });
+        });
+        const customSection = document.getElementById('custom-fields-section');
+        if (customSection) {
+            const visibleItem = customSection.querySelector('.custom-field-item:not(.hidden)');
+            customSection.classList.toggle('hidden', !visibleItem);
+        }
+    }
+
+    function bindUcredSocioActions() {
+        const addButton = document.getElementById('add-socio');
+        const extras = document.getElementById('socios-extras');
+        if (addButton && addButton.dataset.bound !== '1') {
+            addButton.dataset.bound = '1';
+            addButton.addEventListener('click', function() {
+                const template = document.getElementById('socio-extra-template');
+                if (!template || !extras) {
+                    return;
+                }
+                const index = nextSocioIndex();
+                const fragment = template.content.cloneNode(true);
+                fragment.querySelectorAll('[data-socio-field]').forEach(function(field) {
+                    field.name = 'socios[' + index + '][' + field.getAttribute('data-socio-field') + ']';
+                    field.setAttribute('required', 'required');
+                });
+                extras.appendChild(fragment);
+                syncUcredSocioFields();
+            });
+        }
+        if (extras && extras.dataset.bound !== '1') {
+            extras.dataset.bound = '1';
+            extras.addEventListener('click', function(event) {
+                const button = event.target.closest('.remove-socio');
+                if (!button) {
+                    return;
+                }
+                const card = button.closest('.socio-extra');
+                if (card) {
+                    card.remove();
+                }
+            });
+        }
+    }
+
+    function syncMdrComercialField() {
+        const fieldWrap = document.getElementById('mdr-comercial-field');
+        if (!fieldWrap) {
+            return;
+        }
+        const show = hasSelectedProductName(['PARCELEX']);
+        fieldWrap.classList.toggle('hidden', !show);
+        fieldWrap.querySelectorAll('input, select, textarea').forEach(function(field) {
+            if (!show) {
+                field.removeAttribute('required');
+                if (field.dataset.parcelexRequired === '1') {
+                    delete field.dataset.parcelexRequired;
+                }
+            }
+        });
+    }
+
     function verificarCondicoesComerciais() {
         toggleFormSection('condicoes-comerciais-section', hasSelectedProductName(['PARCELEX', 'UCRED']));
+        syncMdrComercialField();
+        syncParcelexRequiredFields();
+        syncUcredSocioFields();
     }
 
     function verificarCamposBancarios() {
         const selected = document.querySelector('input[name="dynamic_products[]"][data-requires-bank="1"]:checked');
         toggleFormSection('dados-bancarios-section', !!selected);
+        syncParcelexRequiredFields();
     }
 
     // Mapeamento de IDs de produtos para IDs de configuração
@@ -1740,6 +1969,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+        syncParcelexRequiredFields();
+        syncUcredSocioFields();
     }
 
     function getCurrentRegistrationType() {

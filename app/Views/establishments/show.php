@@ -261,14 +261,86 @@ $statusLabels = [
                         </div>
                         <?php endif; ?>
                     </dl>
+                    <?php
+                    $ucredSocios = (isset($ucred_socios) && is_array($ucred_socios)) ? array_values($ucred_socios) : [];
+                    $establishmentHasUcred = false;
+                    foreach ($dynamicProductData as $dynamicProductRow) {
+                        $dynamicProductLabel = strtoupper(trim((string) ($dynamicProductRow['product_name'] ?? '') . ' ' . (string) ($dynamicProductRow['product_slug'] ?? '')));
+                        if (str_contains($dynamicProductLabel, 'UCRED')) {
+                            $establishmentHasUcred = true;
+                            break;
+                        }
+                    }
+                    if ($establishmentHasUcred && $ucredSocios === []) {
+                        $fallbackCpf = trim((string) ($customFieldValues['cpf'] ?? ''));
+                        $fallbackBirth = trim((string) ($customFieldValues['data_de_nacimento'] ?? ''));
+                        $fallbackRg = trim((string) ($customFieldValues['rg'] ?? ''));
+                        if ($fallbackCpf !== '' || $fallbackBirth !== '' || $fallbackRg !== '') {
+                            $ucredSocios[] = [
+                                'nome' => (string) ($establishment['nome_completo'] ?? ''),
+                                'cpf' => $fallbackCpf,
+                                'data_nascimento' => $fallbackBirth,
+                                'rg' => $fallbackRg,
+                            ];
+                        }
+                    }
+                    $formatUcredCpf = static function ($value): string {
+                        $digits = preg_replace('/\D/', '', (string) $value);
+                        if (strlen($digits) !== 11) {
+                            return trim((string) $value) !== '' ? (string) $value : '-';
+                        }
+                        return substr($digits, 0, 3) . '.' . substr($digits, 3, 3) . '.' . substr($digits, 6, 3) . '-' . substr($digits, 9, 2);
+                    };
+                    $formatUcredDate = static function ($value): string {
+                        $value = trim((string) $value);
+                        if ($value === '') {
+                            return '-';
+                        }
+                        $timestamp = strtotime($value);
+                        return $timestamp ? date('d/m/Y', $timestamp) : $value;
+                    };
+                    ?>
+                    <?php if ($ucredSocios !== []): ?>
+                    <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Sócios</h4>
+                        <div class="space-y-4">
+                            <?php foreach ($ucredSocios as $ucredSocioIndex => $ucredSocio): ?>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                    <?= $ucredSocioIndex === 0 ? 'Sócio titular' : 'Sócio adicional' ?>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nome</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars((string) (($ucredSocio['nome'] ?? '') !== '' ? $ucredSocio['nome'] : '-')) ?></dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">CPF titular</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($formatUcredCpf($ucredSocio['cpf'] ?? '')) ?></dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Data de nascimento</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($formatUcredDate($ucredSocio['data_nascimento'] ?? '')) ?></dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">RG</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars((string) (($ucredSocio['rg'] ?? '') !== '' ? $ucredSocio['rg'] : '-')) ?></dd>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
             <?php
+            if (!isset($establishmentHasUcred)) {
+                $establishmentHasUcred = false;
+            }
             $visibleCustomFields = [];
             foreach ($customFieldDefinitions as $customField) {
                 $fieldKey = (string) ($customField['field_key'] ?? '');
-                if ($fieldKey === '') {
+                if ($fieldKey === '' || (!empty($establishmentHasUcred) && in_array($fieldKey, ['cpf', 'data_de_nacimento', 'rg'], true))) {
                     continue;
                 }
 

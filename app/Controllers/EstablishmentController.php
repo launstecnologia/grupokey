@@ -11,6 +11,7 @@ use App\Models\EstablishmentDynamicProduct;
 use App\Models\DynamicProduct;
 use App\Models\CustomFieldDefinition;
 use App\Models\CustomFieldValue;
+use App\Models\EstablishmentSocio;
 use App\Models\Segment;
 use App\Models\SistPaySettings;
 use App\Models\User;
@@ -31,6 +32,7 @@ class EstablishmentController
     private $dynamicProductModel;
     private $customFieldDefinitionModel;
     private $customFieldValueModel;
+    private $establishmentSocioModel;
     private $segmentModel;
     private $fileUpload;
     private $userModel;
@@ -47,6 +49,7 @@ class EstablishmentController
         $this->dynamicProductModel = new DynamicProduct();
         $this->customFieldDefinitionModel = new CustomFieldDefinition();
         $this->customFieldValueModel = new CustomFieldValue();
+        $this->establishmentSocioModel = new EstablishmentSocio();
         $this->segmentModel = new Segment();
         $this->fileUpload = new FileUpload();
         $this->userModel = new User();
@@ -259,6 +262,9 @@ class EstablishmentController
                 (int) $establishmentId,
                 $data['custom_field_values'] ?? []
             );
+            if (!empty($data['ucred_selected'])) {
+                $this->establishmentSocioModel->replaceForEstablishment((int) $establishmentId, $data['ucred_socios'] ?? []);
+            }
             
             // Upload de documentos se houver
             $this->handleDocumentUpload($establishmentId);
@@ -468,6 +474,7 @@ class EstablishmentController
             'approvalHistory' => $approvalHistory,
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
             'custom_field_values' => $this->getSafeCustomFieldValues('establishment', (int) $id),
+            'ucred_socios' => $this->establishmentSocioModel->getByEstablishment((int) $id),
             'sistPayApiActive' => $sistPayApiActive,
             'sistPaySettings' => $sistPaySettings ?? []
         ];
@@ -552,6 +559,7 @@ class EstablishmentController
             'dynamic_products_catalog' => $this->getAvailableDynamicProducts(),
             'custom_field_definitions' => $this->getSafeCustomFieldDefinitions('establishment'),
             'custom_field_values' => $this->getSafeCustomFieldValues('establishment', (int) $id),
+            'ucred_socios' => $this->establishmentSocioModel->getByEstablishment((int) $id),
             'document_type_options' => $this->getDocumentTypeOptions(),
             'document_type_product_map' => $this->documentTypeModel->getProductMapForActiveTypes(),
             'document_type_labels' => $this->getDocumentTypeLabelMap(),
@@ -621,6 +629,9 @@ class EstablishmentController
                 (int) $id,
                 $data['custom_field_values'] ?? []
             );
+            if (!empty($data['ucred_selected'])) {
+                $this->establishmentSocioModel->replaceForEstablishment((int) $id, $data['ucred_socios'] ?? []);
+            }
             
             // Upload de novos documentos se houver
             $this->handleDocumentUpload($id);
@@ -1725,7 +1736,37 @@ class EstablishmentController
 
         $customFieldDefinitions = $this->getSafeCustomFieldDefinitions('establishment');
         $selectedProductScopes = $this->buildSelectedProductScopes($products, $dynamicProducts);
-        $customFieldValues = $this->collectCustomFieldValues('establishment', $customFieldDefinitions, $errors, $selectedProductScopes);
+        $parcelexSelected = $this->selectionIncludesParcelex($dynamicProducts);
+        if ($parcelexSelected) {
+            $this->validateParcelexFormFields($registrationType, $errors);
+        }
+        $ucredSelected = $this->selectionIncludesUcred($dynamicProducts);
+        $titularCpfSelected = $this->selectionIncludesTitularCpf($dynamicProducts);
+        $preserveCustomKeys = [];
+        if ($titularCpfSelected) {
+            $preserveCustomKeys[] = 'cpf';
+        }
+        if ($ucredSelected) {
+            $preserveCustomKeys[] = 'data_de_nacimento';
+            $preserveCustomKeys[] = 'rg';
+        }
+        $customFieldValues = $this->collectCustomFieldValues(
+            'establishment',
+            $customFieldDefinitions,
+            $errors,
+            $selectedProductScopes,
+            $parcelexSelected,
+            $preserveCustomKeys
+        );
+        $ucredSocios = $this->collectUcredSocios($ucredSelected, $errors);
+        if ($ucredSelected) {
+            $firstUcredSocio = $ucredSocios[0] ?? ['cpf' => '', 'data_nascimento' => '', 'rg' => ''];
+            $customFieldValues['cpf'] = (string) ($firstUcredSocio['cpf'] ?? '');
+            $customFieldValues['data_de_nacimento'] = (string) ($firstUcredSocio['data_nascimento'] ?? '');
+            $customFieldValues['rg'] = (string) ($firstUcredSocio['rg'] ?? '');
+        } elseif ($titularCpfSelected) {
+            $customFieldValues['cpf'] = $this->validatePostedTitularCpf($errors);
+        }
         $this->validateDynamicProductRequiredFields($dynamicProducts, $errors);
         $this->validateUploadedDocumentRows($errors);
         $this->validateRequiredDocuments($products, $dynamicProducts, $registrationType, $id, $errors);
@@ -1818,6 +1859,8 @@ class EstablishmentController
         $data['dynamic_products'] = $dynamicProducts;
         $data['dynamic_product_values'] = $this->getDynamicProductSpecificData($dynamicProducts);
         $data['custom_field_values'] = $customFieldValues;
+        $data['ucred_selected'] = $ucredSelected;
+        $data['ucred_socios'] = $ucredSocios;
         error_log('Dados específicos dos produtos: ' . json_encode($data['product_data']));
         error_log('Dados dos produtos dinâmicos: ' . json_encode($data['dynamic_product_values']));
         
@@ -1849,6 +1892,9 @@ class EstablishmentController
             if (is_array($currentEstablishment) && !empty($currentEstablishment)) {
                 $data = $this->enforceRepresentativeEditRules($data, $currentEstablishment);
             }
+        }
+        if (!empty($data['ucred_socios'][0]) && is_array($data['ucred_socios'][0])) {
+            $data['ucred_socios'][0]['nome'] = (string) ($data['nome_completo'] ?? '');
         }
         
         error_log('VALIDAÇÃO PASSOU - Dados preparados: ' . json_encode($data));
@@ -2031,11 +2077,159 @@ class EstablishmentController
         return $result;
     }
 
+    private function selectionIncludesParcelex(array $dynamicProducts): bool
+    {
+        return $this->selectionIncludesNamedProduct($dynamicProducts, 'PARCELEX');
+    }
+
+    private function selectionIncludesUcred(array $dynamicProducts): bool
+    {
+        return $this->selectionIncludesNamedProduct($dynamicProducts, 'UCRED');
+    }
+
+    private function selectionIncludesTitularCpf(array $dynamicProducts): bool
+    {
+        foreach ($dynamicProducts as $dynamicProductId) {
+            $product = $this->dynamicProductModel->findById((int) $dynamicProductId);
+            if (!$product) {
+                continue;
+            }
+            $label = strtoupper(trim((string) ($product['name'] ?? '') . ' ' . (string) ($product['slug'] ?? '')));
+            $normalized = trim((string) preg_replace('/[^A-Z0-9]+/', ' ', $label));
+            if (str_contains($label, 'PARCELEX') || str_contains($label, 'UCRED') || preg_match('/(^| )EVO( |$)/', $normalized)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function validatePostedTitularCpf(array &$errors): string
+    {
+        $posted = $_POST['socios'] ?? [];
+        $posted = is_array($posted) ? $posted : [];
+        $row = $posted[0] ?? $posted['0'] ?? [];
+        $row = is_array($row) ? $row : [];
+        $cpf = preg_replace('/\D/', '', (string) ($row['cpf'] ?? ''));
+        if (!skip_required_requested()) {
+            if ($cpf === '') {
+                $errors[] = 'CPF titular é obrigatório';
+            } elseif (!$this->validateCPF($cpf)) {
+                $errors[] = 'CPF titular inválido';
+            }
+        }
+
+        return $cpf;
+    }
+
+    private function selectionIncludesNamedProduct(array $dynamicProducts, string $needle): bool
+    {
+        $needle = strtoupper($needle);
+        foreach ($dynamicProducts as $dynamicProductId) {
+            $product = $this->dynamicProductModel->findById((int) $dynamicProductId);
+            if (!$product) {
+                continue;
+            }
+            $label = strtoupper(trim((string) ($product['name'] ?? '') . ' ' . (string) ($product['slug'] ?? '')));
+            if (str_contains($label, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function collectUcredSocios(bool $ucredSelected, array &$errors): array
+    {
+        if (!$ucredSelected) {
+            return [];
+        }
+
+        $posted = $_POST['socios'] ?? [];
+        $posted = is_array($posted) ? $posted : [];
+        $socios = [];
+        $rows = $posted;
+        ksort($rows);
+        if (!isset($rows[0]) && !isset($rows['0'])) {
+            $rows = ['0' => []] + $rows;
+        }
+
+        foreach ($rows as $index => $row) {
+            $row = is_array($row) ? $row : [];
+            $isTitular = (string) $index === '0';
+            $nome = $isTitular
+                ? trim((string) ($_POST['nome_completo'] ?? ''))
+                : trim((string) ($row['nome'] ?? ''));
+            $cpf = preg_replace('/\D/', '', (string) ($row['cpf'] ?? ''));
+            $rg = trim((string) ($row['rg'] ?? ''));
+            $dateInput = trim((string) ($row['data_nascimento'] ?? ''));
+            $date = $dateInput === '' ? null : $this->parseDate($dateInput);
+            $who = $isTitular ? 'titular' : 'sócio adicional';
+
+            if (!skip_required_requested()) {
+                if (!$isTitular && $nome === '') {
+                    $errors[] = 'Nome do sócio adicional é obrigatório';
+                }
+                if ($cpf === '') {
+                    $errors[] = $isTitular ? 'CPF titular é obrigatório' : 'CPF do sócio adicional é obrigatório';
+                } elseif (!$this->validateCPF($cpf)) {
+                    $errors[] = $isTitular ? 'CPF titular inválido' : 'CPF do sócio adicional inválido';
+                }
+                if ($dateInput === '') {
+                    $errors[] = $isTitular ? 'Data de nascimento do titular é obrigatória' : 'Data de nascimento do sócio adicional é obrigatória';
+                } elseif ($date === null) {
+                    $errors[] = $isTitular ? 'Data de nascimento do titular inválida' : 'Data de nascimento do sócio adicional inválida';
+                }
+                if ($rg === '') {
+                    $errors[] = $isTitular ? 'RG do titular é obrigatório' : 'RG do sócio adicional é obrigatório';
+                }
+            }
+
+            $socios[] = [
+                'nome' => sanitize_input($nome),
+                'cpf' => $cpf,
+                'data_nascimento' => $date ?? '',
+                'rg' => sanitize_input($rg),
+            ];
+        }
+
+        return $socios;
+    }
+
+    private function validateParcelexFormFields(string $registrationType, array &$errors): void
+    {
+        if (skip_required_requested()) {
+            return;
+        }
+
+        $required = [
+            'complemento' => 'Complemento é obrigatório',
+            'observacoes' => 'Observações são obrigatórias',
+            'adesao' => 'Adesão é obrigatória',
+            'valor_adesao' => 'Valor da adesão é obrigatório',
+            'mdr' => 'MDR é obrigatório',
+        ];
+        if (strtoupper($registrationType) !== 'PF') {
+            $required['data_abertura'] = 'Data de abertura é obrigatória';
+        }
+        if (Auth::isAdmin()) {
+            $required['owner_ref'] = 'Parceiro/Usuário é obrigatório';
+        }
+
+        foreach ($required as $field => $message) {
+            $value = $_POST[$field] ?? '';
+            if (is_array($value) || trim((string) $value) === '') {
+                $errors[] = $message;
+            }
+        }
+    }
+
     private function validateDynamicProductRequiredFields(array $dynamicProductIds, array &$errors): void
     {
         $rawValues = $_POST['dynamic_values'] ?? [];
         $rawValues = is_array($rawValues) ? $rawValues : [];
-        $this->validateSharedBankFields($dynamicProductIds, $errors);
+        $forceAll = $this->selectionIncludesParcelex($dynamicProductIds);
+        $this->validateSharedBankFields($dynamicProductIds, $errors, $forceAll);
 
         foreach ($dynamicProductIds as $dynamicProductId) {
             $product = $this->dynamicProductModel->findById((int) $dynamicProductId);
@@ -2046,7 +2240,7 @@ class EstablishmentController
             $values = $rawValues[(int) $dynamicProductId] ?? $rawValues[(string) (int) $dynamicProductId] ?? [];
             $values = is_array($values) ? $values : [];
             foreach (($product['fields'] ?? []) as $field) {
-                if ((int) ($field['is_required'] ?? 0) !== 1) {
+                if ((int) ($field['is_required'] ?? 0) !== 1 && !$forceAll) {
                     continue;
                 }
                 if (shared_bank_slot($field) !== null || (product_name_is_pagseguro($product['name'] ?? '') && field_is_bank_data($field))) {
@@ -2063,7 +2257,7 @@ class EstablishmentController
         }
     }
 
-    private function validateSharedBankFields(array $dynamicProductIds, array &$errors): void
+    private function validateSharedBankFields(array $dynamicProductIds, array &$errors, bool $forceAll = false): void
     {
         $selectedIds = [];
         foreach ($dynamicProductIds as $dynamicProductId) {
@@ -2088,7 +2282,7 @@ class EstablishmentController
             }
             foreach ($product['fields'] ?? [] as $field) {
                 $slot = shared_bank_slot($field);
-                if ($slot === null || (int) ($field['is_required'] ?? 0) !== 1) {
+                if ($slot === null || ((int) ($field['is_required'] ?? 0) !== 1 && !$forceAll)) {
                     continue;
                 }
                 $requiredSlots[$slot] = $labels[$slot] ?? ($field['label'] ?? $slot);
@@ -2144,7 +2338,7 @@ class EstablishmentController
         }
     }
 
-    private function collectCustomFieldValues($entityType, array $definitions, array &$errors, array $selectedProductScopes = [])
+    private function collectCustomFieldValues($entityType, array $definitions, array &$errors, array $selectedProductScopes = [], bool $forceApplicableRequired = false, array $preserveKeys = [])
     {
         $rawValues = $_POST['custom_fields'] ?? [];
         $rawValues = is_array($rawValues) ? $rawValues : [];
@@ -2152,7 +2346,7 @@ class EstablishmentController
 
         foreach ($definitions as $definition) {
             $key = (string) ($definition['field_key'] ?? '');
-            if ($key === '') {
+            if ($key === '' || in_array($key, $preserveKeys, true)) {
                 continue;
             }
 
@@ -2171,7 +2365,7 @@ class EstablishmentController
                 continue;
             }
 
-            if ($isRequired && $value === '') {
+            if (($isRequired || $forceApplicableRequired) && $value === '') {
                 $errors[] = 'Campo adicional "' . $label . '" é obrigatório.';
             }
 

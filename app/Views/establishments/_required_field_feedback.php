@@ -356,15 +356,26 @@ $establishmentValidationErrors = (isset($establishmentValidationErrors) && is_ar
                 [/e-?mail/i, 'email'],
                 [/\bCEP\b/i, 'cep'],
                 [/Logradouro/i, 'logradouro'],
+                [/Complemento/i, 'complemento'],
                 [/N[úu]mero é obrigatório/i, 'numero'],
                 [/Bairro/i, 'bairro'],
                 [/Cidade/i, 'cidade'],
                 [/\bUF\b/i, 'uf'],
                 [/CPF do respons[áa]vel/i, 'cpf_pj'],
+                [/s[óo]cio adicional/i, 'extra-socio'],
+                [/CPF titular/i, 'socios[0][cpf]'],
+                [/Data de nascimento do titular/i, 'socios[0][data_nascimento]'],
+                [/RG do titular/i, 'socios[0][rg]'],
                 [/Data de nascimento/i, 'data_nascimento'],
+                [/Data de abertura/i, 'data_abertura'],
                 [/Raz[ãa]o social/i, 'razao_social'],
                 [/CNPJ/i, 'cnpj'],
                 [/\bCPF\b/i, 'cpf'],
+                [/Observa[çc][õo]es/i, 'observacoes'],
+                [/Valor da ades[ãa]o/i, 'valor_adesao'],
+                [/Ades[ãa]o/i, 'adesao'],
+                [/\bMDR\b/i, 'mdr'],
+                [/Parceiro\/Usu[áa]rio é obrigatório/i, 'owner_ref'],
                 [/Parceiro|Usu[áa]rio selecionado/i, 'owner_ref']
             ];
 
@@ -374,6 +385,10 @@ $establishmentValidationErrors = (isset($establishmentValidationErrors) && is_ar
                 }
                 if (String(rules[i][1]).indexOf('section:') === 0) {
                     return { section: document.getElementById(String(rules[i][1]).slice(8)) };
+                }
+                if (rules[i][1] === 'extra-socio') {
+                    const extraField = formEstabelecimento.querySelector('#socios-extras input, #socios-extras select, #socios-extras textarea');
+                    return extraField ? { field: extraField } : null;
                 }
                 const field = formEstabelecimento.querySelector('[name="' + rules[i][1] + '"]');
                 return field ? { field: field } : null;
