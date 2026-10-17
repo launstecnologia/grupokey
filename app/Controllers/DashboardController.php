@@ -117,7 +117,12 @@ class DashboardController
             if (!str_contains($upperName, 'PARCELEX') && !str_contains($upperName, 'UCRED')) {
                 continue;
             }
-            $summary = $billingReport->getLatestCompletedSummary('dynamic:' . $id);
+            try {
+                $summary = $billingReport->getLatestCompletedSummary('dynamic:' . $id);
+            } catch (\Throwable $e) {
+                error_log('Dashboard faturamento: ' . $e->getMessage());
+                $summary = null;
+            }
             $latestBilling[] = [
                 'label' => $name,
                 'rank' => str_contains($upperName, 'PARCELEX') ? 0 : 1,

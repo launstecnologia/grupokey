@@ -11,6 +11,7 @@ class BillingReport
     public function __construct()
     {
         $this->db = Database::getInstance();
+        $this->ensureBillingColumns();
     }
     
     /**
@@ -828,10 +829,59 @@ try {
         return $this->db->fetch($sql, [$id]);
     }
     
+    private function ensureBillingColumns(): void
+    {
+        $this->addMissingColumns('billing_reports', [
+            'report_layout' => 'VARCHAR(30) NULL',
+            'product_scope' => 'VARCHAR(120) NULL',
+        ]);
+        $this->addMissingColumns('billing_data', [
+            'razao_fantasia' => 'VARCHAR(255) NULL',
+            'cidade' => 'VARCHAR(120) NULL',
+            'uf' => 'VARCHAR(2) NULL',
+        ]);
+    }
+
+    private function addMissingColumns(string $table, array $definitions): void
+    {
+        try {
+            $existing = [];
+            foreach ($this->db->fetchAll('SHOW COLUMNS FROM ' . $table) as $column) {
+                $existing[strtolower((string) ($column['Field'] ?? ''))] = true;
+            }
+        } catch (\Throwable $e) {
+            error_log('BillingReport::addMissingColumns list ' . $table . ': ' . $e->getMessage());
+            return;
+        }
+
+        foreach ($definitions as $name => $definition) {
+            if (isset($existing[strtolower($name)])) {
+                continue;
+            }
+            try {
+                $this->db->query("ALTER TABLE {$table} ADD COLUMN {$name} {$definition}");
+            } catch (\Throwable $e) {
+                error_log('BillingReport::addMissingColumns ' . $table . '.' . $name . ': ' . $e->getMessage());
+            }
+        }
+    }
+
     /**
      * Soma do último relatório concluído de um produto.
      */
     public function getLatestCompletedSummary(string $productScope): ?array
+    {
+        try {
+            $report = $this->fetchLatestCompletedSummary($productScope);
+        } catch (\Throwable $e) {
+            error_log('BillingReport::getLatestCompletedSummary: ' . $e->getMessage());
+            return null;
+        }
+
+        return $report;
+    }
+
+    private function fetchLatestCompletedSummary(string $productScope): ?array
     {
         $report = $this->db->fetch(
             "SELECT id, title, uploaded_at, total_tpv, total_records, product_scope
