@@ -728,8 +728,12 @@ class RepresentativeController
 
     private function getFilters()
     {
+        $status = array_key_exists('status', $_GET)
+            ? sanitize_input((string) ($_GET['status'] ?? ''))
+            : 'ACTIVE';
+
         return [
-            'status' => sanitize_input($_GET['status'] ?? ''),
+            'status' => $status,
             'cidade' => sanitize_input($_GET['cidade'] ?? ''),
             'search' => sanitize_input($_GET['search'] ?? ''),
             'date_from' => sanitize_input($_GET['date_from'] ?? ''),
