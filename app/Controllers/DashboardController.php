@@ -103,6 +103,13 @@ class DashboardController
         ];
         $latestBilling = [];
         $billingReport = new BillingReport();
+        try {
+            $pagseguroBilling = $billingReport->getLatestPagSeguroSummary();
+        } catch (\Throwable $e) {
+            error_log('Dashboard faturamento PagSeguro: ' . $e->getMessage());
+            $pagseguroBilling = null;
+        }
+        $latestBilling[] = $this->billingDashboardCard('PagSeguro', 0, $pagseguroBilling);
         foreach ($this->dynamicProductModel->getAll() as $dynamicProduct) {
             $id = (int) ($dynamicProduct['id'] ?? 0);
             $name = trim((string) ($dynamicProduct['name'] ?? ''));
@@ -123,15 +130,11 @@ class DashboardController
                 error_log('Dashboard faturamento: ' . $e->getMessage());
                 $summary = null;
             }
-            $latestBilling[] = [
-                'label' => $name,
-                'rank' => str_contains($upperName, 'PARCELEX') ? 0 : 1,
-                'total' => (float) ($summary['faturamento_total'] ?? 0),
-                'records' => (int) ($summary['cnpj_count'] ?? 0),
-                'uploaded_at' => $summary['uploaded_at'] ?? null,
-                'title' => $summary['title'] ?? null,
-                'report_id' => $summary['id'] ?? null,
-            ];
+            $latestBilling[] = $this->billingDashboardCard(
+                $name,
+                str_contains($upperName, 'PARCELEX') ? 1 : 2,
+                $summary
+            );
         }
         usort($latestBilling, function (array $a, array $b): int {
             return ($a['rank'] ?? 9) <=> ($b['rank'] ?? 9);
@@ -167,6 +170,19 @@ class DashboardController
         ];
         
         view('dashboard/admin', $data);
+    }
+
+    private function billingDashboardCard(string $label, int $rank, ?array $summary): array
+    {
+        return [
+            'label' => $label,
+            'rank' => $rank,
+            'total' => (float) ($summary['faturamento_total'] ?? 0),
+            'records' => (int) ($summary['cnpj_count'] ?? 0),
+            'uploaded_at' => $summary['uploaded_at'] ?? null,
+            'title' => $summary['title'] ?? null,
+            'report_id' => $summary['id'] ?? null,
+        ];
     }
     
     private function representativeDashboard()

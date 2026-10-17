@@ -881,6 +881,26 @@ try {
         return $report;
     }
 
+    public function getLatestPagSeguroSummary(): ?array
+    {
+        try {
+            $report = $this->db->fetch(
+                "SELECT id, title, uploaded_at, total_tpv, total_records
+                 FROM billing_reports
+                 WHERE status = 'COMPLETED'
+                   AND (product_scope IS NULL OR product_scope = '')
+                   AND (report_layout IS NULL OR report_layout = '' OR report_layout = 'PAGSEGURO')
+                 ORDER BY uploaded_at DESC, id DESC
+                 LIMIT 1"
+            );
+        } catch (\Throwable $e) {
+            error_log('BillingReport::getLatestPagSeguroSummary: ' . $e->getMessage());
+            return null;
+        }
+
+        return $this->hydrateBillingSummary($report ?: null);
+    }
+
     private function fetchLatestCompletedSummary(string $productScope): ?array
     {
         $report = $this->db->fetch(
@@ -892,6 +912,11 @@ try {
             [$productScope]
         );
 
+        return $this->hydrateBillingSummary($report ?: null);
+    }
+
+    private function hydrateBillingSummary(?array $report): ?array
+    {
         if (!$report) {
             return null;
         }
