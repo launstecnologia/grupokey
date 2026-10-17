@@ -100,21 +100,21 @@ class BillingReport
             }
             
             // Detectar cabeçalho - verificar se a primeira coluna contém "Nome" ou se todas as colunas parecem ser cabeçalho
-            if ($rowNumber === 1) {
-                $firstCell = strtoupper(trim($data[0] ?? ''));
-                $isHeader = (
-                    stripos($firstCell, 'NOME') !== false || 
-                    stripos($firstCell, 'REPRESENTANTE') !== false ||
-                    stripos($firstCell, 'CNPJ') !== false ||
-                    stripos($firstCell, 'CPF') !== false ||
-                    stripos($firstCell, 'TPV') !== false ||
-                    stripos($firstCell, 'MARKUP') !== false
-                );
-                
-                if ($isHeader) {
-                    error_log("Linha $rowNumber é cabeçalho, pulando");
-                    continue; // Pular linha de cabeçalho
-                }
+            $firstCell = $this->normalizeHeaderCell((string) ($data[0] ?? ''));
+            $isHeader = in_array($firstCell, [
+                'NOME',
+                'CNPJ',
+                'CNPJ/CPF',
+                'CPF',
+                'CPF/CNPJ',
+                'RAZAO SOCIAL',
+                'RAZAO/FANTASIA',
+                'RAZAO FANTASIA',
+                'FATURAMENTO',
+            ], true) || str_starts_with($firstCell, 'CNPJ') || str_starts_with($firstCell, 'RAZAO');
+            if ($isHeader) {
+                error_log("Linha $rowNumber é cabeçalho, pulando");
+                continue;
             }
             
             $rows[] = $data;
@@ -338,7 +338,7 @@ try {
                 $rowData = $this->extractRowData($row, $reportLayout);
                 error_log("Dados extraídos: " . json_encode($rowData));
                 
-                if ($this->isValidDataRow($rowData)) {
+                if ($this->isValidDataRow($rowData, $reportLayout)) {
                     error_log("Linha válida, salvando no banco");
                     $billingId = $this->saveBillingData($reportId, $rowData);
                     $processedRows[] = [
@@ -355,6 +355,11 @@ try {
             }
         }
         
+        if ($reportLayout === 'CNPJ_FATURAMENTO' && count($processedRows) === 0) {
+            $this->db->query("UPDATE billing_reports SET status = 'ERROR', processed_at = NOW() WHERE id = ?", [$reportId]);
+            throw new \Exception('Nenhuma linha válida encontrada. A planilha precisa ter CNPJ, razão social e faturamento.');
+        }
+
         // Calcular totais (sempre, mesmo se não houver linhas processadas)
         try {
             $this->calculateTotals($reportId, $processedRows);
@@ -409,9 +414,9 @@ try {
      */
     private function extractRowData($row, $reportLayout = 'PAGSEGURO')
     {
-        if ($reportLayout === 'OUTROS_PRODUTOS') {
-            // Estrutura nova: CNPJ | RAZÃO/FANTASIA | FATURAMENTO | CIDADE/UF
-            $cnpj = $this->cleanValue($row[0] ?? '');
+        if ($reportLayout === 'OUTROS_PRODUTOS' || $reportLayout === 'CNPJ_FATURAMENTO') {
+            // CNPJ | RAZÃO SOCIAL | FATURAMENTO | CIDADE/UF (cidade só nos outros produtos)
+            $cnpj = $this->normalizeDocument($row[0] ?? '');
             $razaoFantasia = $this->cleanValue($row[1] ?? '');
             $faturamento = $this->parseCurrency($row[2] ?? '');
             $cidadeUf = $this->cleanValue($row[3] ?? '');
@@ -477,6 +482,45 @@ try {
     /**
      * Limpa e normaliza valores
      */
+    private function normalizeHeaderCell(string $value): string
+    {
+        $value = preg_replace('/^\xEF\xBB\xBF/', '', $value) ?? $value;
+        $value = trim($value);
+        $value = strtr($value, [
+            'Á' => 'A', 'À' => 'A', 'Ã' => 'A', 'Â' => 'A',
+            'É' => 'E', 'Ê' => 'E',
+            'Í' => 'I',
+            'Ó' => 'O', 'Õ' => 'O', 'Ô' => 'O',
+            'Ú' => 'U',
+            'Ç' => 'C',
+            'á' => 'A', 'à' => 'A', 'ã' => 'A', 'â' => 'A',
+            'é' => 'E', 'ê' => 'E',
+            'í' => 'I',
+            'ó' => 'O', 'õ' => 'O', 'ô' => 'O',
+            'ú' => 'U',
+            'ç' => 'C',
+        ]);
+        return strtoupper($value);
+    }
+
+    private function normalizeDocument($value): ?string
+    {
+        $value = $this->cleanValue($value);
+        if ($value === null) {
+            return null;
+        }
+
+        $value = str_replace(["\xC2\xA0", ' '], '', $value);
+        if (preg_match('/e\+/i', $value)) {
+            $value = sprintf('%.0f', (float) str_replace(',', '.', $value));
+        }
+        if (preg_match('/^\d+\.0+$/', $value)) {
+            $value = preg_replace('/\.0+$/', '', $value) ?? $value;
+        }
+
+        return $value;
+    }
+
     private function cleanValue($value)
     {
         if (is_null($value)) {
@@ -562,8 +606,14 @@ try {
     /**
      * Verifica se a linha contém dados válidos
      */
-    private function isValidDataRow($rowData)
+    private function isValidDataRow($rowData, $reportLayout = 'PAGSEGURO')
     {
+        if ($reportLayout === 'CNPJ_FATURAMENTO') {
+            $nome = trim($rowData['nome'] ?? '');
+            $cleanDoc = preg_replace('/\D/', '', (string) ($rowData['cnpj_cpf'] ?? ''));
+            return $nome !== '' && strlen($cleanDoc) >= 11;
+        }
+
         // Verificar se tem nome válido (não pode ser uma data)
         $nome = trim($rowData['nome'] ?? '');
         if (empty($nome)) {
@@ -778,6 +828,37 @@ try {
         return $this->db->fetch($sql, [$id]);
     }
     
+    /**
+     * Soma do último relatório concluído de um produto.
+     */
+    public function getLatestCompletedSummary(string $productScope): ?array
+    {
+        $report = $this->db->fetch(
+            "SELECT id, title, uploaded_at, total_tpv, total_records, product_scope
+             FROM billing_reports
+             WHERE product_scope = ? AND status = 'COMPLETED'
+             ORDER BY uploaded_at DESC, id DESC
+             LIMIT 1",
+            [$productScope]
+        );
+
+        if (!$report) {
+            return null;
+        }
+
+        $sum = $this->db->fetch(
+            "SELECT COALESCE(SUM(tpv_total), 0) AS total, COUNT(*) AS qty
+             FROM billing_data
+             WHERE report_id = ?",
+            [$report['id']]
+        );
+
+        $report['faturamento_total'] = (float) ($sum['total'] ?? $report['total_tpv'] ?? 0);
+        $report['cnpj_count'] = (int) ($sum['qty'] ?? $report['total_records'] ?? 0);
+
+        return $report;
+    }
+
     /**
      * Busca dados de faturamento de um relatório
      */

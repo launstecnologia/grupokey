@@ -40,6 +40,31 @@ $product_establishment_counts = $product_establishment_counts ?? [];
         </div>
     </div>
 
+    <?php if (!empty($latest_billing)): ?>
+    <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <?php foreach ($latest_billing as $billingCard): ?>
+            <div class="bg-white shadow rounded-lg p-4 sm:p-6">
+                <div class="text-sm font-medium text-gray-500">Faturamento <?= htmlspecialchars($billingCard['label'] ?? '') ?></div>
+                <div class="mt-1 text-2xl sm:text-3xl font-bold text-gray-900"><?= format_currency($billingCard['total'] ?? 0) ?></div>
+                <?php if (!empty($billingCard['uploaded_at'])): ?>
+                    <div class="mt-2 text-sm text-gray-600">
+                        Soma de <?= (int) ($billingCard['records'] ?? 0) ?> CNPJs do último relatório
+                        (<?= date('d/m/Y H:i', strtotime($billingCard['uploaded_at'])) ?>)
+                    </div>
+                    <?php if (!empty($billingCard['title'])): ?>
+                        <div class="text-xs text-gray-400 mt-1"><?= htmlspecialchars($billingCard['title']) ?></div>
+                    <?php endif; ?>
+                    <?php if (!empty($billingCard['report_id'])): ?>
+                        <a href="<?= url('billing/' . (int) $billingCard['report_id']) ?>" class="inline-block mt-3 text-sm font-medium text-blue-600 hover:text-blue-800">Ver relatório</a>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <div class="mt-2 text-sm text-gray-500">Nenhum relatório anexado</div>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
     <?php if (!empty($product_establishment_counts)): ?>
     <div class="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <?php foreach ($product_establishment_counts as $productCount): ?>

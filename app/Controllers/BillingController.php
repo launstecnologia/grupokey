@@ -61,18 +61,12 @@ class BillingController
         foreach ($reports as &$report) {
             $layout = strtoupper((string) ($report['report_layout'] ?? 'PAGSEGURO'));
             $scope = (string) ($report['product_scope'] ?? '');
-            $report['layout_label'] = $layout === 'OUTROS_PRODUTOS' ? 'Outros Produtos' : 'PagSeguro';
-            $report['product_scope_label'] = '-';
-            if ($scope !== '') {
-                if ($scope === 'manual:cdc') {
-                    $report['product_scope_label'] = 'CDC';
-                } elseif (strpos($scope, 'dynamic:') === 0) {
-                    $dynamicId = (int) substr($scope, 8);
-                    $report['product_scope_label'] = $dynamicProductsById[$dynamicId] ?? ('Produto Dinâmico #' . $dynamicId);
-                } else {
-                    $report['product_scope_label'] = strtoupper($scope);
-                }
-            }
+            $report['layout_label'] = match ($layout) {
+                'OUTROS_PRODUTOS' => 'Outros Produtos',
+                'CNPJ_FATURAMENTO' => 'CNPJ, razão e faturamento',
+                default => 'PagSeguro',
+            };
+            $report['product_scope_label'] = $this->productScopeLabel($scope, $dynamicProductsById);
         }
         unset($report);
         
@@ -116,17 +110,28 @@ class BillingController
         $productScopes = [
             ['value' => 'manual:cdc', 'label' => 'CDC'],
         ];
+        $simpleBillingProducts = [];
         foreach ($this->dynamicProductModel->getAll() as $dynamicProduct) {
             $id = (int) ($dynamicProduct['id'] ?? 0);
             $name = trim((string) ($dynamicProduct['name'] ?? ''));
-            if ($id > 0 && $name !== '') {
-                $productScopes[] = ['value' => 'dynamic:' . $id, 'label' => $name];
+            if ($id <= 0 || $name === '') {
+                continue;
             }
+            $option = ['value' => 'dynamic:' . $id, 'label' => $name];
+            if ($this->isSimpleBillingProductName($name)) {
+                $simpleBillingProducts[] = $option;
+                continue;
+            }
+            $productScopes[] = $option;
         }
+        usort($simpleBillingProducts, function (array $a, array $b): int {
+            return $this->simpleBillingProductRank($a['label']) <=> $this->simpleBillingProductRank($b['label']);
+        });
 
         $data = [
             'title' => 'Upload de Relatório de Faturamento',
             'productScopes' => $productScopes,
+            'simpleBillingProducts' => $simpleBillingProducts,
         ];
         
         $this->render('billing/create', $data);
@@ -328,8 +333,10 @@ class BillingController
             // Obter dados do formulário
             $reportTitle = $_POST['report_title'] ?? 'Relatório de Faturamento';
             $companyCode = $_POST['company_code'] ?? null;
-            $reportLayout = $_POST['report_layout'] ?? 'PAGSEGURO';
-            $productScope = $_POST['product_scope'] ?? null;
+            [$reportLayout, $productScope] = $this->normalizeBillingUpload(
+                (string) ($_POST['report_layout'] ?? 'PAGSEGURO'),
+                isset($_POST['product_scope']) ? (string) $_POST['product_scope'] : null
+            );
             
             write_log("Título do relatório: {$reportTitle}", 'excel_upload.log');
             write_log("Código da empresa: " . ($companyCode ?? 'N/A'), 'excel_upload.log');
@@ -412,6 +419,14 @@ class BillingController
         
         $billingData = $this->billingReport->getBillingData($id);
         $unlinkedData = $this->billingReport->getUnlinkedData($id);
+        $dynamicProductsById = [];
+        foreach ($this->dynamicProductModel->getAll() as $dynamicProduct) {
+            $dynamicId = (int) ($dynamicProduct['id'] ?? 0);
+            if ($dynamicId > 0) {
+                $dynamicProductsById[$dynamicId] = trim((string) ($dynamicProduct['name'] ?? ''));
+            }
+        }
+        $report['product_scope_label'] = $this->productScopeLabel((string) ($report['product_scope'] ?? ''), $dynamicProductsById);
         
         $data = [
             'title' => 'Detalhes do Relatório',
@@ -578,7 +593,8 @@ class BillingController
     private function generateExcelFile($report, $billingData)
     {
         $reportLayout = strtoupper((string)($report['report_layout'] ?? 'PAGSEGURO'));
-        $isOtherProductsLayout = $reportLayout === 'OUTROS_PRODUTOS';
+        $isCnpjLayout = $reportLayout === 'CNPJ_FATURAMENTO';
+        $isOtherProductsLayout = $reportLayout === 'OUTROS_PRODUTOS' || $isCnpjLayout;
 
         // Usar formato SpreadsheetML que é compatível com Excel
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
@@ -630,7 +646,11 @@ class BillingController
         
         // Cabeçalho da tabela
         $xml .= '<Row ss:StyleID="Header">' . "\n";
-        if ($isOtherProductsLayout) {
+        if ($isCnpjLayout) {
+            $xml .= '<Cell><Data ss:Type="String">CNPJ</Data></Cell>' . "\n";
+            $xml .= '<Cell><Data ss:Type="String">Razão Social</Data></Cell>' . "\n";
+            $xml .= '<Cell><Data ss:Type="String">Faturamento</Data></Cell>' . "\n";
+        } elseif ($isOtherProductsLayout) {
             $xml .= '<Cell><Data ss:Type="String">CNPJ</Data></Cell>' . "\n";
             $xml .= '<Cell><Data ss:Type="String">Razão Social/Fantasia</Data></Cell>' . "\n";
             $xml .= '<Cell><Data ss:Type="String">Faturamento</Data></Cell>' . "\n";
@@ -649,11 +669,13 @@ class BillingController
         // Dados
         foreach ($billingData as $data) {
             $xml .= '<Row>' . "\n";
-            if ($isOtherProductsLayout) {
+            if ($isCnpjLayout || $isOtherProductsLayout) {
                 $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['cnpj_cpf'] ?? '') . '</Data></Cell>' . "\n";
                 $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml(($data['razao_fantasia'] ?? '') ?: ($data['nome'] ?? '')) . '</Data></Cell>' . "\n";
                 $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($data['tpv_total'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
-                $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml(trim((string) (($data['cidade'] ?? '') . '/' . ($data['uf'] ?? '')), '/')) . '</Data></Cell>' . "\n";
+                if (!$isCnpjLayout) {
+                    $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml(trim((string) (($data['cidade'] ?? '') . '/' . ($data['uf'] ?? '')), '/')) . '</Data></Cell>' . "\n";
+                }
             } else {
                 $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['nome'] ?? '') . '</Data></Cell>' . "\n";
                 $xml .= '<Cell><Data ss:Type="String">' . $this->escapeXml($data['cnpj_cpf'] ?? '') . '</Data></Cell>' . "\n";
@@ -677,7 +699,9 @@ class BillingController
             $xml .= '<Cell></Cell>' . "\n";
         }
         $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($report['total_tpv'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
-        if ($isOtherProductsLayout) {
+        if ($isCnpjLayout) {
+            // Planilha de três colunas: o total já está na coluna de faturamento.
+        } elseif ($isOtherProductsLayout) {
             $xml .= '<Cell></Cell>' . "\n";
         } else {
             $xml .= '<Cell ss:StyleID="Currency"><Data ss:Type="Number">' . number_format($report['total_markup'] ?? 0, 2, '.', '') . '</Data></Cell>' . "\n";
@@ -701,6 +725,77 @@ class BillingController
         return htmlspecialchars($string ?? '', ENT_XML1, 'UTF-8');
     }
     
+    private function normalizeBillingUpload(string $reportLayout, ?string $productScope): array
+    {
+        $rawLayout = trim($reportLayout);
+        $productScope = trim((string) $productScope);
+
+        if (stripos($rawLayout, 'CNPJ:') === 0) {
+            $productScope = substr($rawLayout, 5);
+            $reportLayout = 'CNPJ_FATURAMENTO';
+        } else {
+            $reportLayout = strtoupper($rawLayout);
+        }
+
+        if (!in_array($reportLayout, ['PAGSEGURO', 'OUTROS_PRODUTOS', 'CNPJ_FATURAMENTO'], true)) {
+            throw new \Exception('Estrutura do relatório inválida.');
+        }
+
+        if ($reportLayout === 'PAGSEGURO') {
+            return ['PAGSEGURO', null];
+        }
+
+        if ($productScope === '') {
+            throw new \Exception('Selecione o produto da planilha.');
+        }
+
+        if ($reportLayout === 'CNPJ_FATURAMENTO') {
+            if (!preg_match('/^dynamic:(\d+)$/', $productScope, $matches)) {
+                throw new \Exception('Selecione Parcelex ou UCRED para esta planilha.');
+            }
+            $product = $this->dynamicProductModel->findById((int) $matches[1]);
+            $name = trim((string) ($product['name'] ?? ''));
+            if (!$product || !$this->isSimpleBillingProductName($name)) {
+                throw new \Exception('Selecione Parcelex ou UCRED para esta planilha.');
+            }
+        }
+
+        return [$reportLayout, $productScope];
+    }
+
+    private function isSimpleBillingProductName(string $name): bool
+    {
+        $upper = strtoupper($name);
+        return str_contains($upper, 'PARCELEX') || str_contains($upper, 'UCRED');
+    }
+
+    private function simpleBillingProductRank(string $name): int
+    {
+        $upper = strtoupper($name);
+        if (str_contains($upper, 'PARCELEX')) {
+            return 0;
+        }
+        if (str_contains($upper, 'UCRED')) {
+            return 1;
+        }
+        return 2;
+    }
+
+    private function productScopeLabel(string $scope, array $dynamicProductsById): string
+    {
+        if ($scope === '') {
+            return '-';
+        }
+        if ($scope === 'manual:cdc') {
+            return 'CDC';
+        }
+        if (strpos($scope, 'dynamic:') === 0) {
+            $dynamicId = (int) substr($scope, 8);
+            return $dynamicProductsById[$dynamicId] ?? ('Produto Dinâmico #' . $dynamicId);
+        }
+        return strtoupper($scope);
+    }
+
     /**
      * Renderiza uma view
      */

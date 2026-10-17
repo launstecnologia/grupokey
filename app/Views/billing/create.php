@@ -1,6 +1,7 @@
 <?php
 $title = $title ?? 'Upload de Relatório';
 $productScopes = $productScopes ?? [];
+$simpleBillingProducts = $simpleBillingProducts ?? [];
 ?>
 
 <div class="container-fluid">
@@ -43,8 +44,14 @@ $productScopes = $productScopes ?? [];
                             <label for="report_layout" class="form-label">Estrutura do Relatório</label>
                             <select class="form-control" id="report_layout" name="report_layout" required>
                                 <option value="PAGSEGURO" selected>PagSeguro (estrutura atual)</option>
-                                <option value="OUTROS_PRODUTOS">Outros produtos (sem PagSeguro)</option>
+                                <?php foreach ($simpleBillingProducts as $product): ?>
+                                <option value="CNPJ:<?= htmlspecialchars($product['value']) ?>"><?= htmlspecialchars($product['label']) ?></option>
+                                <?php endforeach; ?>
+                                <option value="OUTROS_PRODUTOS">Outros produtos</option>
                             </select>
+                            <div class="form-text" id="layout-help">
+                                Parcelex e UCRED usam a planilha com CNPJ, razão social e faturamento. Deixe o CNPJ como texto.
+                            </div>
                         </div>
 
                         <div class="mb-3 hidden" id="product-scope-wrapper">
@@ -85,11 +92,11 @@ $productScopes = $productScopes ?? [];
                     <h6 class="m-0 font-weight-bold text-primary">Exemplo de Estrutura</h6>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
+                    <div class="table-responsive" id="example-pagseguro">
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>
-                                    <th colspan="5">PagSeguro (atual)</th>
+                                    <th colspan="5">PagSeguro</th>
                                 </tr>
                                 <tr>
                                     <th>Nome</th>
@@ -107,22 +114,49 @@ $productScopes = $productScopes ?? [];
                                     <td>R$ 1.000,00</td>
                                     <td>R$ 10,00</td>
                                 </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive hidden" id="example-cnpj">
+                        <table class="table table-sm table-bordered">
+                            <thead>
                                 <tr>
-                                    <td colspan="5" class="bg-light text-center font-weight-bold">Outros produtos (novo)</td>
+                                    <th colspan="3">Parcelex e UCRED</th>
+                                </tr>
+                                <tr>
+                                    <th>CNPJ</th>
+                                    <th>RAZÃO SOCIAL</th>
+                                    <th>FATURAMENTO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>12.345.678/0001-99</td>
+                                    <td>EMPRESA MODELO LTDA</td>
+                                    <td>R$ 150.000,00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive hidden" id="example-outros">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th colspan="4">Outros produtos</th>
                                 </tr>
                                 <tr>
                                     <th>CNPJ</th>
                                     <th>RAZÃO/FANTASIA</th>
                                     <th>FATURAMENTO</th>
                                     <th>CIDADE/UF</th>
-                                    <th>-</th>
                                 </tr>
+                            </thead>
+                            <tbody>
                                 <tr>
                                     <td>12.345.678/0001-99</td>
                                     <td>EMPRESA MODELO LTDA</td>
                                     <td>R$ 150.000,00</td>
                                     <td>Belo Horizonte/MG</td>
-                                    <td>-</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -236,11 +270,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (companyCodeInput && companyCodeInput.value.trim()) {
             formData.append('company_code', companyCodeInput.value.trim());
         }
-        if (reportLayoutInput) {
-            formData.append('report_layout', reportLayoutInput.value);
+        let layoutValue = reportLayoutInput ? reportLayoutInput.value : 'PAGSEGURO';
+        let scopeValue = productScopeInput && productScopeInput.value.trim() ? productScopeInput.value.trim() : '';
+        if (layoutValue.indexOf('CNPJ:') === 0) {
+            scopeValue = layoutValue.substring(5);
+            layoutValue = 'CNPJ_FATURAMENTO';
         }
-        if (productScopeInput && productScopeInput.value.trim()) {
-            formData.append('product_scope', productScopeInput.value.trim());
+        if (layoutValue === 'OUTROS_PRODUTOS' && !scopeValue) {
+            alert('Selecione o produto de faturamento.');
+            return false;
+        }
+        formData.append('report_layout', layoutValue);
+        if (scopeValue) {
+            formData.append('product_scope', scopeValue);
         }
         
         // Verificar se o arquivo está no FormData
@@ -349,7 +391,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function syncLayoutFields() {
-        const isOutros = reportLayoutInput && reportLayoutInput.value === 'OUTROS_PRODUTOS';
+        const layoutValue = reportLayoutInput ? reportLayoutInput.value : 'PAGSEGURO';
+        const isOutros = layoutValue === 'OUTROS_PRODUTOS';
+        const isCnpj = layoutValue.indexOf('CNPJ:') === 0;
         if (productScopeWrapper) {
             productScopeWrapper.classList.toggle('hidden', !isOutros);
         }
@@ -361,6 +405,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 productScopeInput.value = '';
             }
         }
+        const examplePagseguro = document.getElementById('example-pagseguro');
+        const exampleCnpj = document.getElementById('example-cnpj');
+        const exampleOutros = document.getElementById('example-outros');
+        if (examplePagseguro) examplePagseguro.classList.toggle('hidden', layoutValue !== 'PAGSEGURO');
+        if (exampleCnpj) exampleCnpj.classList.toggle('hidden', !isCnpj);
+        if (exampleOutros) exampleOutros.classList.toggle('hidden', !isOutros);
     }
 
     if (reportLayoutInput) {

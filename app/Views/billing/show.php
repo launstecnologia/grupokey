@@ -6,7 +6,9 @@ $report = $report ?? [];
 $billing_data = $billing_data ?? [];
 $unlinked_data = $unlinked_data ?? [];
 $reportLayout = strtoupper((string)($report['report_layout'] ?? 'PAGSEGURO'));
+$isCnpjLayout = $reportLayout === 'CNPJ_FATURAMENTO';
 $isOtherProductsLayout = $reportLayout === 'OUTROS_PRODUTOS';
+$isAmountLayout = $isOtherProductsLayout || $isCnpjLayout;
 
 // Calcular contadores
 $linkedCount = 0;
@@ -32,9 +34,10 @@ $statusLabels = [
 $status = $report['status'] ?? 'PROCESSING';
 $statusClass = $statusColors[$status] ?? 'bg-gray-100 text-gray-800';
 $statusLabel = $statusLabels[$status] ?? $status;
-$layoutLabel = $isOtherProductsLayout ? 'Outros Produtos' : 'PagSeguro';
-$establishmentColumnIndex = $isOtherProductsLayout ? 4 : 5;
-$statusColumnIndex = $isOtherProductsLayout ? 5 : 6;
+$layoutLabel = $isCnpjLayout ? 'CNPJ, razão e faturamento' : ($isOtherProductsLayout ? 'Outros Produtos' : 'PagSeguro');
+$productScopeLabel = trim((string) ($report['product_scope_label'] ?? ''));
+$establishmentColumnIndex = $isCnpjLayout ? 3 : ($isOtherProductsLayout ? 4 : 5);
+$statusColumnIndex = $isCnpjLayout ? 4 : ($isOtherProductsLayout ? 5 : 6);
 ?>
 
 <div class="pt-6 px-4">
@@ -90,18 +93,26 @@ $statusColumnIndex = $isOtherProductsLayout ? 5 : 6;
                             <dt class="text-sm font-medium text-gray-500">Layout</dt>
                             <dd class="mt-1 text-sm text-gray-900"><?= $layoutLabel ?></dd>
                         </div>
+                        <?php if ($productScopeLabel !== '' && $productScopeLabel !== '-'): ?>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Produto</dt>
+                            <dd class="mt-1 text-sm text-gray-900"><?= htmlspecialchars($productScopeLabel) ?></dd>
+                        </div>
+                        <?php endif; ?>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Total de Registros</dt>
                             <dd class="mt-1 text-sm text-gray-900"><?= number_format($report['total_records']) ?></dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">TPV Total</dt>
+                            <dt class="text-sm font-medium text-gray-500"><?= $isAmountLayout ? 'Faturamento Total' : 'TPV Total' ?></dt>
                             <dd class="mt-1 text-sm text-gray-900">R$ <?= number_format($report['total_tpv'], 2, ',', '.') ?></dd>
                         </div>
+                        <?php if (!$isAmountLayout): ?>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Markup Total</dt>
                             <dd class="mt-1 text-sm text-gray-900">R$ <?= number_format($report['total_markup'], 2, ',', '.') ?></dd>
                         </div>
+                        <?php endif; ?>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Upload</dt>
                             <dd class="mt-1 text-sm text-gray-900"><?= date('d/m/Y H:i', strtotime($report['uploaded_at'])) ?></dd>
@@ -156,19 +167,21 @@ $statusColumnIndex = $isOtherProductsLayout ? 5 : 6;
                     <table class="min-w-full divide-y divide-gray-200" id="billingTable">
                         <thead class="bg-gray-50">
                             <tr>
-                                <?php if ($isOtherProductsLayout): ?>
+                                <?php if ($isAmountLayout): ?>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(0, 'text')">
                                     CNPJ <i class="fas fa-sort ml-1"></i>
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(1, 'text')">
-                                    Razão Social/Fantasia <i class="fas fa-sort ml-1"></i>
+                                    Razão Social <i class="fas fa-sort ml-1"></i>
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(2, 'number')">
                                     Faturamento <i class="fas fa-sort ml-1"></i>
                                 </th>
+                                <?php if ($isOtherProductsLayout): ?>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(3, 'text')">
                                     Cidade/UF <i class="fas fa-sort ml-1"></i>
                                 </th>
+                                <?php endif; ?>
                                 <?php else: ?>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(0, 'text')">
                                     Nome <i class="fas fa-sort ml-1"></i>
@@ -198,7 +211,7 @@ $statusColumnIndex = $isOtherProductsLayout ? 5 : 6;
                         <tbody class="bg-white divide-y divide-gray-200">
                             <?php foreach ($billing_data as $data): ?>
                                 <tr class="hover:bg-blue-200 transition-colors cursor-pointer" data-billing-id="<?= $data['id'] ?>">
-                                    <?php if ($isOtherProductsLayout): ?>
+                                    <?php if ($isAmountLayout): ?>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900"><?= htmlspecialchars($data['cnpj_cpf'] ?? '') ?></div>
                                     </td>
@@ -208,11 +221,13 @@ $statusColumnIndex = $isOtherProductsLayout ? 5 : 6;
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">R$ <?= number_format($data['tpv_total'], 2, ',', '.') ?></div>
                                     </td>
+                                    <?php if ($isOtherProductsLayout): ?>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">
                                             <?= htmlspecialchars(trim((string) (($data['cidade'] ?? '') . '/' . ($data['uf'] ?? '')), '/')) ?>
                                         </div>
                                     </td>
+                                    <?php endif; ?>
                                     <?php else: ?>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900"><?= htmlspecialchars($data['nome'] ?? '') ?></div>

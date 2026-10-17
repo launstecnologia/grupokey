@@ -10,6 +10,7 @@ use App\Models\Banner;
 use App\Models\RepresentativeModal;
 use App\Models\Ticket;
 use App\Models\DynamicProduct;
+use App\Models\BillingReport;
 
 class DashboardController
 {
@@ -100,6 +101,8 @@ class DashboardController
                 'total' => (int) ($this->establishmentModel->getStats(['produto' => 'manual:pagseguro'])['total'] ?? 0)
             ]
         ];
+        $latestBilling = [];
+        $billingReport = new BillingReport();
         foreach ($this->dynamicProductModel->getAll() as $dynamicProduct) {
             $id = (int) ($dynamicProduct['id'] ?? 0);
             $name = trim((string) ($dynamicProduct['name'] ?? ''));
@@ -110,7 +113,24 @@ class DashboardController
                 'label' => $name,
                 'total' => (int) ($this->establishmentModel->getStats(['produto' => 'dynamic:' . $id])['total'] ?? 0)
             ];
+            $upperName = strtoupper($name);
+            if (!str_contains($upperName, 'PARCELEX') && !str_contains($upperName, 'UCRED')) {
+                continue;
+            }
+            $summary = $billingReport->getLatestCompletedSummary('dynamic:' . $id);
+            $latestBilling[] = [
+                'label' => $name,
+                'rank' => str_contains($upperName, 'PARCELEX') ? 0 : 1,
+                'total' => (float) ($summary['faturamento_total'] ?? 0),
+                'records' => (int) ($summary['cnpj_count'] ?? 0),
+                'uploaded_at' => $summary['uploaded_at'] ?? null,
+                'title' => $summary['title'] ?? null,
+                'report_id' => $summary['id'] ?? null,
+            ];
         }
+        usort($latestBilling, function (array $a, array $b): int {
+            return ($a['rank'] ?? 9) <=> ($b['rank'] ?? 9);
+        });
         
         // Filtros para o período atual
         $currentMonth = date('Y-m-01');
@@ -136,6 +156,7 @@ class DashboardController
             'user_stats' => $userStats,
             'representative_stats' => $representativeStats,
             'product_establishment_counts' => $productEstablishmentCounts,
+            'latest_billing' => $latestBilling,
             'current_month_stats' => $currentMonthStats,
             'last_month_stats' => $lastMonthStats
         ];
