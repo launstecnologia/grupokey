@@ -77,7 +77,6 @@ class MaterialController
                 $filters['allowed_product_keys'] = $allowedProductKeys;
                 $productOptions = array_intersect_key($productOptions, array_flip($allowedProductKeys));
             }
-            $filters['is_active'] = 1;
         }
 
         $files = $this->materialModel->getAllFiles($filters);

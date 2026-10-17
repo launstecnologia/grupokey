@@ -232,7 +232,7 @@ $filters = $filters ?? [];
                                 <?php
                                 $statusColors = [
                                     'ACTIVE' => 'bg-green-100 text-green-800',
-                                    'INACTIVE' => 'bg-gray-100 text-gray-800'
+                                    'INACTIVE' => 'partner-status-inactive'
                                 ];
                                 $statusLabels = [
                                     'ACTIVE' => 'Ativo',
@@ -346,6 +346,18 @@ document.addEventListener('click', function(e) {
     }
 });
 </script>
+
+<style>
+.partner-status-inactive {
+    background-color: #f59e0b;
+    color: #111827;
+}
+.dark .partner-status-inactive {
+    background-color: #fbbf24 !important;
+    color: #111827 !important;
+    box-shadow: 0 0 0 1px #f59e0b;
+}
+</style>
 
 <?php
 $content = ob_get_clean();
