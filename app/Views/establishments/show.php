@@ -305,25 +305,25 @@ $statusLabels = [
                         <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Sócios</h4>
                         <div class="space-y-4">
                             <?php foreach ($ucredSocios as $ucredSocioIndex => $ucredSocio): ?>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="md:col-span-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                                    <?= $ucredSocioIndex === 0 ? 'Sócio titular' : 'Sócio adicional' ?>
-                                </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-copy-product data-copy-title="Copiar dados do sócio">
+                                <h4 class="md:col-span-2 m-0 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                    <span class="copyable-title"><?= $ucredSocioIndex === 0 ? 'Sócio titular' : 'Sócio adicional' ?></span>
+                                </h4>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nome</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars((string) (($ucredSocio['nome'] ?? '') !== '' ? $ucredSocio['nome'] : '-')) ?></dd>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars((string) (($ucredSocio['nome'] ?? '') !== '' ? $ucredSocio['nome'] : '-')) ?></dd>
                                 </div>
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">CPF titular</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($formatUcredCpf($ucredSocio['cpf'] ?? '')) ?></dd>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">CPF do Sócio</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars($formatUcredCpf($ucredSocio['cpf'] ?? '')) ?></dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Data de nascimento</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($formatUcredDate($ucredSocio['data_nascimento'] ?? '')) ?></dd>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars($formatUcredDate($ucredSocio['data_nascimento'] ?? '')) ?></dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">RG</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars((string) (($ucredSocio['rg'] ?? '') !== '' ? $ucredSocio['rg'] : '-')) ?></dd>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white copyable-value"><?= htmlspecialchars((string) (($ucredSocio['rg'] ?? '') !== '' ? $ucredSocio['rg'] : '-')) ?></dd>
                                 </div>
                             </div>
                             <?php endforeach; ?>
@@ -1266,7 +1266,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'copy-value-button';
-        button.title = 'Copiar produto e campos';
+        button.title = card.getAttribute('data-copy-title') || 'Copiar produto e campos';
         button.innerHTML = '<i class="fas fa-copy"></i>';
         button.addEventListener('click', function(event) {
             event.preventDefault();
